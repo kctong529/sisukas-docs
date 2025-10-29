@@ -1,3 +1,7 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://docs.sisukas.eu/'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = 'Sisukas Documentation'
+
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'
