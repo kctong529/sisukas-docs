@@ -83,7 +83,7 @@ jobs:
             --gc \
             --minify \
             --theme hugo-book \
-            --baseURL "${{ steps.pages.outputs.base_url }}/" \
+            --baseURL "https://docs.sisukas.eu/" \
             --cacheDir "${{ runner.temp }}/hugo_cache"
       - name: Cache save
         id: cache-save
