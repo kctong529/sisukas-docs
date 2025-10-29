@@ -2,6 +2,14 @@ baseURL = 'https://docs.sisukas.eu/'
 languageCode = 'en-us'
 title = 'Sisukas Documentation'
 
+[markup.goldmark.renderer]
+  unsafe = true
+
 [caches]
   [caches.images]
     dir = ':cacheDir/images'
+
+[params]
+  # (Optional, default docs) Specify section of content to render as menu
+  # You can also set value to "*" to render all sections to menu
+  BookSection = '*'

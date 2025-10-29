@@ -1,6 +1,6 @@
 {
-  "name": "My New Hugo Site",
-  "short_name": "My New Hugo Site",
+  "name": "Sisukas Documentation",
+  "short_name": "Sisukas Documentation",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
