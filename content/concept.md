@@ -4,8 +4,6 @@ bookFlatSection: true
 title: "How We Filter"
 ---
 
-# How We Filter, A Conceptual Model
-
 ## The Fundamental Problem
 
 Consider a typical course search scenario:
