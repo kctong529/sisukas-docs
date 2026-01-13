@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 10
 bookFlatSection: true
 title: "The Missing Dashboard"
 ---
