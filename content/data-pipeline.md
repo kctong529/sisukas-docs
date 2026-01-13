@@ -1,42 +1,28 @@
 ---
-weight: 4
+weight: 6
 title: "Data Pipeline"
 ---
 
 # Course Data Pipeline
 
-> [!NOTE]
-> The course data (`courses.json`) was retrieved using the Aalto Open API, following the instructions at [3scale Aalto Open API Docs](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu). The data was obtained using the `GET /courseunitrealisations` endpoint, with the parameter: `startTimeAfter=2024-01-01`.
-
-> [!IMPORTANT]
-> The app uses a cached version of this data with HTTP conditional requests (If-Modified-Since) to ensure fast performance while staying up-to-date. The browser will automatically fetch updates only when the data has changed on the server.
-
 ## Overview
 
-Sisukas maintains an up-to-date course database by automatically fetching course data from the Aalto University API, transforming it for efficient delivery, and detecting changes.
+Sisukas maintains an up-to-date course database by automatically fetching course data from the [Aalto University API](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu), transforming it for efficient delivery, and detecting changes.
 
 The process runs:
-- **Daily** at 6 AM UTC (automatic)
-- **On demand** via GitHub Actions workflow dispatch
-- **On push** to main or dev branches
+- Daily at 6 AM UTC (automatic)
+- On demand via GitHub Actions workflow dispatch
+- On push to main or dev branches
 
 ## Data Flow
 
-```
-Aalto API
-   ↓
-Fetch Latest Courses (fetch_latest_courses.py)
-   ↓
-Transform (transform_courses.py)
-   ↓
-Compare with Previous (report_course_changes.py)
-   ↓
-Report Changes
-   ↓
-Upload to GCS (if changes detected)
-   ↓
-Frontend Loads courses.json
-```
+1. Aalto API
+2. Fetch Latest Courses (fetch_latest_courses.py)
+3. Transform (transform_courses.py)
+4. Compare with Previous (report_course_changes.py)
+5. Report Changes
+6. Upload to GCS (if changes detected)
+7. Frontend Loads courses.json
 
 ## Components
 
@@ -227,7 +213,38 @@ gs://sisukas-core/
 
 ## Local Development
 
-### Testing Data Fetch
+### Setting Up the Frontend
+```bash
+cd frontend/course-browser
+npm run dev
+```
+
+The frontend automatically loads course data from a Google Cloud Storage bucket via the `VITE_GCS_BUCKET` environment variable.
+
+**Default Configuration:**
+- Production: `https://storage.googleapis.com/sisukas-core` (from main branch)
+- Development: `https://storage.googleapis.com/sisukas-core-test` (from dev branch)
+
+**Data Loading:**
+- Courses are fetched from GCS using a Stale-While-Revalidate (SWR) caching strategy
+- Data is cached in IndexedDB for offline access and performance
+- On startup, the app checks if cached data is stale by fetching `courses.hash.json`
+- If stale, it downloads the fresh `courses.json` from GCS
+
+**Configuring the Data Source:**
+1. Set `VITE_GCS_BUCKET` environment variable to your GCS bucket URL:
+```bash
+   export VITE_GCS_BUCKET="https://storage.googleapis.com/sisukas-core"
+```
+2. Ensure `courses.json` and `courses.hash.json` are available at that location
+
+**For Offline Development:**
+- The app will use IndexedDB cache if GCS is unreachable
+- To test with local data, you can mock the `cache.fetch()` method in `LargeFileCache`
+
+### Testing the Data Pipeline Locally
+
+**1. Test Data Fetch**
 
 ```bash
 export AALTO_USER_KEY="your_api_key"
@@ -236,7 +253,7 @@ python scripts/fetch_latest_courses.py
 
 This creates `latest_fetch.json` with raw API data.
 
-### Testing Data Transform
+**2. Test Data Transform**
 
 ```bash
 python scripts/transform_courses.py latest_fetch.json latest.json
@@ -244,7 +261,7 @@ python scripts/transform_courses.py latest_fetch.json latest.json
 
 This creates `latest.json` with transformed data.
 
-### Testing Change Detection
+**3. Test Change Detection**
 
 ```bash
 cp latest.json courses.json  # Make a "previous" version
@@ -253,17 +270,6 @@ python scripts/report_course_changes.py
 ```
 
 This compares and reports changes.
-
-### Using Local Data
-
-To use local courses.json in development:
-
-```bash
-cd frontend/course-browser
-npm run dev
-```
-
-The dev server loads `courses.json` from the project root. You can replace it with local data for testing.
 
 ## Data Quality
 
@@ -376,8 +382,39 @@ Check:
 3. Test the transformation
 4. Monitor change logs to see impact
 
+## Why Both Aalto Open API and Sisu API?
+
+> [!NOTE]
+> Terminology clarification: The Aalto API uses the term "offering" (formally "courseunitrealisations") to refer to specific semester instances. In Sisukas documentation, we use the term "instance" to mean the same thing from a user perspective.
+
+Sisukas uses two separate data sources by design:
+
+**Aalto Open API** provides course metadata (name, credits, description, teachers). 
+This data is:
+- Stable and slow-changing
+- Cacheable for long periods
+- Updated daily via automated pipeline
+- Suitable for search and filtering operations
+
+**Aalto Sisu API** (accessed via sisu-wrapper) provides study group details and schedules. 
+This data is:
+- More detailed (individual lecture times, exercise groups)
+- Changes more frequently
+- Requires real-time queries
+- Not suitable for bulk caching
+
+Separating them allows:
+1. **Fast search/filtering** on cached course data (Aalto Open API)
+2. **Detailed schedule queries** on demand (Aalto Sisu API via sisu-wrapper)
+3. **Better performance** – don't fetch schedule data for every course in search results
+4. **Cleaner architecture** – each service has a focused purpose
+5. **Efficient caching** – cache what's stable, query what's dynamic
+
+This design decision reflects a common pattern: use aggregate/summary data for exploration, 
+and detailed data only when needed.
+
 ## References
 
-- [Aalto API Documentation](https://course.api.aalto.fi/)
+- [Aalto Open Courses API](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu)
 - [Google Cloud Storage](https://cloud.google.com/storage)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)

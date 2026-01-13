@@ -45,6 +45,10 @@ make setup
 
 This creates Python virtual environments and installs dependencies for all components (frontend, backend, filters-api, and sisu-wrapper). See `make help` for all available commands.
 
+> [!TIP]
+> The project includes a Makefile with convenient commands for setup and management. 
+See [Makefile Reference](../makefile/) for the complete list of available targets.
+
 ## Course Data
 
 Course data comes from the Aalto University API and is automatically updated daily. The latest `courses.json` file is available from Google Cloud Storage and is loaded by the frontend when you start the dev server.
@@ -72,9 +76,25 @@ The app works best on modern browsers (Chrome, Firefox, Safari, Brave). It's ful
 
 ## Authentication & HTTPS
 
-The authentication system uses BetterAuth with production cookie settings. These don't work on localhost, so sign-in is NOT functional in local development (neither HTTP nor HTTPS).
+Live app status: The app at [sisukas.eu](sisukas.eu) has full authentication enabled. You can sign in, bookmark courses, and access authenticated features.
 
-If you want to test with HTTPS locally (for future authentication work), see [Local HTTPS Setup](../local-https/).
+Local development status: Sign-in doesn't work on localhost because browsers treat different ports as different domains. Your frontend runs on localhost:5173, but the backend services run on different ports (localhost:3000), which breaks the secure cookie configuration that production uses.
+
+This is a browser security limitation, not a bug. It's expected behavior for local development.
+
+**What you can do without signing in:**
+- Browse and search all courses
+- Apply filters and save them to shareable URLs
+- Explore the full discovery interface
+
+**What requires sign-in (on the live app):**
+- Bookmark courses
+- Create and manage Plans
+- Access planning features (coming soon)
+
+### Running HTTPS Locally
+
+If you want to test HTTPS in local development (for reasons other than authentication), see [Local HTTPS Setup](../local-https/).
 
 ## Running Backend Services
 
@@ -107,10 +127,17 @@ Available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 API documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-### SISU Wrapper
+### SISU Wrapper (REST API for Study Groups)
 
-Aggregates and normalizes SISU teaching session data:
+Provides study group and real-time schedule data. The frontend calls this service 
+to display which lectures, exercises, and exams are available for each course.
 
+**Is it required?**
+- For course discovery/filtering: No, works without it
+- For displaying detailed study groups: Yes, needed for full feature set
+- For local development: Optional, but recommended
+
+**To run locally:**
 ```sh
 cd sisu-wrapper
 uv run fastapi dev api/main.py --port 8001
@@ -119,6 +146,14 @@ uv run fastapi dev api/main.py --port 8001
 Available at [http://127.0.0.1:8001](http://127.0.0.1:8001)
 
 API documentation: [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs)
+
+**Using the Python library:**
+The sisu-wrapper is also published on PyPI for programmatic use:
+```sh
+pip install sisu-wrapper
+```
+
+See the [Sisu Wrapper documentation](https://github.com/kctong529/sisukas/blob/main/sisu-wrapper/README.md) for usage examples.
 
 ## Building for Production
 

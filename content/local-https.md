@@ -1,5 +1,5 @@
 ---
-weight: 5
+weight: 10
 title: "Local HTTPS with mkcert"
 ---
 
@@ -7,41 +7,10 @@ title: "Local HTTPS with mkcert"
 
 ## Why HTTPS Locally?
 
-The authentication system uses BetterAuth with production cookie settings. These cookie settings don't work on localhost (HTTP or HTTPS), so sign-in doesn't function locally.
+See [Getting Started: Authentication & HTTPS](../getting-started/#authentication--https) 
+for context on the authentication limitation.
 
-However, HTTPS is still useful for:
-- Testing other parts of the application without sign-in
-- Preparing the environment for when cookie issues are resolved
-- Matching production environment more closely
-
-## Current Status
-
-Sign-in doesn't work on localhost (whether HTTP or HTTPS). This is a known limitation while we resolve the cookie configuration.
-
-## How It Works
-
-The `vite.config.ts` checks if certificates exist:
-
-```typescript
-const hasCerts = fs.existsSync(keyPath) && fs.existsSync(certPath)
-
-server: mode === 'development' ? {
-  ...(hasCerts ? {
-    https: {
-      key: fs.readFileSync(keyPath),
-      cert: fs.readFileSync(certPath),
-    },
-  } : {}),
-  port: 5173
-} : undefined
-```
-
-- If certificates exist → Dev server uses HTTPS
-- If no certificates → Dev server uses HTTP
-
-## Setup
-
-If you want to run with HTTPS:
+If you want to run the dev server with HTTPS (for other testing purposes):
 
 ### Install mkcert (One Time)
 

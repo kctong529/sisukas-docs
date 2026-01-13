@@ -1,38 +1,36 @@
 ---
-weight: 1
-title: "Filtering Architecture"
-bookCollapseSection: true
+weight: 4
+bookFlatSection: true
+title: "How We Filter"
 ---
-
-# How Filtering Works in Sisukas
 
 ## The Fundamental Problem
 
-Consider a real requirement from a student:
+Consider a typical course search scenario:
 
-> "I want courses that start in Period II and are open for enrollment. From those, I'm interested in courses that count toward my CS major, or courses in my DSD minor, or anything taught by Milo."
+> *"I want courses that start in Period II and are open for enrollment. From those, I'm interested in courses that count toward my CS major, or courses in my DSD minor, or anything taught by Milo."*
 
-This seemingly simple requirement actually contains multiple distinct parts:
-
+This requirement contains:
 - **Universal constraints** (Period II, enrollment open) — non-negotiable requirements
-- **Multiple alternatives** (CS major OR DSD minor OR Milo's courses) — any single option satisfies the need
-- **Different comparison types** (temporal overlap, set membership, text matching) — each requiring distinct logic
+- **Multiple alternatives** (CS major OR DSD minor OR Milo's courses) — any single option works
+- **Different comparison types** (temporal, set membership, text) — each with distinct logic
 
-Traditional interfaces force users to either oversimplify their requirements or master complex query languages. Sisukas uses a structured approach that accommodates this complexity while remaining comprehensible.
+Traditional interfaces force you to oversimplify or master complex query languages. This model provides structured flexibility that handles complexity while remaining clear.
 
-## Core Concepts: The Two-Tier Architecture
+## Core Concepts
 
-Filtering requirements naturally decompose into two components:
+### The Two-Tier Architecture
 
-**First, establish the filtering context:** "Show me Period II courses that are open for enrollment."
+Filtering naturally breaks into two parts:
 
-**Then, define selection criteria:** "From those, give me my major courses, or my minor courses, or anything from Milo."
+1. **Establish universal constraints:** "Show me Period II courses that are open for enrollment."
+2. **Define selection criteria within that context:** "From those, give me my major, my minor, or anything from Milo."
 
-### Why Two Tiers?
+> [!TIP]
+> **Why Two Tiers?**  
+> Without separating these, universal constraints repeat in every alternative. The two-tier structure mirrors how you naturally think: establish boundaries, then specify what qualifies within them.
 
-Without this separation, universal constraints must be repeated in every alternative. Compare these:
-
-**Without separation (repetitive):**
+**Without separation, constraints repeat:**
 ```
 Match any of:
   - (Period II AND Enrollment open AND CS major)
@@ -40,9 +38,7 @@ Match any of:
   - (Period II AND Enrollment open AND Teacher: Milo)
 ```
 
-Notice "Period II AND Enrollment open" appears three times, creating redundancy and potential for inconsistency.
-
-**With two-tier structure (clean):**
+**With two tiers, structure is clear:**
 ```
 Must satisfy: Period II AND Enrollment open
 Then match any of:
@@ -51,227 +47,173 @@ Then match any of:
   - Teacher: Milo
 ```
 
-The universal constraints define the **filtering context**. The alternative patterns describe **what qualifies** within that context.
+The universal constraints define the filtering context. The alternative patterns describe what qualifies within that context.
 
-## Must Rules: Universal Requirements
+### Must Rules: Universal Requirements
 
-Must rules represent non-negotiable requirements. They answer: *"What must be true about every course I see?"*
+Must rules answer: *"What must be true about every course I see?"*
 
-No exceptions, no alternatives, no conditional application. If a course fails even one must rule, it's immediately excluded.
+No exceptions, no alternatives. Failure to satisfy even one must rule results in immediate exclusion.
 
-### Key Characteristics
-
+**Key characteristics:**
 - Apply to every course without exception
 - All must pass (AND logic)
 - Failure means immediate rejection
-- Evaluated before any group logic
 
-### Examples
+**Examples:**
+- "All courses must overlap Period II 2024-25"
+- "All courses must be open for enrollment"
+- "All courses must be taught in English"
 
-```
-"All courses must overlap Period II 2024-25"
-"All courses must be open for enrollment"
-"All courses must be taught in English"
-```
+> [!IMPORTANT]
+> **Must Rules Are Absolute**  
+> A course might satisfy all group criteria, but if it fails a single must rule, it is excluded. These define non-negotiable boundaries.
 
-These establish boundaries within which all other selection logic operates.
+### Rule Groups: Alternative Patterns
 
-## Rule Groups: Alternative Patterns
+Rule groups answer: *"What are the different ways a course can meet my needs?"*
 
-Rule groups define different acceptable qualification paths. They answer: *"What are the different ways a course can meet my needs?"*
+A course might qualify through your major, your minor, or by being taught by a preferred instructor. Any single path is sufficient.
 
-A course might qualify through your major program, your minor program, or by being taught by a preferred instructor. Any single path is sufficient.
+Between groups, OR logic applies. Within a group, AND logic applies.
 
-### Key Characteristics
-
-- Define alternative qualification paths (OR logic between groups)
-- Each group is a conjunction of rules (AND logic within groups)
-- A course needs to satisfy only one group to qualify
-- Groups evaluate independently
-
-### Examples
-
-Well-formed groups represent coherent selection criteria:
+**Well-formed groups represent coherent selection criteria:**
 - "My major courses" → Belongs to CS major
-- "My minor courses" → Belongs to DSD minor
+- "My minor courses" → Belongs to DSD minor  
 - "Trusted instructor" → Teacher contains "Milo"
 
-## Filter Rules: Atomic Conditions
+> [!NOTE]
+> **Groups Are Independent**  
+> Each group evaluates independently. One group's outcome doesn't affect others. A course needs to satisfy only one group to qualify.
 
-Rules are the fundamental building blocks. Each rule asks a single yes/no question: *"Does this specific attribute have this specific property?"*
+### Filter Rules: Atomic Conditions
 
-### Rule Components
+Rules are the building blocks. Each asks a single yes/no question: *"Does this attribute have this property?"*
 
-Every rule consists of three parts:
+**Every rule has three components:**
 
-1. **Field** — What attribute are we examining?
-   - Examples: Credits, Teacher, Period
-2. **Relation** — How are we comparing?
-   - Examples: Contains, Equals, Overlaps
-3. **Value** — What are we comparing against?
-   - Examples: "Milo", 5, "Period II"
+1. **Field** — What attribute are we examining? (Credits, Teacher, Period)
+2. **Relation** — How are we comparing? (Contains, Equals, Overlaps)
+3. **Value** — What are we comparing against? ("Milo", 5, "Period II")
 
-A rule evaluates a course by extracting the field, applying the relation operator, and returning true or false.
+**Examples:**
 
-### Evaluation Examples
-
-**Text matching:**
+*Text matching:*
 ```
-Rule: "Teacher contains Milo"
-Course A: teacher = "Milo Orlich" → ✓ true
-Course B: teacher = "Jane Anderson" → ✗ false
+"Teacher contains Milo"
+Course A: teacher = "Milo Orlich" → true ✓
+Course B: teacher = "Jane Anderson" → false ✗
 ```
 
-**Numeric comparison:**
+*Temporal overlap:*
 ```
-Rule: "Credits equals 5"
-Course A: credits = 5 → ✓ true
-Course B: credits = 3 → ✗ false
-```
-
-**Temporal overlap:**
-```
-Rule: "Overlaps Period II (Oct 28 - Dec 13)"
-Course A: Oct 28 - Dec 13 → ✓ true (complete overlap)
-Course B: Sep 1 - Oct 15 → ✗ false (no overlap)
-Course C: Nov 15 - Jan 31 → ✓ true (partial overlap)
+"Period overlaps Period II 2024-25" (Oct 28 - Dec 13)
+Course A: Oct 28 - Dec 13 → true ✓
+Course B: Sep 9 - Oct 25 → false ✗ (ends before Period II starts)
 ```
 
-## How Rules Combine: The Evaluation Logic
-
-The complete filtering model works like this:
-
+*Set membership:*
 ```
-A course is INCLUDED if and only if:
-  (All must rules pass) AND (At least one group matches)
+"Belongs to CS major"
+Course A: curricula = ["CS major", "Math minor"] → true ✓
+Course B: curricula = ["DSD major"] → false ✗
 ```
 
-Where each group requires all its rules to pass:
+## How Evaluation Works
+
+To understand how filtering actually produces results, let's walk through the three-stage process:
+
+{{% steps %}}
+1. #### Stage 1: Universal Screening
+   Every course is tested against must rules. Any failure results in immediate exclusion.
+
+2. #### Stage 2: Group Matching
+   Courses that passed Stage 1 are evaluated against rule groups. A course qualifies if any single group matches.
+
+3. #### Stage 3: Result Collection
+   All qualifying courses are collected and returned.
+{{% /steps %}}
+
+### Evaluation Example
+
+**Query:**
 ```
-Group matches if: (Rule 1 AND Rule 2 AND ... AND Rule N)
+Must Rules:
+  - Period overlaps "Period II 2024-25"
+  - Enrollment is open (assume today is 2024-10-01)
+
+Groups:
+  Group 1: Belongs to "CS major"
+  Group 2: Belongs to "DSD minor"
+  Group 3: Teacher contains "Milo"
 ```
 
-## Worked Example
-
-Let's evaluate four courses against a filter:
-
-**Filter specification:**
-```
-Must rules:
-  - Period II (Oct 28 - Dec 13)
-  - Enrollment open
-
-Rule groups:
-  - Group 1: CS major
-  - Group 2: DSD minor
-  - Group 3: Teacher: Milo
-```
-
-### Course A: Intro Programming
+#### Course A - "Introduction to Programming"
 ```
 Period: Oct 28 - Dec 13 (Period II) ✓
-Enrollment closes: 2024-12-01 ✓
-Curricula: [CS major]
-Teacher: Kim
+Enrollment closes: 2024-10-15 ✓
+Curricula: [CS major, Math minor]
+Teacher: Anderson
 ```
+**Result: ✓ INCLUDED** — Passes both must rules, matches Group 1 (CS major).
 
-**Evaluation:**
-1. Must 1 (Period II)? → ✓ Pass
-2. Must 2 (Enrollment open)? → ✓ Pass
-3. Check groups...
-4. Group 1 (CS major)? → ✓ Match!
-5. **Result: INCLUDE** (via CS major)
-
-### Course B: Data Structures
+#### Course B - "Data Structures"
 ```
 Period: Sep 9 - Oct 25 (Period I) ✗
 Enrollment closes: 2024-10-15 ✓
 Curricula: [CS major, DSD minor]
 Teacher: Milo
 ```
+**Result: ✗ EXCLUDED** — Fails the Period II must rule. Even though it would match all three groups, must rules are evaluated first and are non-negotiable.
 
-**Evaluation:**
-1. Must 1 (Period II)? → ✗ **Fail**
-2. **Result: EXCLUDE** (would have matched all three groups, but fails must rule)
+> [!WARNING]
+> **Must Rules Trump Everything**  
+> Course B would satisfy all three group criteria, but fails the Period must rule and is therefore excluded.
 
-**Key insight:** Must rules trump everything. Course B would satisfy all group criteria, but because it fails the Period II must rule, it's excluded immediately.
-
-### Course C: Linear Algebra
+#### Course C - "Linear Algebra"
 ```
 Period: Oct 28 - Dec 13 (Period II) ✓
 Enrollment closes: 2024-10-15 ✓
 Curricula: [Math major]
 Teacher: Milo
 ```
+**Result: ✓ INCLUDED** — Passes both must rules. Doesn't satisfy Groups 1-2 (not CS or DSD), but matches Group 3 (taught by Milo).
 
-**Evaluation:**
-1. Must 1 (Period II)? → ✓ Pass
-2. Must 2 (Enrollment open)? → ✓ Pass
-3. Check groups...
-4. Group 1 (CS major)? → ✗ No
-5. Group 2 (DSD minor)? → ✗ No
-6. Group 3 (Teacher: Milo)? → ✓ Match!
-7. **Result: INCLUDE** (via Milo, even though not in major/minor)
+### Short-Circuit Evaluation
 
-### Course D: Algorithms
-```
-Period: Oct 28 - Dec 13 (Period II) ✓
-Enrollment closes: 2024-09-15 (passed) ✗
-Curricula: [CS major]
-Teacher: Smith
-```
+The evaluation process terminates early when the outcome is determined, which significantly improves performance:
 
-**Evaluation:**
-1. Must 1 (Period II)? → ✓ Pass
-2. Must 2 (Enrollment open)? → ✗ **Fail**
-3. **Result: EXCLUDE** (would match Group 1, but fails must rule)
+**In must rules:** Stop at the first failure—the course is already excluded.
 
-## Performance: Short-Circuit Evaluation
+**In groups:** Stop at the first match—the course already qualifies.
 
-The system optimizes evaluation through early exit:
+This optimization typically reduces evaluations by 40-70% compared to checking every rule for every course. Rather than exhaustive evaluation, the system exits as soon as the outcome is known.
 
-**In must rules:** Evaluation stops at the first failure—the course is already excluded.
-
-**In groups:** Evaluation stops at the first match—the course is already included.
-
-This typically reduces evaluations by 40-70% compared to checking every rule for every course.
-
-## Design Principles
-
-### Why This Structure?
-
-This architecture was chosen because it matches how people naturally think:
-
-1. Establish boundaries first ("I want Period II courses")
-2. Get specific about what you want within those boundaries ("from my programs or from Milo")
-
-The structure also makes it easier to:
-- **Understand** what a query does (read it like natural language)
-- **Debug** when something's wrong (check must rules, then check which group matched)
-- **Modify** incrementally (add a new constraint, add a new alternative pattern)
+## Why This Design
 
 ### Predictability
 
-The model maintains no hidden state. No surprising side effects. No context-dependent behavior.
+What you see is what you get. Identical queries on identical data always produce identical results. Rules evaluate independently without side effects.
 
-**What you see is what you get.** Identical queries on identical data produce identical results. Rules evaluate independently without side effects. Standard boolean algebra properties apply.
+> [!NOTE]
+> **No Hidden State**  
+> Identical queries always produce identical results. Rules evaluate independently. Standard boolean algebra applies. This predictability is essential for usability.
 
 ### Natural Expression
 
-The goal is to bridge the gap between how you think about filtering and how you express it. You shouldn't need to become a query language expert to say "courses from my programs or taught by Milo."
+The two-tier structure, OR logic between groups, and AND logic within groups map directly to natural language. You shouldn't need to become a query language expert to say "courses from my programs or taught by Milo."
 
-The two-tier structure, OR logic between groups, and AND logic within groups map directly to natural language patterns. This is intentional.
+### The Core Formula
 
-## Summary
-
-The complete filtering model can be expressed formally:
+A course qualifies if it satisfies all must rules AND at least one group:
 
 ```
-A course x is in the result set S if and only if:
-
-x ∈ S ⟺ (M₁(x) ∧ M₂(x) ∧ ... ∧ Mₙ(x)) ∧ (G₁(x) ∨ G₂(x) ∨ ... ∨ Gₖ(x))
-
-where each group is: Gⱼ(x) = (R_{j,1}(x) ∧ R_{j,2}(x) ∧ ... ∧ R_{j,m}(x))
+course matches if: (all must rules pass) AND (any group matches)
 ```
 
-This structure elegantly handles complex real-world filtering requirements while remaining intuitive and predictable.
+Within each group, all rules must pass:
+```
+group matches if: (all rules in group pass)
+```
+
+This simple, predictable logic handles complex requirements.

@@ -16,27 +16,32 @@ Sisukas is a course discovery and study planning tool designed for university st
 ## Quick Navigation
 
 **New to Sisukas?** Start here:
-- **[Getting Started](../getting-started/)** — Set up locally or access the live application
-- **[The Problem We're Solving](../why-sisukas/)** — Understand the friction in course discovery and planning
+- **[Getting Started](../getting-started/):** Set up locally or access the live application
+- **[The Problem We're Solving](../why-sisukas/):** Understand the friction in course discovery and planning
 
 **Want to understand how it works?**
-- **[Discovery & Filtering](../concepts/filtering/)** — Deep dive into the filter architecture and design
-- **[Planning & Scheduling](../concepts/planning/)** — How we're building semester planning and conflict-aware scheduling
+- **[How Filtering Works](../concepts/filtering/):** Deep dive into the filter architecture and design
+- **[Semester Planning Vision](../concepts/planning/):** How we're building semester planning and conflict resolution
+- **[Data Pipeline](../data-pipeline/):** How course data is maintained and updated
 
 **Looking for technical details?**
-- **[Architecture](../architecture/)** — System design, components, and data flow
-- **[API Reference](../api/)** — Filters API, SISU Wrapper, and integration points
-- **[Contributing](../contributing/)** — Get involved with development
+- **[Architecture](../architecture/)** – System design [Coming soon]
+- **[API Reference](../api/):** REST APIs for filters, SISU data, and integration
+- **[Makefile Reference](../makefile/):** Available commands and workflows
+- **[Contributing](../contributing/)** – Get involved (See [GitHub repository](https://github.com/kctong529/sisukas))
 
 ## Core Philosophy
 
 Sisukas is built on a few key insights:
 
-**Scheduling conflicts are inevitable, not errors.** Most students encounter overlapping lectures, exercises, or exams. Rather than pretending this doesn't happen, Sisukas surfaces conflicts clearly so students can make explicit trade-offs.
+**Scheduling conflicts are inevitable, not errors.**  
+Most students encounter overlapping lectures, exercises, or exams. Rather than pretending this doesn't happen, Sisukas surfaces conflicts clearly so students can make explicit trade-offs.
 
-**Information should be easily accessible.** SISU buries details behind many clicks and repetitive navigation. Finding and comparing course schedules requires excessive effort. Sisukas puts information front and center, eliminating friction from the exploration process.
+**Information should be easily accessible.**  
+SISU buries details behind many clicks and repetitive navigation. Finding and comparing course schedules requires excessive effort. Sisukas puts information front and center, eliminating friction from the exploration process.
 
-**Filtering should feel natural.** Complex requirements shouldn't demand query language expertise. The filter system uses a Blueprint-Builder-Rule pattern that maps directly to how people naturally think: establish boundaries, then specify what qualifies within those boundaries.
+**Filtering should feel natural.**  
+Complex requirements shouldn't demand query language expertise. The filter system uses a Blueprint-Builder-Rule pattern that maps directly to how people naturally think: establish boundaries, then specify what qualifies within those boundaries.
 
 ## Key Features
 
@@ -44,17 +49,35 @@ Sisukas is built on a few key insights:
 
 **Expressive filtering** using Boolean logic, date ranges, and multiple criteria. Save and share filter configurations via short URLs.
 
-**Early-stage planning** with authenticated user features. Bookmark courses as favorites, track specific instances (semester offerings), and prepare for upcoming planning features.
+**Early-stage planning** with authenticated user features. Bookmark courses as favorites, track specific instances for upcoming semesters, and prepare for upcoming planning features.
+
+## Key Terms
+
+**Discovery:** The process of finding relevant courses using search and filtering.
+
+**Filtering:** The structured query system for expressing complex course requirements.
+
+**Planning:** The activity of assembling a coherent semester by choosing courses, 
+instances, and study groups while understanding trade-offs.
+
+**Scheduling:** The process of resolving conflicts and building an actual timetable. 
+In Sisukas, scheduling happens as part of planning (not as a separate phase).
+
+**Workspace:** A temporary collection of courses (Plan) where students explore 
+combinations before committing to registration.
 
 ## The Road Ahead
 
 Sisukas is gradually evolving from course browsing toward comprehensive semester planning. This happens in phases:
 
-**Phase 1 (Current):** Plans (collections of course instances) and SchedulePairs (optimized study group combinations)
+**Phase 1 (In Development):** Plans and SchedulePairs are currently being built. Plans (collections of course 
+instances) are being implemented in the backend, with UI coming soon. SchedulePairs (optimized study group combinations) are in the service prototype stage.
 
 **Phase 2 (Coming):** Decision Slots (explicit visibility into scheduling conflicts and trade-offs)
 
 **Phase 3 (Future):** Comprehensive calendar views, workload tracking, and reflection tools
+
+See [Semester Planning](../planning/) for details on what's coming and current status.
 
 ## Running Locally
 
