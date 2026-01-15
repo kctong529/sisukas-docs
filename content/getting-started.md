@@ -1,6 +1,7 @@
 ---
 weight: 2
 title: "Getting Started"
+description: "Documentation for Sisukas."
 ---
 
 # Getting Started with Sisukas
