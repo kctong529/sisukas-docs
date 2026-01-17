@@ -1,5 +1,5 @@
 ---
-weight: 11
+weight: 2
 title: "User Route Protection"
 ---
 
