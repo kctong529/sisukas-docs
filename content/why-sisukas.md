@@ -3,8 +3,6 @@ weight: 3
 title: "Why Sisukas: The Problem"
 ---
 
-# Why Sisukas: Understanding the Problem
-
 ## The Real Problem with SISU
 
 > [!NOTE]

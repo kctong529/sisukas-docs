@@ -3,6 +3,9 @@ weight: 4
 title: "Composing Schedule Pairs"
 ---
 
+> [!NOTE]
+> This is Phase 1 of semester planning. After exploring Schedule Pairs, you'll use [Decision Slots](../decision-slots/) to handle conflicts.
+
 ## The Problem Schedule Pairs Solve
 
 You've created a Plan with CS-A1110 and MATH-A1020. Both are offered with multiple lecture times and exercise groups. Which combination is best?

@@ -3,7 +3,8 @@ weight: 5
 title: "Conflicts in Decision Slots"
 ---
 
-See [Plans](../plans/) for how blocks are composed and 
+> [!NOTE]
+> This is Phase 2 of semester planning. See [Plans](../plans/) for how blocks are composed and 
 [Schedule Pairs](../schedule-pairs/) for how they're ranked.
 
 ## What is a Decision Slot?

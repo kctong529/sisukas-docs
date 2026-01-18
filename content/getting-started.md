@@ -4,8 +4,6 @@ title: "Getting Started"
 description: "Documentation for Sisukas."
 ---
 
-# Getting Started with Sisukas
-
 ## Which Path Is Right for You?
 
 ### Try It Now (Recommended for Most People)
