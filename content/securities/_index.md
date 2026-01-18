@@ -1,7 +1,11 @@
 ---
-weight: 1
-title: "Overview"
+title: "Securities"
+weight: 5
 ---
+
+> [!NOTE]
+> Part of Sisukas' overall architecture. See [Architecture Overview](../../architecture/) 
+> for how security fits in.
 
 # Security Layers Overview
 
@@ -88,3 +92,9 @@ expect(data).toEqual([])  // RLS blocks access
 ```
 
 Both test suites must pass for security to be verified.
+
+## Implementation
+
+For specific implementations, see:
+- **[Route Protection](../route-protection/)** – Express middleware layer
+- **[Row-Level Security](../row-level-security-testing/)** – Database layer

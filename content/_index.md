@@ -15,80 +15,67 @@ Sisukas is a course discovery and study planning tool designed for university st
 
 ## Quick Navigation
 
-**New to Sisukas?** Start here:
-- **[Getting Started](../getting-started/):** Set up locally or access the live application
-- **[The Problem We're Solving](../why-sisukas/):** Understand the friction in course discovery and planning
+**Getting Started?**
+- **[Getting Started](../getting-started/)** – Set up locally or access sisukas.eu
+- **[Why Sisukas?](../why-sisukas/)** – Understand the problem we're solving
 
-**Want to understand how it works?**
-- **[How Filtering Works](../concepts/filtering/):** Deep dive into the filter architecture and design
-- **[Semester Planning Vision](../concepts/planning/):** How we're building semester planning and conflict resolution
-- **[Data Pipeline](../data-pipeline/):** How course data is maintained and updated
+**Want to Understand Our Approach?**
+- **[The Big Picture](../concepts/overview/)** – Why we design this way, the three-phase planning vision
+- **[How Filtering Works](../concepts/filtering/)** – The philosophy and design of our discovery system
+- **[Planning Concepts](../concepts/plans/)** – Plans and the composable block model
+- **[Schedule Pairs & Decision Slots](../concepts/)** – How planning moves from exploration to commitment
 
-**Looking for technical details?**
-- **[Architecture](../architecture/)** – System design [Coming soon]
-- **[API Reference](../api/):** REST APIs for filters, SISU data, and integration
-- **[Makefile Reference](../makefile/):** Available commands and workflows
-- **[Contributing](../contributing/)** – Get involved (See [GitHub repository](https://github.com/kctong529/sisukas))
+**Ready to Implement?**
+- **[Planning Architecture](../architecture/planning/)** – How Plans, Schedule Pairs, and Decision Slots are built
+- **[API Reference](../api/)** – Available endpoints
+- **[Data Pipeline](../data-pipeline/)** – How course data is maintained and updated
 
-## Core Philosophy
+**Looking for System Details?**
+- **[Data Pipeline](../data-pipeline/)** – Course data architecture
+- **[Environment Variables](../env-reference/)** – All configuration options
+- **[Security](../securities/)** – Authentication and data protection
+- **[Makefile Reference](../makefile/)** – Build commands
+- **[Local HTTPS Setup](../local-https/)** – HTTPS in development
 
-Sisukas is built on a few key insights:
+## Common Scenarios
 
-**Scheduling conflicts are inevitable, not errors.**  
-Most students encounter overlapping lectures, exercises, or exams. Rather than pretending this doesn't happen, Sisukas surfaces conflicts clearly so students can make explicit trade-offs.
+**"I just want to find courses"**
+→ Go straight to [sisukas.eu](https://sisukas.eu) or see [Getting Started](../getting-started/)
 
-**Information should be easily accessible.**  
-SISU buries details behind many clicks and repetitive navigation. Finding and comparing course schedules requires excessive effort. Sisukas puts information front and center, eliminating friction from the exploration process.
+**"I want to understand what this is"**
+→ Start with [Why Sisukas?](../why-sisukas/) (5 min read)
 
-**Filtering should feel natural.**  
-Complex requirements shouldn't demand query language expertise. The filter system uses a Blueprint-Builder-Rule pattern that maps directly to how people naturally think: establish boundaries, then specify what qualifies within those boundaries.
+**"I want to plan a semester thoughtfully"**
+→ Read [The Big Picture](../concepts/overview/) then [Planning Concepts](../concepts/plans/)
 
-## Key Features
+**"I want to understand how filtering works**
+→ See [How Filtering Works](../concepts/filtering/) and try it live
 
-**Fast course discovery** powered by browser-cached data. Once loaded, searching and filtering thousands of courses happens instantly without network requests.
+**"I want to self-host or contribute"**
+→ See [Getting Started](../getting-started/) and [Planning Architecture](../architecture/planning/)
 
-**Expressive filtering** using Boolean logic, date ranges, and multiple criteria. Save and share filter configurations via short URLs.
+**"I want API access"**
+→ See [API Reference](../api/) and [Data Pipeline](../data-pipeline/)
 
-**Early-stage planning** with authenticated user features. Bookmark courses as favorites, track specific instances for upcoming semesters, and prepare for upcoming planning features.
+## Terminology
 
-## Key Terms
+As you read Sisukas documentation, you'll encounter these core concepts:
 
-**Discovery:** The process of finding relevant courses using search and filtering.
-
-**Filtering:** The structured query system for expressing complex course requirements.
-
-**Planning:** The activity of assembling a coherent semester by choosing courses, 
-instances, and study groups while understanding trade-offs.
-
-**Scheduling:** The process of resolving conflicts and building an actual timetable. 
-In Sisukas, scheduling happens as part of planning (not as a separate phase).
-
-**Workspace:** A temporary collection of courses (Plan) where students explore 
-combinations before committing to registration.
-
-## The Road Ahead
-
-Sisukas is gradually evolving from course browsing toward comprehensive semester planning. This happens in phases:
-
-**Phase 1 (In Development):** Plans and SchedulePairs are currently being built. Plans (collections of course 
-instances) are being implemented in the backend, with UI coming soon. SchedulePairs (optimized study group combinations) are in the service prototype stage.
-
-**Phase 2 (Coming):** Decision Slots (explicit visibility into scheduling conflicts and trade-offs)
-
-**Phase 3 (Future):** Comprehensive calendar views, workload tracking, and reflection tools
-
-See [Semester Planning](../planning/) for details on what's coming and current status.
+| Term | Definition | Example |
+|------|-----------|---------|
+| **Course** | An abstract course that is stable across semesters | CS-A1110 Introduction to Programming |
+| **Course Instance** | A specific semester offering of a course with specific dates, study groups, and schedules | CS-A1110 Autumn 2025 |
+| **Plan** | A flexible workspace where you group course instances for a specific semester; exploration only, not commitments | "Spring 2025 Exploration" containing 4–5 course instances |
+| **Study Group** | A specific section within a course (e.g. "Exercise Group H01" or "Lecture"). The granular scheduling unit you actually attend — or deliberately skip. This is a real SISU concept | Exercise H01, Lecture |
+| **Block** | Sisukas's way of grouping study groups by type (lectures, exercises, exams). For each course, you pick one study group from the Exercise Block (lectures and exams are usually fixed) | Exercise Block: [H01, H02, H03] |
+| **Schedule Pair** | An optimized combination of study group choices from multiple courses, ranked by how well they fit together (fewest conflicts first) | CS-A1110 (Mon 10:00 lectures + Tue 14:00 exercises)<br/>+ MATH-A1020 (Thu 13:00 lectures + Wed 15:00 exercises) |
+| **Decision Slot** | A time interval where your study group choices from different courses overlap, requiring you to choose which one to prioritize | Tue 14:00–15:00: CS exercise vs. MATH lecture |
 
 ## Running Locally
 
-### Prerequisites
-
-Install [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org/) v18+:
-```sh
-uv --version && node --version
-```
-
 ### Quick Start
+
+Install [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org/) v18+, then:
 ```sh
 git clone https://github.com/kctong529/sisukas.git
 cd sisukas
@@ -101,19 +88,17 @@ cd frontend/course-browser && npm run dev
 # Opens at http://localhost:5173
 ```
 
-> [!NOTE]
-> Sign-in doesn't work in local development due to BetterAuth cookie configuration. See [Getting Started](../getting-started/) for details.
+See [Getting Started](../getting-started/) for full setup instructions including backend services.
 
-**Backend services (optional):**
-```sh
-# Filters API
-cd filters-api && uv run fastapi dev main.py
+## Quick Status
 
-# Sisu Wrapper
-cd sisu-wrapper && uv run fastapi dev api/main.py --port 8001
-```
-
-See the [Getting Started](../getting-started/) guide for detailed instructions.
+| Feature | Live | Local | Notes |
+|---------|------|-------|-------|
+| Course discovery | ✅ | ✅ | Full search & filtering |
+| Bookmarks | ✅ | ❌ | Requires sign-in |
+| Plans | ✅ | ❌ | Database ready, limited UI |
+| Schedule Pairs | 🔨 | ❌ | Algorithm designed |
+| Decision Slots | 📋 | ❌ | Designed, not built |
 
 ## Contributing
 
@@ -123,4 +108,4 @@ See [Contributing](../contributing/) for details.
 
 ## License
 
-MIT. See [LICENSE](LICENSE) file.
+MIT. See [LICENSE](https://github.com/kctong529/sisukas/blob/main/LICENSE) file.

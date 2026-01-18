@@ -3,9 +3,10 @@ weight: 2
 title: "User Route Protection"
 ---
 
-# User Route Protection Implementation
+> [!NOTE]
+> See [Security Overview](../) for why defense in depth matters.
 
-The backend server has comprehensive protection for user routes with role-based access control and session management.
+This document covers the implementation of **Layer 1: Route Protection**.
 
 ## Architecture
 
@@ -281,3 +282,10 @@ curl -H "Authorization: Bearer $TOKEN" \
 | `/api/admin/login` | GET | None | Public | Login form |
 | `/api/admin/login` | POST | None | Public | Credential verification |
 | `/api/admin/logout` | GET | Admin Token | Admin only | Session destruction |
+
+## Complete Security Picture
+
+This is Layer 1 (route protection). See:
+- **[Security Overview](../overview/)** – Defense in depth approach
+- **[Row-Level Security](../row-level-security-testing/)** – Layer 2 (database)
+- **[Data Pipeline](../../data-pipeline/#security)** – Layer 3 (data source)

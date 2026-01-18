@@ -20,8 +20,8 @@ pip install sisu-wrapper
 Returns all study groups for a course offering.
 
 **Parameters:**
-- `course_unit_id` (string) — Course unit ID (e.g., "aalto-OPINKOHD-1125839311-20210801")
-- `offering_id` (string) — Course offering/realisation ID (e.g., "aalto-CUR-206690-3122470")
+- `course_unit_id` (string) — Course unit ID (e.g. "aalto-OPINKOHD-1125839311-20210801")
+- `offering_id` (string) — Course offering/realisation ID (e.g. "aalto-CUR-206690-3122470")
 
 **Response:**
 ```json
@@ -117,3 +117,8 @@ The library provides:
 - Context manager support
 
 For full documentation, see [sisu-wrapper README](https://github.com/kctong529/sisukas/blob/main/sisu-wrapper/README.md).
+
+## Want to understand the bigger picture?
+- **[Getting Started](../getting-started/#running-backend-services)** – Using these services
+- **[Architecture](../architecture/)** – How APIs fit into the system
+- **[Data Pipeline](../data-pipeline/)** – Course data source

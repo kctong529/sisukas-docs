@@ -3,9 +3,24 @@ weight: 6
 title: "Data Pipeline"
 ---
 
+> [!NOTE]
+> Part of Sisukas' architecture. See [Architecture Overview](../architecture/) 
+> for how all components fit together.
+
 # Course Data Pipeline
 
 ## Overview
+
+Sisukas uses two separate data sources:
+
+- **Aalto Open API** – Stable course metadata (name, credits, teachers). Updated daily via automated pipeline, cached globally for fast search.
+  
+- **Aalto Sisu API** – Real-time study group details and schedules. Queried on-demand via sisu-wrapper for current data.
+
+This design separates stable data (cache-friendly) from dynamic data 
+(real-time queries). [Why Two APIs?](#why-both-aalto-open-api-and-sisu-api)
+
+## Data Pipeline (Aalto Open API)
 
 Sisukas maintains an up-to-date course database by automatically fetching course data from the [Aalto University API](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu), transforming it for efficient delivery, and detecting changes.
 

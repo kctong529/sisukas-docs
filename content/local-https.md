@@ -3,6 +3,10 @@ weight: 10
 title: "Local HTTPS with mkcert"
 ---
 
+> [!NOTE]
+> Part of [Getting Started](../../getting-started/#authentication--https).
+> Only needed if testing HTTPS locally.
+
 # Local HTTPS Development
 
 ## Why HTTPS Locally?

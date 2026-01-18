@@ -7,7 +7,7 @@ title: "Row-Level Security"
 
 ## What is RLS?
 
-Row-Level Security (RLS) is a database-level security feature that ensures users can only access their own data. See the [Overview](../overview/) for why this matters and how it works with route protection.
+Row-Level Security (RLS) is a database-level security feature that ensures users can only access their own data. See the [Overview](../) for why this matters and how it works with route protection.
 
 ## Quick Start
 
@@ -121,3 +121,10 @@ it('should prevent User 2 from seeing User 1 profile', async () => {
 
 - [Supabase RLS Documentation](https://supabase.com/docs/guides/auth/row-level-security)
 - [Vitest Documentation](https://vitest.dev/)
+
+## Complete Security Picture
+
+This is Layer 2 (database). See:
+- **[Security Overview](../overview/)** – Defense in depth approach
+- **[Route Protection](../route-protection/)** – Layer 1 (API routes)
+- **[Getting Started](../../getting-started/#running-backend-services)** – Setting up for testing

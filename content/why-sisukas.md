@@ -69,16 +69,21 @@ This isn't complicated, but it's tedious. The psychological impact is real. Many
 
 ## What SISU Actually Supports
 
-SISU is excellent at one set of activities and silent on others:
-
-| Activity | SISU | What's Missing |
+| User Task | SISU Strength | What's Missing |
 |---|---|---|
-| Find a course (if you know what you want) | Strong catalog search |  |
-| Discover courses beyond requirements | Poor | Effective discovery tools |
-| Register for a course | Strong enrollment system |  |
-| Plan a semester (explore combinations, understand interactions) | ✗ Missing | Composition, comparison, iteration |
+| "I need CS-A1110" (known course) | ✅ Strong search and enrollment | — |
+| "What CS courses are available in Period II?" | ⚠️ Possible but tedious (manual filtering) | Smart filtering UI |
+| "Can I take CS-A1110 and MATH-A1020 together?" | ❌ No (requires manual calendar checking) | Composition tools, conflict detection |
+| "Which exercise group fits my schedule?" | ⚠️ Buried in tabs and dropdowns | Clear visualization, easy comparison |
+| "Here's my 5-course plan. Where are the conflicts?" | ❌ No (requires external tools) | Planning workspace, conflict analysis |
+| "Is this semester balanced in terms of workload?" | ❌ No | Reflection and pattern analysis |
 
-SISU assumes discovery isn't hard and planning isn't necessary. For students following the recommended path, this works fine. For ambitious students, elective explorers, or anyone venturing beyond the curriculum, the system becomes an obstacle.
+### Why the Gap Exists
+
+SISU was built for a specific workflow: you know what you want → you find it → you register. 
+Most students follow this path when adhering to recommended curricula.
+
+But when you're exploring, comparing, or assembling courses, SISU assumes this work happens outside the system (spreadsheets, calendar apps, memory). Sisukas brings that work inside.
 
 ## What Students Actually Need
 
@@ -108,20 +113,16 @@ or taught by my favorite instructor." Filters are saved and shareable.
 
 **2. Early-stage planning** where you group courses into Plans and explore how study 
 groups combine. See where conflicts exist and make explicit trade-offs about which 
-events matter. [See the planning vision](../concepts/planning/).
+events matter. [See the planning vision](../concepts/overview/).
 
 ### What's Available Now
 
-The application is live at [sisukas.eu](https://sisukas.eu) with:
-- Fast course search and filtering across the full course catalog
-- Ability to save filters and share via short URLs
-- Bookmark courses and track instances for upcoming semesters
+See [Getting Started](../getting-started/) to try the live app.
 
-Planning features (Plans, SchedulePairs, Decision Slots) are currently in development. 
-See [Semester Planning](../concepts/planning/) for the roadmap.
+The current implementation provides:
+- Fast filtering ([How Filtering Works](../concepts/filtering/))
+- Data from Aalto's systems ([Data Pipeline](../data-pipeline/))
+- REST APIs for integration ([API Reference](../api/))
 
-### Next Steps
-
-- **[Getting Started](../getting-started/)** – Run locally or use the live app
-- **[How Filtering Works](../concepts/filtering/)** – Deep dive into the query system
-- **[Semester Planning Vision](../concepts/planning/)** – See what's coming
+Planning features (Plans, Schedule Pairs, Decision Slots) are in development.
+See [The Big Picture](../concepts/overview/) for the roadmap.

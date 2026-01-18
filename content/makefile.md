@@ -3,6 +3,10 @@ weight: 9
 title: "Makefile Reference"
 ---
 
+> [!NOTE]
+> Used in [Getting Started](../../getting-started/#setup-all-components). 
+> See there for typical workflows.
+
 # Makefile Reference
 
 ## Overview

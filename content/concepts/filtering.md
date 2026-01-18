@@ -1,8 +1,12 @@
 ---
-weight: 4
+weight: 2
 bookFlatSection: true
 title: "How We Filter"
 ---
+
+> [!NOTE]
+> This page explains the **filtering philosophy**. For the big picture on planning,
+> see [The Big Picture](../overview/). To start using filters, see [Getting Started](../../getting-started/).
 
 ## The Fundamental Problem
 
@@ -178,16 +182,6 @@ Curricula: [Math major]
 Teacher: Milo
 ```
 **Result: ✓ INCLUDED** — Passes both must rules. Doesn't satisfy Groups 1-2 (not CS or DSD), but matches Group 3 (taught by Milo).
-
-### Short-Circuit Evaluation
-
-The evaluation process terminates early when the outcome is determined, which significantly improves performance:
-
-**In must rules:** Stop at the first failure—the course is already excluded.
-
-**In groups:** Stop at the first match—the course already qualifies.
-
-This optimization typically reduces evaluations by 40-70% compared to checking every rule for every course. Rather than exhaustive evaluation, the system exits as soon as the outcome is known.
 
 ## Why This Design
 

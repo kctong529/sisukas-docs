@@ -6,14 +6,30 @@ description: "Documentation for Sisukas."
 
 # Getting Started with Sisukas
 
-## Using the Live Application
+## Which Path Is Right for You?
 
-The easiest way to get started is using the live app at [https://sisukas.eu](https://sisukas.eu).
+### Try It Now (Recommended for Most People)
+
+Visit **[sisukas.eu](https://sisukas.eu)** to:
+- Browse 4000+ Aalto courses
+- Apply intelligent filters
+- Bookmark favorite courses
+- Create Plans and explore study groups
 
 > [!IMPORTANT]
 > The application is browser-based with no installation required. Course data is automatically cached in your browser for instant searching and filtering, making it usable even with limited network connectivity.
 
-## Running Locally
+### Run Locally (For Development or Self-Hosting)
+Set up a local development environment if you want to:
+- Contribute to the codebase
+- Self-host the application
+- Work on course discovery features
+- Understand the architecture
+
+> [!TIP]
+> Authentication doesn't work out of the box on localhost (browser security limitation). You can still browse and filter courses, but can't access bookmarks, plans, or study groups.
+
+## Running Locally: The Full Setup
 
 Local setup is straightforward and has been tested on macOS and Linux. Windows users should use WSL (Windows Subsystem for Linux).
 
@@ -83,15 +99,27 @@ Local development status: Sign-in doesn't work on localhost because browsers tre
 
 This is a browser security limitation, not a bug. It's expected behavior for local development.
 
-**What you can do without signing in:**
-- Browse and search all courses
-- Apply filters and save them to shareable URLs
-- Explore the full discovery interface
+## What You Can Do Locally
 
-**What requires sign-in (on the live app):**
-- Bookmark courses
-- Create and manage Plans
-- Access planning features (coming soon)
+Since authentication doesn't work on localhost, here's what's available 
+in local development:
+
+### Fully Functional (No Sign-In Required)
+- ✓ Browse and search all courses
+- ✓ Apply filters and see results
+- ✓ Save filters to shareable URLs
+- ✓ Explore course details and schedules
+
+### Requires Sign-In (Only at sisukas.eu)
+- ✗ View study groups and exercise options
+- ✗ Create bookmarks (save favorite courses)
+- ✗ Create Plans (group courses for a semester)
+- ✗ Use planning features (Schedule Pairs, Decision Slots)
+
+> [!NOTE]
+> **Why?** Browsers treat `localhost:5173` (frontend) and `localhost:3000` (backend) as different origins. Authentication uses secure HttpOnly cookies, which can't be shared across different origins. This is a browser security feature, not a limitation of Sisukas.
+
+To test authentication features, use the live app at [sisukas.eu](https://sisukas.eu).
 
 ### Running HTTPS Locally
 
@@ -207,8 +235,7 @@ sisukas/
 └── Makefile                   # Convenient commands
 ```
 
-## Next Steps
-
-- **[Learn about Filtering](../concepts/filtering/)** — Understand the powerful filter system
-- **[Explore the Architecture](../architecture/)** — See how components fit together
-- **[Start Contributing](../contributing/)** — Help build the future of Sisukas
+## Learn More
+- **[Why Sisukas?](../why-sisukas/)** – Problem we're solving
+- **[The Big Picture](../concepts/overview/)** – Planning vision
+- **[API Reference](../api/)** – Backend endpoints
