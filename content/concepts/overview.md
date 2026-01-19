@@ -72,19 +72,6 @@ By Phase 3, you have a complete semester with all trade-offs made explicit. Refl
 > [!IMPORTANT]
 > Understanding takes time. You need a complete semester before you can reflect on it. And reflection is valuable for future semesters, not this current one.
 
-## Why This Order Matters
-
-You *could* show all conflicts upfront (Phase 1 + Phase 2 combined), 
-but that overwhelms exploration. By separating exploration from decision-making, 
-you keep the interface simple while supporting complex planning.
-
-You *could* add reflection immediately (Phase 1 + Phase 3 combined), 
-but students haven't finished planning yet. Reflection tools are useless 
-until the semester is locked in.
-
-The phases aren't arbitrary. They reflect the natural progression of planning:  
-explore → decide → reflect.
-
 ## Scheduling Conflicts: A Different Perspective
 
 Traditional scheduling assumes conflicts are a problem to solve. Sisukas assumes they're a problem to *manage*.
