@@ -12,7 +12,7 @@ These guides explain the **ideas and philosophy** behind Sisukas.
 **[The Big Picture](./overview/)** – Why we design this way
 - Core belief: conflicts are inevitable, not errors
 - How discovery and planning work together
-- The three-phase approach
+- The phased planning approach
 
 ## Discovery: Finding Courses
 
@@ -24,19 +24,18 @@ These guides explain the **ideas and philosophy** behind Sisukas.
 ## Planning: Assembling Your Semester
 
 **[Plans & The Block Model](./plans/)** – Grouping and composing
-- Why courses are blocks, not monoliths
+- Why course instances are partitioned into blocks
 - How Plans work as exploration workspaces
 - The composability principle
 
 **[Schedule Pairs](./schedule-pairs/)** – Finding good combinations
-- How blocks fit together
-- Why ranking matters
-- Making informed choices
+- How one study group per block forms complete timetable options
+- Ranking schedules to support informed choice
 
 **[Decision Slots](./decision-slots/)** – Making trade-offs explicit
-- Why conflicts deserve conscious choice
-- Understanding your commitments
-- Patterns for better planning next semester
+- Why some conflicts are unavoidable
+- Explicitly choosing how you will attend
+- Reflecting on repeated compromises
 
 ## Ready to Build?
 

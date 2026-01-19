@@ -20,19 +20,20 @@ For the conceptual foundation, see:
 
 ## Block Composability: Core Model
 
-Unlike traditional scheduling (where all events are fixed), Sisukas treats study groups as composable blocks:
+Unlike traditional scheduling (where all events are fixed), Sisukas treats study groups as the fundamental selectable units. Blocks are user-defined groupings that define selection constraints during schedule computation.
 
 ```
-Course Instance = { lectures } + { exercise_groups } + { exams }
+Course Instance = { study groups }
 
-Planning = Selecting which blocks from which instances
-         + Composing them into valid combinations
+Planning = Partitioning study groups into blocks
+         + Selecting one study group per block
+         + Composing those selections into valid combinations
          + Making trade-offs explicit
 ```
 
 This model enables optimization (Schedule Pairs) and conscious choice-making (Decision Slots).
 
-## Phase 1: Plans & Schedule Pairs (Current)
+## Phase 1: Plans
 
 ### Plans: Data Model
 
@@ -62,7 +63,9 @@ Plans store only instance IDs (not full course data) because:
 
 Only one plan can be active per user at any time. This is enforced both at the database level and in the UI. When a user opens Favourites View, courses can be added to the active plan. When they activate a different plan in Lego View, the previous plan becomes inactive, and the new plan is always highlighted in Lego View. This constraint prevents confusion: users always know which plan receives new instances.
 
-### Schedule Pairs: Finding Good Block Combinations
+## Phase 2: Schedule Pairs
+
+### Finding Good Combinations
 
 **Input:** 2+ course instances from a Plan
 
@@ -72,9 +75,13 @@ Only one plan can be active per user at any time. This is enforced both at the d
 For each instance:
   Fetch all study groups (lectures, exercises, exams)
   
-Generate all valid combinations:
-  Example: Instance A (3 lecture options) × Instance B (2 exercise options)
-    = 6 possible combinations
+Generate all valid combinations (one study group per block per instance):
+
+Example:
+  Instance A (default partition): 1 Lecture block × 1 Exercise block (3 study groups)
+  Instance B (default partition): 1 Lecture block × 1 Exercise block (3 study groups)
+
+Total combinations: 2 × 3 = 6 Schedule Pairs
   
 For each combination:
   Find all overlapping time slots
@@ -110,29 +117,29 @@ score = (overlap_minutes × weight_1)
 
 ```
 Instance A: CS-A1110
-  ├─ Lecture blocks:
+  ├─ Lecture study groups:
   │  ├─ Mon/Wed 10-12
   │  ├─ Mon/Wed 13-15
   │  └─ Tue/Thu 10-12
-  └─ Exercise blocks:
+  └─ Exercise study groups:
      ├─ Tue 14-16 (Group H01)
      └─ Thu 14-16 (Group H02)
 
 Instance B: MATH-A1020
-  ├─ Lecture blocks:
+  ├─ Lecture study groups:
   │  ├─ Mon/Wed 11-13
   │  └─ Tue/Thu 11-13
-  └─ Exercise blocks:
+  └─ Exercise study groups:
      ├─ Mon 15-17
      ├─ Wed 15-17
      └─ Fri 15-17
 ```
 
 Valid composition must include:
-- One lecture block from CS-A1110
-- One exercise block from CS-A1110
-- One lecture block from MATH-A1020
-- One exercise block from MATH-A1020
+- One lecture study group from CS-A1110
+- One exercise study group from CS-A1110
+- One lecture study group from MATH-A1020
+- One exercise study group from MATH-A1020
 
 Schedule Pairs generates all valid combinations, ranks by overlap.
 
@@ -140,14 +147,20 @@ Schedule Pairs generates all valid combinations, ranks by overlap.
 
 ### Partitioning System
 
-The partitioning system allows users to customize how study groups are organized before computation.
+Partitioning is the mechanism by which blocks are defined.
+
+Blocks do not exist independently of partitioning; they are computational groupings over study groups created by the user (or provided as defaults).
 
 #### What is Partitioning?
 
-By default, all exercise groups for a course instance are treated as a single block. Partitioning allows users to:
-- Split exercise groups into separate blocks (e.g. treat H01 and H02 as distinct options)
-- Combine groups (e.g. treat all exercises as optional)
-- Define custom preferences per instance
+In implementation, blocks are computational groupings derived from study groups; users can refine these groupings beyond the conceptual defaults described in the concept docs.
+
+By default, the system provides a suggested partition where:
+- all lecture study groups form one block
+- all exercise study groups form one block
+- exams (if any) form fixed blocks
+
+This default reflects common course structure, not a constraint of the system. The partition can be freely modified by the user.
 
 #### Workflow: From Selection to Computation
 
@@ -188,7 +201,7 @@ When Lego View needs a partition for an instance, it checks in this order:
 
 When a user computes, their selection is saved if it's custom, or used directly if it's a cached default.
 
-## Phase 2: Decision Slots (Roadmap - Not Yet Implemented)
+## Phase 3: Decision Slots (Planned)
 
 **Purpose:** Make remaining conflicts explicit and force intentional choices
 
@@ -198,7 +211,7 @@ When a user computes, their selection is saved if it's custom, or used directly 
 
 ---
 
-## Phase 3: Reflection & Workload Tools (Future)
+## Phase 4: Reflection & Workload Tools (Future)
 
 **Planned:** Track patterns across a semester to help students understand their choices and plan better next semester.
 
@@ -208,7 +221,7 @@ When a user computes, their selection is saved if it's custom, or used directly 
 - What was the actual workload vs. theoretical?
 - How would different Schedule Pair choices have looked?
 
-**Status:** Concept phase, depends on Phase 1 & 2
+**Status:** Concept phase, depends on Phase 1 - 3
 
 ---
 
@@ -333,10 +346,10 @@ export const planInstances = pgTable(
 
 // POST /api/plans/:id/compute-schedule
 {
-  Schedule Pairs: [
+  schedulePairs: [
     {
       rank: 1,
-      groups: [
+      studyGroupSelections: [
         { instanceId: "inst-001", studyGroupId: "sg-001", type: "lecture", time: "Mon 10-12" },
         { instanceId: "inst-002", studyGroupId: "sg-002", type: "exercise", time: "Tue 14-16" }
       ],
@@ -347,7 +360,7 @@ export const planInstances = pgTable(
     },
     {
       rank: 2,
-      groups: [...],
+      studyGroupSelections: [...],
       conflicts: {
         totalOverlapMinutes: 60,
         overlaps: [
@@ -428,7 +441,7 @@ export const planInstances = pgTable(
 - Wastes storage
 
 **Our choice:**
-- First user to compute saves partition for others to reuse
+- Cached partitions are treated as suggested defaults, not authoritative truth, and are always overridable by the user
 - Cached defaults speed up computation for subsequent users
 - Users can still customize partitions (custom overrides)
 - Balances efficiency with user flexibility
@@ -533,7 +546,7 @@ export const planInstances = pgTable(
 ## Current Limitations
 
 **Block composition constraints:**
-- Assumes students can pick lecture time independently from exercise time
+- Assumes chosen study group selections are independent across blocks (no constraints like “must attend lecture A to take exercise B”)
 - Doesn't yet account for prerequisite ordering (some exercises depend on lecture)
 - Exam times are fixed (no choice in combination)
 - Doesn't model "blended" courses (mixed live/recorded)

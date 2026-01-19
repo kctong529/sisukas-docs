@@ -12,7 +12,7 @@ title: "How We Filter"
 
 Consider a typical course search scenario:
 
-> *"I want courses that start in Period II and are open for enrollment. From those, I'm interested in courses that count toward my CS major, or courses in my DSD minor, or anything taught by Milo."*
+> *"I want courses that start in Period II and are open for enrollment. From those, I'm interested in courses that count toward my CS major, or courses in my DSD minor, or anything taught by Milo".*
 
 This requirement contains:
 - **Universal constraints** (Period II, enrollment open) — non-negotiable requirements
@@ -27,8 +27,8 @@ Traditional interfaces force you to oversimplify or master complex query languag
 
 Filtering naturally breaks into two parts:
 
-1. **Establish universal constraints:** "Show me Period II courses that are open for enrollment."
-2. **Define selection criteria within that context:** "From those, give me my major, my minor, or anything from Milo."
+1. **Establish universal constraints:** "Show me Period II courses that are open for enrollment"
+2. **Define selection criteria within that context:** "From those, give me my major, my minor, or anything from Milo"
 
 > [!TIP]
 > **Why Two Tiers?**  
@@ -195,7 +195,7 @@ What you see is what you get. Identical queries on identical data always produce
 
 ### Natural Expression
 
-The two-tier structure, OR logic between groups, and AND logic within groups map directly to natural language. You shouldn't need to become a query language expert to say "courses from my programs or taught by Milo."
+The two-tier structure, OR logic between groups, and AND logic within groups map directly to natural language. You shouldn't need to become a query language expert to say "courses from my programs or taught by Milo".
 
 ### The Core Formula
 

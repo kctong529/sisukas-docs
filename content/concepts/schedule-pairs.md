@@ -4,71 +4,112 @@ title: "Composing Schedule Pairs"
 ---
 
 > [!NOTE]
-> This is Phase 1 of semester planning. After exploring Schedule Pairs, you'll use [Decision Slots](../decision-slots/) to handle conflicts.
+> This is Phase 2. After exploring Schedule Pairs, you'll use [Decision Slots](../decision-slots/) to handle conflicts.
 
-## The Problem Schedule Pairs Solve
+## The Problem: Selection Fatigue
 
-You've created a Plan with CS-A1110 and MATH-A1020. Both are offered with multiple lecture times and exercise groups. Which combination is best?
+Planning breaks down quickly when courses have internal options.
 
-**CS-A1110 blocks:**
-- Lecture: Mon/Wed 10-12 OR Mon/Wed 13-15 OR Tue/Thu 10-12
-- Exercise: Tue 14-16 OR Thu 14-16
+If Course A has 3 exercise groups and Course B has 4, there are already
+12 different ways those choices can interact. Add a third course, and the
+number grows fast.
 
-**MATH-A1020 blocks:**
-- Lecture: Mon/Wed 11-13 OR Tue/Thu 11-13
-- Exercise: Mon 15-17 OR Wed 15-17
+Manually comparing these combinations, toggling calendars, remembering
+conflicts, trying to keep track of what you've already checked, is tedious
+and error-prone.
 
-**Possible compositions:**
-- Combo 1: CS lecture (10-12) + MATH lecture (11-13) = 1hr overlap 11-12
-- Combo 2: CS lecture (10-12) + MATH lecture (Tue/Thu 11-13) = no overlap
-- Combo 3: CS lecture (13-15) + MATH lecture (11-13) = 1hr overlap (different day)
-- ... and many more
+## From Options to Concrete Schedules
 
-Which should you choose?
+At this stage of planning, you're no longer asking:
+> “What options exist?”
+
+You're asking:
+> “Which concrete schedules actually work?”
+
+A **Schedule Pair** answers that question.
+
+It represents one complete timetable choice: a specific selection of
+study groups, one from each block, across the courses in your Plan.
 
 ## What Schedule Pairs Do
 
-Schedule Pairs generate and rank all valid block combinations by how well they fit together.
+Given a Plan, the Schedule Pairs engine:
 
-For CS + MATH above, the system:
-1. Generates all valid combinations (all ways to combine blocks from both courses)
-2. Detects overlaps in each combination
-3. Ranks them (best first: fewest conflicts)
+- takes your current partition (how study groups are grouped into blocks),
+- generates all valid combinations by selecting exactly one study group
+  from each block, per course,
+- and ranks those combinations by how well they fit together.
 
-Result: You see the top options ranked by level of conflicts. You choose based on what matters to you (flexibility, recording availability, break between classes, etc.).
+> [!NOTE]
+> Blocks come from your current partition. By default, Sisukas groups study
+groups by lecture / exercise / exam, but this grouping is only a suggestion.
+You can define your own.
 
-## The Model: Ranking by Fit
+## Example: CS-A1110 + MATH-A1020
 
-```
-Top options (ranked by fewest conflicts):
-Option 1: CS lecture (Tue/Thu 10-12) + MATH lecture (Mon/Wed 11-13)
-No overlaps ✓
-Option 2: CS lecture (Mon/Wed 10-12) + MATH lecture (Tue/Thu 11-13)
-No overlaps ✓
-Option 3: CS lecture (Mon/Wed 10-12) + MATH exercise (Wed 15-17)
-No overlaps, but exercises are separate ✓
-Option 4: CS lecture (Mon/Wed 10-12) + MATH lecture (Mon/Wed 11-13)
-1 hour overlap (11-12) Mon/Wed
-...and so on
-```
+Using the default partition, each course typically has:
+- a Lecture Block (often only one study group),
+- and an Exercise Block (multiple study groups).
 
-You pick whichever fits your needs best.
+Each Schedule Pair below represents a complete, concrete timetable choice:
+one study group per block, per course.
+
+### Schedule Pair 1
+
+- CS Lecture (Mon 10–12)
+- CS Exercise H01 (Tue 14–16)
+- MATH Lecture (Tue 10–12)
+- MATH Exercise H01 (Mon 10–12)
+
+→ **2-hour overlap**  
+(CS Lecture and MATH Exercise both scheduled Mon 10–12)
+
+### Schedule Pair 2
+
+- CS Lecture (Mon 10–12)
+- CS Exercise H01 (Tue 14–16)
+- MATH Lecture (Tue 10–12)
+- MATH Exercise H02 (Wed 10–12)
+
+→ **No overlap**
+
+## Ranking by “Fit”
+
+> [!IMPORTANT]
+> Not all conflicts are equally bad.
+
+The system ranks Schedule Pairs using a **Fit Score**, so you see the
+most workable options first:
+
+1. **Perfect Fit**  
+   No time conflicts.
+
+2. **Manageable Fit**  
+   Overlaps exist only in study groups marked as “recordings available”.
+
+3. **Hard Conflict**  
+   Overlapping exams or mandatory sessions.
+
+Instead of silently picking one schedule for you, Sisukas shows you the
+ranked options so you can decide which trade-offs you're willing to accept.
 
 ## Why This Matters for Planning
 
-**Without Schedule Pairs:** You manually compare each combination (tedious, error-prone)
+- **Without Schedule Pairs:**  
+  You manually compare combinations, relying on memory and repeated checks.
 
-**With Schedule Pairs:** The system shows you ranked options so you can make an informed choice
+- **With Schedule Pairs:**  
+  The system presents the viable schedules, ordered by how well they fit,
+  so you can focus on making a decision, not finding the options.
 
-Instead of a scheduling algorithm choosing *for* you, Schedule Pairs show you the options and let you decide. You understand the trade-offs before committing.
+> [!TIP]
+> Schedule Pairs don't choose *for* you.  
+> They make the trade-offs visible so you can choose consciously.
 
 ## Next Steps
 
-Once you've chosen a Schedule Pair, **[Decision Slots](../decision-slots/)** make any remaining conflicts explicit so you can consciously decide which events to prioritize.
-
-## Next in the planning process
-- **[Decision Slots](../decision-slots/)** – Make your trade-offs explicit
-- **[Planning Architecture](../../architecture/planning/)** – How this is built
+For any remaining conflicts, use **[Decision Slots](../decision-slots/)** to
+explicitly decide what you'll attend and what you'll skip.
 
 ## See Also
 - [The Big Picture](../overview/) – Understand the three phases

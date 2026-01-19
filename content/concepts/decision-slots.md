@@ -4,82 +4,88 @@ title: "Conflicts in Decision Slots"
 ---
 
 > [!NOTE]
-> This is Phase 2 of semester planning. See [Plans](../plans/) for how blocks are composed and 
+> This is Phase 3. See [Plans](../plans/) for how blocks are composed and 
 [Schedule Pairs](../schedule-pairs/) for how they're ranked.
+
+## When Conflicts Don't Go Away
+
+Even after choosing a well-ranked Schedule Pair, some overlaps are unavoidable.
+
+At this point, planning isn't about finding a better combination. It's about
+deciding how you will handle the conflicts that remain.
+
+That's what Decision Slots are for.
 
 ## What is a Decision Slot?
 
-A **Decision Slot** is a time interval where blocks from different courses overlap, 
-forcing you to choose which one to prioritize.
+A **Decision Slot** is a specific time interval where the study groups in your
+chosen Schedule Pair overlap.
 
-After you've built a [Schedule Pair](../schedule-pairs/) with CS and MATH, you might 
-have chosen:
+Once you select a Schedule Pair, Sisukas identifies every remaining overlap and
+turns each one into an explicit Decision Slot that requires a choice.
 
-- **CS-A1110:** Lecture Mon/Wed 10-12, Exercise Tue 14-16
-- **MATH-A1020:** Lecture Mon/Wed 11-13, Exercise Tue 15-17
+## Example: The 11:00–12:00 Overlap
 
-These overlap:
-- **Mon/Wed 11-12:** During both lectures
-- **Tue 14-15:** During both exercises
+You've selected a Schedule Pair where:
 
-Each overlap is a Decision Slot. You must choose.
+- **CS Lecture** runs Monday 11:00–12:00  
+- **MATH Lecture** also runs Monday 11:00–12:00  
 
-## Why Make Trade-Offs Explicit?
+This overlap becomes a Decision Slot.
 
-Most students have overlapping events. That's normal. What's not normal is 
-pretending they don't exist.
+> [!IMPORTANT]
+> At this point, you are no longer choosing between schedules. You are choosing how you will actually spend that hour.
 
-**Without Decision Slots:** Calendar shows both events. You "handle it somehow" 
-(skip one, watch recording, arrive late). Nothing explicit, nothing remembered.
+## Your Options
 
-**With Decision Slots:** You mark one as primary, the other as secondary. 
-The system remembers your choice: "You prioritize CS lectures over MATH lectures."
+For each Decision Slot, you explicitly decide how to handle it.
 
-This explicitness matters because:
-1. You think about priorities (not defaults)
-2. You know your actual commitments (not theoretical max)
-3. You can plan accordingly (watch recordings on specific days, coordinate with friends)
-4. The pattern feeds into future planning (reflection: which courses demanded most sacrifices?)
+### Option A: Attend CS (Primary)
 
-## Example Decision
+- Mark CS as **Primary**
+- Mark MATH as **Secondary**
+- *System action:*  
+  Your calendar shows CS. MATH is treated as recorded or self-study.
 
-You've chosen CS lecture (10-12) + MATH lecture (11-13). They overlap 11-12.
+### Option B: Attend MATH (Primary)
 
-**Decision Slot: Monday/Wednesday 11-12**
+- Mark MATH as **Primary**
+- Mark CS as **Secondary**
+- *System action:*  
+  Your calendar shows MATH.
 
-Your options:
-- **Option A:** Attend CS (primary), skip MATH (secondary)
-  - Mark: "CS lecture primary, MATH lecture secondary"
-  - Plan: Watch MATH recording Tuesday evening
-  - Implication: Need recordings available
+### Option C: Split Attendance
 
-- **Option B:** Attend MATH (primary), skip CS (secondary)
-  - Mark: "MATH lecture primary, CS lecture secondary"
-  - Plan: Watch CS recording Thursday
-  - Implication: CS lectures must be recorded
-
-- **Option C:** Attend both (split attendance)
-  - Arrive 11 mins late to CS, OR leave MATH 12 mins early
-  - Mark: "Both primary, partial overlap"
-  - Implication: Lose 10-15 mins of content in both
-
-You choose based on:
-- Which course needs live attendance?
-- Which has good recordings?
-- What can you live with?
+- Attend part of CS, then part of MATH
+- *System action:*  
+  Both study groups are marked as **Partial**.
 
 ## Why This Leads to Better Planning
 
-By being explicit about trade-offs, you:
-- Build a semester you actually understand
-- See patterns (which courses demanded sacrifices)
-- Plan better next semester (avoid same mistakes)
-- Feel more in control (you chose this, not a scheduling algorithm)
+Making these decisions explicit has important effects:
 
-## What comes next?
+1. **No hidden state**  
+   You don't have to remember what you planned to skip — the system records it.
 
-Phase 3 of semester planning will include reflection tools to understand
-your patterns. For now, see:
+2. **A truthful calendar**  
+   Your exported calendar reflects what you actually plan to attend, not every
+   overlapping possibility.
 
-- [The Big Picture](../overview/) – See all three phases
-- [Planning Architecture](../../architecture/planning/) – How phases are built
+> [!TIP]
+> Over time, you can see which courses repeatedly forced compromises and where your workload pressure came from.
+
+## How This Fits into the Planning Flow
+
+Decision Slots are the final step where plans turn into commitments:
+
+**[Discover](../filtering/) → [Plan](../plans/) → [Optimize](../schedule-pairs/) → Decide**
+
+## What Comes Next?
+
+Reflection and workload tools will build on Decision Slot data to help you
+understand your patterns across a semester.
+
+For now, see:
+
+- [The Big Picture](../overview/) – How all phases connect
+- [Planning Architecture](../../architecture/planning/) – How Decision Slots are implemented

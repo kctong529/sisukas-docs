@@ -4,102 +4,44 @@ title: "The Big Picture"
 ---
 
 > [!NOTE]
-> First time here? See [Why Sisukas?](../../why-sisukas/) for context, 
-> then [Getting Started](../../getting-started/) to run it locally.
+> New to the project? Start with [Why Sisukas?](../../why-sisukas/) for the philosophy, then return here for the implementation roadmap.
 
 ## Our Core Philosophy
 
-Most scheduling tools treat overlapping courses as an error to prevent. 
-Sisukas takes the opposite view: **overlaps are inevitable and normal.** 
-The goal is not to eliminate them, but to surface them clearly so students 
-can make explicit trade-offs.
-
-This fundamental shift changes how we approach planning and scheduling.
+Sisukas treats overlaps not as errors, but as **inevitable trade-offs.** This fundamental shift changes how we approach planning.
 
 ### Three Beliefs
 
-1. **Scheduling conflicts are inevitable, not errors**  
-Students actually deal with overlapping lectures, exercises, and exams. 
-They make trade-offs, skip sessions, watch recordings later, or prioritize 
-one course over another. Sisukas builds around this reality instead of 
-ignoring it.
+1. **Conflicts are normal**  
+Students already skip sessions, watch recordings, or prioritize one course over another. Sisukas builds around this reality.
 
 2. **Information should be easily accessible**  
-SISU buries details behind many clicks and repetitive navigation. Finding 
-and comparing course schedules requires excessive effort. Sisukas puts 
-information front and center, eliminating friction from exploration.
+No more clicking through five menus to see a schedule. Details are front and center.
 
-3. **Students should make conscious choices**  
-Instead of a scheduling algorithm that assigns your time, you retain control. 
-You see the options, understand the trade-offs, and make informed choices.
+3. **Conscious Choice**  
+We don't use a "black box" algorithm to solve your schedule; we show you the trade-offs so you can decide.
 
-## The Abstraction Problem
+## The Planning Lifecycle
 
-> [!IMPORTANT]
-> When *discovering*, an abstract course code like "MS-A0111" is useful. It helps you find "Calculus 1" without worrying about when it runs. When *planning*, the instance is everything. You need "MS-A0111 in Autumn 2025" because you're building a specific semester.
- 
-But even instances aren't the full story. A course instance isn't a single fixed time slot. It's a collection of blocks you can mix and match: exercise groups at multiple times, lectures that might be optional, exams. Planning means assembling these blocks from *multiple courses* into a coherent semester.
+Planning moves from abstract ideas to concrete schedules in three phases:
 
-This is where Plans, Schedule Pairs, and Decision Slots come in.
+### Phase 1: Workspace & Composition (Plans & Blocks)
+You create a **Plan**: a flexible workspace for a specific semester (e.g. "Autumn 2025"). Inside, course instances are broken into **Blocks** (user-defined groupings of study groups). By default, Sisukas suggests blocks like Lectures/Exercises/Exams, but you can partition study groups however you want.
 
-> [!TIP]
-> Our model makes the concrete problem (how do you actually combine courses?) explicit before jumping to the solution.
+### Phase 2: Optimization (Schedule Pairs)
+The **Schedule Pairs** engine analyzes your Plan. It generates every possible combination by selecting one study group per block across your chosen courses and ranks them by "fit," showing you which combinations have the fewest conflicts.
 
-## The Three-Phase Approach
+### Phase 3: Resolution (Decision Slots)
+For the conflicts that remain, you use **Decision Slots**. You explicitly mark which event is "Primary" (attendance) and which is "Secondary" (recording/self-study).
 
-We're building toward comprehensive semester planning incrementally:
+## Technical Vocabulary
 
-### Phase 1: Flexible Exploration (Plans & Schedule Pairs)
-
-Students need a workspace to explore combinations. This is where Plans live: flexible collections of course instances.
-
-As students explore, they discover which study group combinations work well together. Schedule Pairs handle this optimization: they find the best pairing of study groups across multiple courses.
-
-> [!NOTE]
-> Exploration is different from commitment. Plans let you explore freely; Schedule Pairs help you make informed choices about study groups. Only when you've found combinations you like do you move to Phase 2.
-
-### Phase 2: Explicit Trade-Offs (Decision Slots)
-
-Once you've chosen study group combinations, conflicts become visible. Decision Slots make these explicit: "Here's where you have overlapping events. Which one matters more to you?"
-
-> [!TIP]
-> Discovering conflicts is different from deciding how to handle them. Phase 1 finds good combinations. Phase 2 makes your compromises visible and intentional.
-
-### Phase 3: Understanding Your Pattern (Reflection Tools)
-
-By Phase 3, you have a complete semester with all trade-offs made explicit. Reflection tools help you understand your patterns: which courses required sacrifices? How much content did you skip? Would a different pairing have been better?
-
-> [!IMPORTANT]
-> Understanding takes time. You need a complete semester before you can reflect on it. And reflection is valuable for future semesters, not this current one.
-
-## Scheduling Conflicts: A Different Perspective
-
-Traditional scheduling assumes conflicts are a problem to solve. Sisukas assumes they're a problem to *manage*.
-
-The difference is significant:
-
-| Perspective | Traditional | Sisukas |
-|---|---|---|
-| Conflicts are | Errors to prevent | Inevitable and normal |
-| Goal | Find perfect non-overlapping schedule | Minimize high-impact conflicts |
-| Student role | Follow the algorithm | Make explicit choices |
-| Information | "Here's your schedule" | "Here are your options and trade-offs" |
-
-> [!TIP]
-> This shift reflects the reality of student life. Most students don't have perfect, non-overlapping schedules. They work with what exists and make strategic decisions about which events matter most.
-
-## Integration with Discovery
-
-Planning builds directly on discovery. The complete workflow looks like:
-
-1. **Discover** – Use fast filtering to find interesting courses
-2. **Bookmark** – Save courses as favorites (no commitment)
-3. **Plan** – Create a Plan for your semester with specific instances
-4. **Explore** – Use Schedule Pairs to find good study group combinations
-5. **Decide** – Use Decision Slots to make explicit trade-offs
-6. **Commit** – Register in SISU with a complete, transparent plan
-
-At each step, you can step back, explore more, or adjust your choices. The commitment step comes only when you're ready.
+| Term | Definition |
+| :--- | :--- |
+| **Instance** | A specific run of a course (e.g. "Fall 2025") |
+| **Block** | A user-defined partition (grouping) over study groups that defines one “choice slot” during computation. Defaults suggest Lecture/Exercise/Exam blocks |
+| **Schedule Pair** | A concrete timetable choice: one study group selected from each block across the courses in a Plan, ranked by fit |
+| **Decision Slot** | A specific time interval where selected study groups overlap, requiring a priority choice |
 
 ## Next Steps
 
