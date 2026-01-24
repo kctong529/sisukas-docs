@@ -23,7 +23,8 @@ Sisukas is a course discovery and study planning tool designed for university st
 - **[The Big Picture](../concepts/overview/)** – Why we design this way, the planning philosophy
 - **[How Filtering Works](../concepts/filtering/)** – The philosophy and design of our discovery system
 - **[Planning Concepts](../concepts/plans/)** – Plans and the block-based planning model
-- **[Schedule Pairs & Decision Slots](../concepts/)** – How planning moves from exploration to decisions
+- **[Schedule Pairs & Decision Slots](../concepts/)** – Exploring combinations and making trade-offs explicit
+- **[Year Timeline](../concepts/year-timeline/)** – Seeing your academic year as a whole
 
 **Ready to Implement?**
 - **[Planning Architecture](../architecture/planning/)** – How Plans, Schedule Pairs, and Decision Slots are built
@@ -45,7 +46,7 @@ Sisukas is a course discovery and study planning tool designed for university st
 → Start with [Why Sisukas?](../why-sisukas/) (5 min read)
 
 **"I want to plan a semester thoughtfully"**  
-→ Read [The Big Picture](../concepts/overview/) then [Planning Concepts](../concepts/plans/)
+→ Read [The Big Picture](../concepts/overview/), use the [Year Timeline](../concepts/year-timeline/) for context, then dive into [Planning Concepts](../concepts/plans/)
 
 **"I want to understand how filtering works"**  
 → See [How Filtering Works](../concepts/filtering/) and try it live

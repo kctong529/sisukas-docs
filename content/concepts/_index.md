@@ -37,6 +37,10 @@ These guides explain the **ideas and philosophy** behind Sisukas.
 - Explicitly choosing how you will attend
 - Reflecting on repeated compromises
 
+**[Year Timeline](./year-timeline/)** – Seeing your academic year as a whole
+- Completed, ongoing, and planned studies in one view
+- Automation-first (no manual maintenance)
+
 ## Ready to Build?
 
 See **[Planning Architecture](../../architecture/planning/)** for implementation details.

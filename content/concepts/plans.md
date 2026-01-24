@@ -18,6 +18,9 @@ A **Plan** is a flexible workspace where you group course instances you're consi
 
 A Plan doesn't represent a commitment. It's a place to **think**, explore options, and understand trade-offs before deciding anything.
 
+> [!NOTE]
+> Plans are semester-scoped workspaces. For year-level continuity (completed, ongoing, and planned studies together), see the [Year Timeline](../year-timeline/).
+
 ## From Courses to Choices
 
 When planning a semester, the difficulty isn't picking courses. It's dealing with their **internal choices**.

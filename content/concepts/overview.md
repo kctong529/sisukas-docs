@@ -8,7 +8,9 @@ title: "The Big Picture"
 
 ## Our Core Philosophy
 
-Sisukas treats overlaps not as errors, but as **inevitable trade-offs.** This fundamental shift changes how we approach planning.
+Sisukas treats overlaps not as errors, but as **inevitable trade-offs**. This fundamental shift changes how we approach planning.
+
+Long-term context is provided by the [Year Timeline](../year-timeline/), which shows completed, ongoing, and planned studies across an academic year.
 
 ### Three Beliefs
 
