@@ -36,7 +36,7 @@ Local development is fully supported, but requires a few services to run togethe
 > The setup uses locally trusted certificates generated with `mkcert`.
 > Without HTTPS, sign-in will not work.
 
-See **[Running Sisukas Locally](../developer-guide/running-locally/)** for details.
+See **[Running Sisukas Locally](../dev-guide/running-locally/)** for details.
 
 That page covers:
 - required tools
