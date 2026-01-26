@@ -19,6 +19,8 @@ Visit **[sisukas.eu](https://sisukas.eu)** to:
 > Course data is cached locally for instant searching and filtering, making
 > the app usable even with limited connectivity.
 
+This is the easiest way to experience the full system with no setup required.
+
 ### Run Locally (For Development or Self-Hosting)
 
 Set up a local development environment if you want to:
@@ -27,48 +29,43 @@ Set up a local development environment if you want to:
 - Work on discovery, filtering, or planning features
 - Understand the system architecture
 
-> [!TIP]
-> Authentication does not work out of the box on localhost due to browser
-> security restrictions. You can still browse and filter courses locally,
-> but authenticated features require the live app.
-
-## Running Locally: Full Setup
-
-Local setup is straightforward and tested on macOS and Linux.
-Windows users should use WSL (Windows Subsystem for Linux).
-
-### Prerequisites
-
-Install the following tools:
-
-**[uv](https://docs.astral.sh/uv/)** — Fast Python package manager:
-```sh
-uv --version
-```
-
-**[Node.js](https://nodejs.org/)** — v18 or later:
-```sh
-node --version
-```
-
-### Clone the Repository
-
-```sh
-git clone https://github.com/kctong529/sisukas.git
-cd sisukas
-```
-
-### Setup All Components
-
-```sh
-make setup
-```
-
-This creates Python virtual environments and installs dependencies for all components (frontend, backend, filters-api, and sisu-wrapper). Run `make help` to see all available commands.
+Local development is fully supported, but requires a few services to run together.
 
 > [!TIP]
-> The project includes a Makefile with convenient shortcuts.
-> See the [Makefile Reference](../makefile/) for details.
+> Local authentication requires HTTPS.
+> The setup uses locally trusted certificates generated with `mkcert`.
+> Without HTTPS, sign-in will not work.
+
+See **[Running Sisukas Locally](../developer-guide/running-locally/)** for details.
+
+That page covers:
+- required tools
+- one-time setup
+- which services need to run
+- how authentication works on localhost
+
+## What You Can Do Without Any Setup
+
+Even without signing in or running backend services, Sisukas supports:
+
+- ✓ Browsing and searching courses
+- ✓ Applying complex filters
+- ✓ Inspecting course metadata and basic schedules
+- ✓ Saving and sharing filter configurations (when Filters API is running)
+
+This makes frontend-only development and exploration easy.
+
+## What Requires Authentication
+
+Authenticated features include:
+
+- bookmarking courses
+- creating and persisting Plans
+- schedule evaluation and decision slots
+
+These features work:
+- on sisukas.eu, or
+- locally with HTTPS and backend services running
 
 ## Course Data
 
@@ -76,139 +73,29 @@ Course data is fetched from the Aalto University API and updated daily.
 The frontend loads the latest `courses.json` automatically when the dev
 server starts.
 
-> [!TIP]
+> [!NOTE]
 > For details on how course data is fetched, cached, and updated, see the
 > [Data Pipeline](../dev-guide/data-pipeline/) guide.
 
-## Running the Frontend
+### Browser Support
 
-The frontend runs independently and does not require backend services
-for course discovery and filtering.
-
-```sh
-cd frontend/course-browser
-npm run dev
-```
-
-Opens at [http://localhost:5173](http://localhost:5173)
-
-### Browser Requirements
-
-Sisukas works best on modern browsers (Chrome, Firefox, Safari, Brave)
-and is fully responsive on mobile.
+Sisukas works best on modern browsers such as Chrome, Firefox, Safari, and Brave.
+It is fully responsive and usable on mobile devices.
 
 > [!TIP]
 > `courses.json` cannot be accessed via `file://` URLs due to browser
-> security restrictions. Always use the dev server.
+> security restrictions. Always use the dev server when running locally.
 
-## Authentication & HTTPS (Local Development)
+## Where to Go Next
 
-The live app at **[sisukas.eu](https://sisukas.eu)** supports full
-authentication, bookmarks, and planning features.
+- **Want to understand the system?**  
+  Read **[System Overview](../system-overview/)** and **[Concepts Overview](../concepts/overview/)**
 
-In local development, authentication does not work because browsers treat
-different ports (e.g. `localhost:5173` and `localhost:3000`) as different
-origins. Secure authentication cookies cannot be shared across them.
+- **Want to run or modify the code?**  
+  Start with **[Running Sisukas Locally](../dev-guide/running-locally/)**
 
-This is expected browser behavior, not a Sisukas limitation.
+- **Looking for implementation details?**  
+  Continue to the **[Developer Guide](../dev-guide/)**
 
-> [!NOTE]
-> To test authenticated features, use the live app.
-
-If you need HTTPS locally for other reasons, see
-[Local HTTPS Setup](../local-https/).
-
-## What You Can Do Locally
-
-### Fully Functional (No Sign-In Required)
-
-- ✓ Browse and search courses
-- ✓ Apply and share filters
-- ✓ Explore course details and schedules
-
-### Requires Sign-In (Live App Only)
-
-- ✗ Bookmark courses
-- ✗ Create Plans
-- ✗ Use Schedule Pairs
-- ✗ Use Decision Slots
-
-## Backend Services (Optional)
-
-Backend services are only required if you are working on:
-
-- authentication,
-- persistence,
-- or planning-related APIs.
-
-Frontend-only development does **not** require running backend services.
-
-### Backend Setup
-
-```sh
-cd backend
-npm ci --ignore-scripts
-cp .env.example .env
-```
-
-Running the backend requires additional configuration depending on what
-you are working on.
-
-### Filters API
-
-Handles persistence and sharing of filter configurations.
-
-```sh
-cd filters-api
-uv run fastapi dev main.py
-```
-
-Available at [http://127.0.0.1:8000](http://127.0.0.1:8000)
-
-API documentation: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-### SISU Wrapper (Study Group API)
-
-Provides real-time study group and schedule data.
-
-- Required for full planning features
-- Optional for frontend development
-
-```sh
-cd sisu-wrapper
-uv run fastapi dev api/main.py --port 8001
-```
-
-Available at [http://127.0.0.1:8001](http://127.0.0.1:8001)
-
-API documentation: [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs)
-
-The Python library is also available on PyPI:
-
-```sh
-pip install sisu-wrapper
-```
-
-## Building the Frontend for Production
-
-To build the frontend bundle:
-
-```sh
-npm run build
-```
-
-This creates static files in `/dist`, which can be served using any HTTP server.
-
-## First Steps
-
-1. Browse courses
-2. Apply filters
-3. Explore course details
-4. Save and share filters
-5. Sign in (optional) to access planning features
-
-## Learn More
-
-- **[Why Sisukas?](../why-sisukas/)** – The problem Sisukas solves
-- **[The Big Picture](../concepts/overview/)** – Planning philosophy
-- **[API Reference](../api/)** – Backend endpoints
+Sisukas is designed to support deliberate exploration first and commitment later.  
+The documentation follows the same principle.
