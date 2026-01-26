@@ -31,7 +31,7 @@ Sisukas is a course discovery and study planning tool designed for university st
 - **[API Reference](../api/)** – Available endpoints
 
 **Looking for System Details?**
-- **[Data Pipeline](../data-pipeline/)** – How course data is maintained and updated
+- **[Data Pipeline](../dev-guide/data-pipeline/)** – How course data is maintained and updated
 - **[Environment Variables](../env-reference/)** – All configuration options
 - **[Security](../securities/)** – Authentication and data protection
 - **[Makefile Reference](../makefile/)** – Build commands
@@ -55,7 +55,7 @@ Sisukas is a course discovery and study planning tool designed for university st
 → See [Getting Started](../getting-started/) and [Planning Architecture](../architecture/planning/)
 
 **"I want API access"**  
-→ See [API Reference](../api/) and [Data Pipeline](../data-pipeline/)
+→ See [API Reference](../api/) and [Data Pipeline](../dev-guide/data-pipeline/)
 
 ## Terminology
 

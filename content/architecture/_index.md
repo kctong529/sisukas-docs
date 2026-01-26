@@ -1,6 +1,6 @@
 ---
 title: "Architecture"
-weight: 5
+weight: 7
 ---
 
 # System Architecture
@@ -18,5 +18,5 @@ These guides explain **how Sisukas is built**.
 ## See Also
 
 **[Concepts](../../concepts/)** – Understand the philosophy and ideas before diving into implementation
-**[API Reference](../../api/)** – Available endpoints
+**[API Reference](../../dev-guide/api/)** – Available endpoints
 **[Security](../../securities/)** – How data is protected

@@ -1,4 +1,7 @@
-# Environment Variables Reference
+---
+weight: 4
+title: "Environment Variables Reference"
+---
 
 Each Sisukas component uses a `.env` file for configuration. Copy from `.env.example` when setting up.
 
@@ -43,9 +46,7 @@ These are configured as **GitHub Secrets** (not in `.env`):
 | `AALTO_USER_KEY` | API key for Aalto's course data API (required for data pipeline) |
 | `GCS_SERVICE_ACCOUNT_KEY` | JSON key for Google Cloud Storage authentication |
 
-See [Data Pipeline](./data-pipeline.md) for details.
-
----
+See [Data Pipeline](./data-pipeline/) for details.
 
 ## Getting Started with `.env` Files
 
@@ -65,8 +66,6 @@ See [Data Pipeline](./data-pipeline.md) for details.
 
 4. **For production:** All variables should be explicit and secure. Never commit `.env` files to git.
 
----
-
 ## Never Commit `.env` Files
 
 Add to `.gitignore`:
@@ -78,10 +77,8 @@ Add to `.gitignore`:
 
 `.env` files contain secrets. Always keep them private.
 
----
-
 ## Links to Detailed Setup
 
-- [Getting Started: Backend Setup](../getting-started/#running-backend-services)
+- [Getting Started: Backend Setup](../../getting-started/#running-backend-services)
 - [Makefile Reference: Environment Variables](../makefile/#environment-variables)
 - [Data Pipeline: GitHub Actions](../data-pipeline/#github-actions-workflow)

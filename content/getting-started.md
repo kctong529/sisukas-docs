@@ -78,7 +78,7 @@ server starts.
 
 > [!TIP]
 > For details on how course data is fetched, cached, and updated, see the
-> [Data Pipeline](../data-pipeline/) guide.
+> [Data Pipeline](../dev-guide/data-pipeline/) guide.
 
 ## Running the Frontend
 

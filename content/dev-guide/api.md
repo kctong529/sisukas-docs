@@ -1,5 +1,5 @@
 ---
-weight: 8
+weight: 3
 title: "API Reference"
 ---
 
@@ -74,8 +74,6 @@ Course unit IDs and offering IDs are available in `courses.json`:
 }
 ```
 
-See [Data Pipeline](../data-pipeline/#finding-course-ids) for more details.
-
 ### Status
 
 Currently used by the frontend to display study group details. The REST API is 
@@ -119,6 +117,6 @@ The library provides:
 For full documentation, see [sisu-wrapper README](https://github.com/kctong529/sisukas/blob/main/sisu-wrapper/README.md).
 
 ## Want to understand the bigger picture?
-- **[Getting Started](../getting-started/#running-backend-services)** – Using these services
-- **[Architecture](../architecture/)** – How APIs fit into the system
+- **[Getting Started](../../getting-started/#running-backend-services)** – Using these services
+- **[Architecture](../../architecture/)** – How APIs fit into the system
 - **[Data Pipeline](../data-pipeline/)** – Course data source

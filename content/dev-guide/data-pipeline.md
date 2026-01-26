@@ -1,24 +1,22 @@
 ---
-weight: 6
+weight: 2
 title: "Data Pipeline"
 ---
 
 > [!NOTE]
-> Part of Sisukas' architecture. See [Architecture Overview](../architecture/) 
-> for how all components fit together.
+> This page is part of the Developer Guide. It documents how course data is
+> produced, validated, and distributed to runtime systems.
 
 # Course Data Pipeline
 
 ## Overview
 
-Sisukas uses two separate data sources:
+Sisukas relies on two distinct external data sources, each used for different purposes.
 
-- **Aalto Open API** – Stable course metadata (name, credits, teachers). Updated daily via automated pipeline, cached globally for fast search.
-  
-- **Aalto Sisu API** – Real-time study group details and schedules. Queried on-demand via sisu-wrapper for current data.
-
-This design separates stable data (cache-friendly) from dynamic data 
-(real-time queries). [Why Two APIs?](#why-both-aalto-open-api-and-sisu-api)
+The data pipeline described on this page is responsible only for ingesting and
+processing stable course metadata from the Aalto Open API. Live study group and
+schedule data from the Aalto SISU API is fetched separately at runtime by the
+frontend and is not part of this pipeline.
 
 ## Data Pipeline (Aalto Open API)
 
@@ -45,7 +43,7 @@ The process runs:
 
 **File:** `scripts/fetch_latest_courses.py`
 
-Fetches course data from Aalto's SISU API:
+Fetches course data from Aalto Open Courses API:
 
 ```
 GET https://course.api.aalto.fi/api/sisu/v1/courseunitrealisations
@@ -351,7 +349,7 @@ Check:
 - API key is valid and hasn't expired
 - Network connectivity to Aalto servers
 
-## Architecture Notes
+## Design Rationale
 
 ### Why Fetch → Transform → Upload?
 

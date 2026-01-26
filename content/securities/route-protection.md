@@ -288,4 +288,4 @@ curl -H "Authorization: Bearer $TOKEN" \
 This is Layer 1 (route protection). See:
 - **[Security Overview](../overview/)** – Defense in depth approach
 - **[Row-Level Security](../row-level-security-testing/)** – Layer 2 (database)
-- **[Data Pipeline](../../data-pipeline/#security)** – Layer 3 (data source)
+- **[Data Pipeline](../../dev-guide/data-pipeline/#security)** – Layer 3 (data source)
