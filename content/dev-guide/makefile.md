@@ -11,59 +11,72 @@ title: "Makefile Reference"
 
 ## Overview
 
-The Makefile automates setup and management of the Sisukas development environment, handling Python virtual environments, Node.js dependencies, and optional localhost certificate generation.
+The Makefile automates setup and management of the Sisukas development environment, handling Python virtual environments, Node.js dependencies, and localhost HTTPS certificate generation.
 
-Works in both local development and CI/CD environments. Certificate generation is optional and automatically skipped if mkcert is not available (as in GitHub Actions).
+It is designed to work in both local development and CI/CD environments.  
+Some steps (notably HTTPS certificate generation) are environment-sensitive and may be skipped automatically in CI.
 
 ## Available Targets
 
 ### `make help`
+
 Displays all available targets and their descriptions.
 
 ### `make setup`
+
 Complete setup of all components. Runs in this order:
 1. Verifies required tools (uv, node, mkcert)
 2. Sets up filters-api Python environment
 3. Sets up sisu-wrapper Python environment
 4. Sets up backend Node.js dependencies
 5. Sets up frontend Node.js dependencies
-6. Generates localhost certificates
+6. Generates localhost HTTPS certificates (if mkcert is available)
 
 **Use this:** First time setup or when you want everything fresh.
 
-### `make check-tools`
-Verifies that required tools are installed:
-- `uv` (Python package manager) — Required, exits with error if missing
-- `node` (JavaScript runtime) — Required, exits with error if missing
-- `mkcert` (localhost certificate tool) — Optional, prints warning if missing
+> [!NOTE]
+> If mkcert is not installed, setup will still complete,
+> but local authentication will not work until certificates are generated.
 
-Exits with error if uv or node are missing. Prints warning (doesn't exit) if mkcert is not found.
+### `make check-tools`
+
+Verifies that required tools are installed:
+- `uv` (Python package manager) — **Required**, exits with error if missing
+- `node` (JavaScript runtime) — **Required**, exits with error if missing
+- `mkcert` (localhost certificate tool) — **Required for authenticated local development**
+
+If mkcert is missing, the command prints a warning and continues.
+This allows CI and non-auth frontend work to proceed.
 
 ### `make setup-filters-api`
+
 Sets up the filters-api Python service:
 - Creates Python 3.12 virtual environment
-- Compiles requirements if requirements.in exists
+- Compiles requirements if `requirements.in` exists
 - Syncs dependencies
-- Copies .env.example to .env
+- Copies `.env.example` to `.env`
 
 Location: `filters-api/`
 
 ### `make setup-sisu-wrapper`
+
 Sets up the sisu-wrapper Python service:
 - Creates Python 3.12 virtual environment
-- Compiles requirements if requirements.in exists
+- Compiles requirements if `requirements.in` exists
 - Syncs dependencies
 
 Location: `sisu-wrapper/`
 
 ### `make setup-backend`
+
 Sets up backend Node.js dependencies:
-- Runs `npm ci --ignore-scripts` in backend directory
-- Copies .env.example to .env
+- Runs `npm ci --ignore-scripts`
+- Copies `.env.example` to `.env`
 
 Location: `backend/`
 
 ### `make setup-frontend`
+
 Sets up frontend Node.js dependencies:
 - Runs `npm ci --ignore-scripts` in frontend/course-browser
 - Copies .env.example to .env
@@ -71,28 +84,33 @@ Sets up frontend Node.js dependencies:
 Location: `frontend/course-browser/`
 
 ### `make setup-certs`
-Generates localhost certificates using mkcert:
+
+Generates localhost HTTPS certificates using mkcert:
+
 - Checks if mkcert is installed
-- If not found: Skips with warning (optional, only needed for local HTTPS)
-- Creates certificates for localhost and 127.0.0.1
-- Stores in `frontend/course-browser/`
-- Skips if certificates already exist
-- Provides instructions for installing mkcert
+- If not found: prints warning and skips
+- Creates certificates for `localhost` and `127.0.0.1`
+- Stores them in `frontend/course-browser/`
+- Skips generation if certificates already exist
 
 Creates:
 - `frontend/course-browser/localhost.pem`
 - `frontend/course-browser/localhost-key.pem`
 
-**Note:** Certificates are optional. They're only needed if you want HTTPS in local development. CI/CD pipelines automatically skip this step.
+> [!IMPORTANT]
+> These certificates are **required** for local sign-in and authentication flows.
+> Without them, the frontend must be run over HTTP and authentication will fail.
 
 ### `make compile-requirements`
-Compiles Python requirements.in files to requirements.txt:
+
+Compiles Python `requirements.in` files to `requirements.txt`:
 - `filters-api/requirements.in` → `filters-api/requirements.txt`
 - `sisu-wrapper/requirements.in` → `sisu-wrapper/requirements.txt`
 
-Use when you update requirements.in files.
+Use when updating Python dependencies.
 
 ### `make clean`
+
 Removes all generated artifacts:
 - Python virtual environments: `filters-api/.venv`, `sisu-wrapper/.venv`
 - Node modules: `backend/node_modules`, `frontend/course-browser/node_modules`
@@ -100,21 +118,22 @@ Removes all generated artifacts:
 Does NOT remove certificates. Use `make clean-certs` for that.
 
 ### `make clean-certs`
-Removes localhost certificates:
+
+Removes localhost HTTPS certificates:
 - `frontend/course-browser/localhost.pem`
 - `frontend/course-browser/localhost-key.pem`
 
 ## Common Workflows
 
 ### First-Time Setup
-```bash
+```
 make setup
 ```
 
-This installs everything needed.
+Installs all dependencies and generates HTTPS certificates (if mkcert is installed).
 
-### Install mkcert First-Time (if needed)
-```bash
+### Install mkcert
+```
 # macOS
 brew install mkcert
 
@@ -125,28 +144,20 @@ sudo apt install mkcert
 choco install mkcert
 ```
 
-Then run `make setup` to generate certificates.
+Then generate certificates:
 
-### Update Python Requirements
-```bash
-# Edit requirements.in files
-nano filters-api/requirements.in
-
-# Compile and sync
-make compile-requirements
-
-# Reinstall (includes compile)
-make setup-filters-api
+```
+make setup-certs
 ```
 
 ### Clean Everything and Start Fresh
-```bash
+```
 make clean
 make setup
 ```
 
 ### Regenerate Certificates
-```bash
+```
 make clean-certs
 make setup-certs
 ```
@@ -187,80 +198,46 @@ sisukas/
 ## How It Works
 
 ### Python Setup (uv)
-Uses `uv` for fast Python package management:
-- Creates virtual environments with Python 3.12
-- Compiles requirements.in to requirements.txt (universal, platform-independent)
-- Uses `uv pip sync` to install exact versions
+
+- Uses Python 3.12
+- Compiles `requirements.in` to pinned `requirements.txt`
+- Installs exact versions via `uv pip sync`
 
 ### Node Setup
-Uses `npm ci --ignore-scripts` for clean, reproducible installs:
-- Skips build scripts during setup
-- Works for both backend and frontend components
+
+- Uses `npm ci --ignore-scripts`
+- Ensures reproducible installs for frontend and backend
 
 ### Certificate Generation (mkcert)
-Uses mkcert for development HTTPS:
-- Creates a local Certificate Authority on first run
-- Installs CA in system trust store (asks for password once)
-- Generates certificates signed by local CA
-- Certificates work in all browsers automatically
-- Only for localhost development (not valid on the internet)
+
+- Creates a local Certificate Authority
+- Installs it into the system trust store
+- Generates browser-trusted certificates for localhost
+- Required for secure cookies and auth redirects
 
 ### Idempotency
-Most targets are safe to run multiple times:
-- `setup-certs` skips if certs already exist
-- `.env` files copied with `|| true` (don't fail if exists)
-- `npm ci` and `uv pip sync` are designed to be repeatable
 
-## Environment Variables
-
-Each component can have a `.env` file. Copy from `.env.example`:
-- `filters-api/.env`
-- `frontend/course-browser/.env`
-- `backend/.env`
-
-`make setup` does this automatically if `.env.example` exists.
+Most targets are safe to rerun:
+- Certificates are skipped if already present
+- `.env` files are not overwritten
+- Dependency installs are repeatable
 
 ## Troubleshooting
 
-### "uv not found"
-Install from https://astral.sh/uv
-
-### "node not found"
-Install from https://nodejs.org
-
 ### "mkcert not found"
-In CI/CD (GitHub Actions, etc.): This is normal and not an error. Certificate generation is automatically skipped. Certificates are only needed for local HTTPS development.
 
-In local development: Optional. Only needed if you want HTTPS certificates. 
-Install as described above, then run `make setup-certs`.
+- In CI: expected, certificates are skipped
+- Locally: install mkcert and run `make setup-certs`
 
-### Certificates won't generate
-```bash
-# Make sure mkcert is installed and in PATH
-which mkcert
+### Authentication not working locally
 
-# Try generating again
-make clean-certs
-make setup-certs
-
-# If it still fails, install local CA manually
-mkcert -install
-```
-
-### Need to use a different Python version
-Edit the Makefile and change `3.12` to your desired version (3.11, 3.10, etc.)
-
-### npm ci failing
-Make sure package-lock.json exists in the directory. If not:
-```bash
-cd backend  # or frontend/course-browser
-npm install
-cd ..
-```
+- Check that `localhost.pem` and `localhost-key.pem` exist
+- Ensure frontend is running over `https://localhost:5173`
+- Restart the frontend after generating certificates
 
 ## Notes
 
-- The Makefile uses bash features. For Windows, use WSL or Git Bash.
-- Environment variables in .env files are loaded by the applications, not by make itself.
-- Certificates are regenerated with `make setup` only if they don't exist (idempotent).
-- Clean targets are not automatically run by `make setup` - you must explicitly run `make clean` if you want fresh install.
+- The Makefile uses bash features; use WSL or Git Bash on Windows
+- `.env` files are loaded by applications, not by make
+- HTTPS certificates are **mandatory for local authentication**
+- Clean targets are never run implicitly

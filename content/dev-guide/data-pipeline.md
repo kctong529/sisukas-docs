@@ -7,8 +7,6 @@ title: "Data Pipeline"
 > This page is part of the Developer Guide. It documents how course data is
 > produced, validated, and distributed to runtime systems.
 
-# Course Data Pipeline
-
 ## Overview
 
 Sisukas relies on two distinct external data sources, each used for different purposes.

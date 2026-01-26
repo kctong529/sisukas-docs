@@ -3,7 +3,8 @@ title: "Running Sisukas Locally"
 weight: 1
 ---
 
-This page describes how to run Sisukas locally in a development setup. Sisukas consists of five independent services (frontend, backend, database, SISU wrapper, and filters API) that you'll run in separate terminals, allowing you to view logs clearly and restart individual components without stopping the others.
+> [!NOTE]
+> This page describes how to run Sisukas locally in a development setup. Sisukas consists of five independent services (frontend, backend, database, SISU wrapper, and filters API) that you'll run in separate terminals, allowing you to view logs clearly and restart individual components without stopping the others.
 
 ## Prerequisites
 
