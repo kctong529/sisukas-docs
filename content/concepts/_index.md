@@ -3,9 +3,8 @@ title: "Concepts"
 weight: 5
 ---
 
-# Understanding Sisukas
-
-These guides explain the **ideas and philosophy** behind Sisukas.
+> [!NOTE]
+> These guides explain the ideas and philosophy behind Sisukas.
 
 ## Start Here: The Philosophy
 

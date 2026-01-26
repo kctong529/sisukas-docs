@@ -5,7 +5,7 @@ title: "How We Filter"
 ---
 
 > [!NOTE]
-> This page explains the **filtering philosophy**. For the big picture on planning,
+> This page explains the filtering philosophy. For the big picture on planning,
 > see [The Big Picture](../overview/). To start using filters, see [Getting Started](../../getting-started/).
 
 ## The Fundamental Problem
