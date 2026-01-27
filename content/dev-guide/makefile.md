@@ -1,6 +1,7 @@
 ---
 weight: 5
 title: "Makefile Reference"
+description: "Make targets for setting up and maintaining the Sisukas dev environment, including dependencies and local HTTPS certs."
 ---
 
 > [!NOTE]

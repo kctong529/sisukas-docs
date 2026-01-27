@@ -1,7 +1,7 @@
 ---
 weight: 2
-bookFlatSection: true
 title: "How We Filter"
+description: "Filtering design in Sisukas: must rules, rule groups, and predictable boolean logic for fast course discovery."
 ---
 
 > [!NOTE]

@@ -1,6 +1,7 @@
 ---
 weight: 3
 title: "Row-Level Security"
+description: "Layer 2 authorization: Supabase RLS policies and tests that ensure users can only access their own rows."
 ---
 
 # Row-Level Security (RLS)

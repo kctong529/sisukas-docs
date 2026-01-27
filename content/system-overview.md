@@ -1,6 +1,7 @@
 ---
 weight: 4
 title: "System Overview"
+description: "How Sisukas is structured end-to-end: frontend, backend APIs, SISU wrapper, data pipeline, and key data classes."
 ---
 
 > [!NOTE]

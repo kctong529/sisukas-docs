@@ -1,6 +1,7 @@
 ---
-title: "Concepts"
 weight: 5
+title: "Concepts"
+description: "The core ideas behind Sisukas: filtering philosophy, plans and blocks, schedule pairs, decision slots, and year timeline."
 ---
 
 > [!NOTE]

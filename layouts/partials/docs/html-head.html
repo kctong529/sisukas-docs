@@ -17,6 +17,17 @@ https://github.com/alex-shpak/hugo-book
 {{ partial "opengraph.html" . }}
 {{ partial "schema.html" . }}
 
+
+<!-- Open Graph / LinkedIn -->
+<meta property="og:image" content="{{ with .Params.thumbnail }}{{ . | absURL }}{{ else }}{{ .Site.Params.defaultThumbnail | absURL }}{{ end }}" />
+<meta property="og:url" content="{{ .Permalink }}" />
+
+<!-- Twitter fallback -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ .Title }}" />
+<meta name="twitter:description" content="{{ with .Params.description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
+<meta name="twitter:image" content="{{ with .Params.thumbnail }}{{ . | absURL }}{{ else }}{{ .Site.Params.defaultThumbnail | absURL }}{{ end }}" />
+
 <title>{{ partial "docs/html-head-title" . }}</title>
 {{ partial "docs/html-head-favicon" . }}
 
@@ -58,16 +69,3 @@ https://github.com/alex-shpak/hugo-book
     integrity="{{ .Data.Integrity }}" crossorigin="anonymous"
   {{- end -}}
 {{- end -}}
-
-<!-- Open Graph / LinkedIn -->
-<meta property="og:type" content="website" />
-<meta property="og:title" content="{{ .Title }}" />
-<meta property="og:description" content="{{ with .Params.description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
-<meta property="og:image" content="{{ with .Params.thumbnail }}{{ . | absURL }}{{ else }}{{ .Site.Params.defaultThumbnail | absURL }}{{ end }}" />
-<meta property="og:url" content="{{ .Permalink }}" />
-
-<!-- Twitter fallback -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="{{ .Title }}" />
-<meta name="twitter:description" content="{{ with .Params.description }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}" />
-<meta name="twitter:image" content="{{ with .Params.thumbnail }}{{ . | absURL }}{{ else }}{{ .Site.Params.defaultThumbnail | absURL }}{{ end }}" />

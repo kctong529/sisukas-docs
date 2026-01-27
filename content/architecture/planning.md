@@ -1,6 +1,7 @@
 ---
 weight: 1
 title: "Planning System Architecture"
+description: "Implementation details of Plans, blocks, schedule pairs, and decision slots, including models, algorithms, and APIs."
 ---
 
 > [!NOTE]

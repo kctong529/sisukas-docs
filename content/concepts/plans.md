@@ -1,7 +1,7 @@
 ---
 weight: 3
-bookFlatSection: true
 title: "Plans: Grouping Your Blocks"
+description: "What a Plan is and how blocks turn course options into explicit choices for semester-level planning."
 ---
 
 > [!NOTE]

@@ -1,6 +1,7 @@
 ---
 weight: 3
 title: "Why Sisukas: The Problem"
+description: "Why Sisukas exists: SISU is built for registration, but students need a workspace for exploration, comparison, and trade-offs."
 ---
 
 ## The Real Problem with SISU

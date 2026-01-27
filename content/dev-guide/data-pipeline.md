@@ -1,6 +1,7 @@
 ---
 weight: 2
 title: "Data Pipeline"
+description: "How course metadata is fetched from the Aalto Open API, transformed, change-checked, and published as courses.json."
 ---
 
 > [!NOTE]

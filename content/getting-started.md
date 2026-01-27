@@ -1,7 +1,7 @@
 ---
 weight: 2
 title: "Getting Started"
-description: "Documentation for Sisukas"
+description: "Start here to try sisukas.eu or run Sisukas locally, with pointers to the main concepts and developer guide."
 ---
 
 ## Which Path Is Right for You?

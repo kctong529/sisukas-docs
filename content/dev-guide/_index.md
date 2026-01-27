@@ -1,6 +1,7 @@
 ---
-title: "Developer Guide"
 weight: 6
+title: "Developer Guide"
+description: "Contributor-focused guide to running, debugging, and extending Sisukas: setup, services, data flow, and operations."
 ---
 
 > [!NOTE]

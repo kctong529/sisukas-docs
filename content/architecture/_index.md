@@ -1,6 +1,7 @@
 ---
-title: "Architecture"
 weight: 7
+title: "Architecture"
+description: "Implementation-focused guides for Sisukas architecture, starting with the planning system and related components."
 ---
 
 # System Architecture

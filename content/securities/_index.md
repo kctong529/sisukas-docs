@@ -1,6 +1,7 @@
 ---
-title: "Securities"
 weight: 8
+title: "Securities"
+description: "Security model overview: route protection plus Supabase row-level security, with testing strategy and threat examples."
 ---
 
 > [!NOTE]

@@ -1,7 +1,7 @@
 ---
 weight: 6
 title: "Year Timeline"
-description: "A high-level overview of academic workload across an academic year"
+description: "Year-level view of workload: completed, ongoing, and planned studies shown across teaching periods with no manual upkeep."
 ---
 
 The Year Timeline is a conceptual view of your academic year. It exists to

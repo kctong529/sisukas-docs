@@ -1,6 +1,7 @@
 ---
 weight: 3
 title: "API Reference"
+description: "Reference for Sisukas APIs, including the SISU wrapper endpoints and how to find course and offering IDs."
 ---
 
 ## Sisu Wrapper REST API

@@ -1,6 +1,7 @@
 ---
 weight: 1
 title: "The Big Picture"
+description: "Sisukas planning philosophy and roadmap: conflicts are normal, information is accessible, and trade-offs are explicit."
 ---
 
 > [!NOTE]

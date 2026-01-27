@@ -1,8 +1,9 @@
 ---
 weight: 1
-title: ""
+title: "Sisukas Documentation"
 layout: docs
 bookFlatSection: true
+description: "Entry point for Sisukas docs: getting started, core concepts, architecture, and developer reference."
 ---
 
 # Sisukas Documentation

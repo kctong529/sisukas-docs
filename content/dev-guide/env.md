@@ -1,6 +1,7 @@
 ---
 weight: 4
 title: "Environment Variables Reference"
+description: "All supported environment variables for Sisukas components, plus required secrets and local setup notes."
 ---
 
 Each Sisukas component uses a `.env` file for configuration. Copy from `.env.example` when setting up.

@@ -1,6 +1,7 @@
 ---
 weight: 2
 title: "User Route Protection"
+description: "Layer 1 authorization: Express middleware, admin sessions, protected routes, and how requests are validated."
 ---
 
 > [!NOTE]

@@ -1,6 +1,7 @@
 ---
 weight: 4
 title: "Composing Schedule Pairs"
+description: "How schedule pairs are generated and ranked: selecting one study group per block to form concrete timetable options."
 ---
 
 > [!NOTE]
