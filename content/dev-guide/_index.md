@@ -32,6 +32,9 @@ Once the system is running, the next question is usually *where the data comes f
 
 This document is essential for understanding why the frontend treats course data as immutable snapshots and why SISU data is handled separately at runtime.
 
+- **[Curriculum Metadata](./curriculum-metadata/)**  
+  Explains how Aalto curriculum modules are catalogued, verified against official sources, and integrated into Sisukas. Covers module identifiers, source attribution, review decisions, and validation.
+
 ### 3. Service boundaries and APIs
 
 Sisukas is composed of several independent services with clear responsibilities:
