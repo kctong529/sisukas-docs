@@ -44,6 +44,9 @@ Sisukas is composed of several independent services with clear responsibilities:
 
 This is the right place to look when modifying backend–frontend interactions or adding new endpoints.
 
+- **[Study-event and Location Contract](./study-event-contract/)**  
+  Describes event series identities, expanded occurrences, room/building resolution, and scheduling limitations.
+
 ### 4. Configuration and environments
 
 For changes that involve setup, credentials, or deployment differences:
