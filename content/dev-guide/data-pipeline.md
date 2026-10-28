@@ -1,432 +1,112 @@
 ---
 weight: 2
 title: "Data Pipeline"
-description: "How course metadata is fetched from the Aalto Open API, transformed, change-checked, and published as courses.json."
+description: "How Sisukas ingests, reconciles, and publishes active and historical course catalogues."
 ---
-
-> [!NOTE]
-> This page is part of the Developer Guide. It documents how course data is
-> produced, validated, and distributed to runtime systems.
 
 ## Overview
 
-Sisukas relies on two distinct external data sources, each used for different purposes.
+Sisukas uses two upstream interfaces for different kinds of course data:
 
-The data pipeline described on this page is responsible only for ingesting and
-processing stable course metadata from the Aalto Open API. Live study group and
-schedule data from the Aalto SISU API is fetched separately at runtime by the
-frontend and is not part of this pipeline.
+| Source | Purpose | Access pattern |
+| --- | --- | --- |
+| [Aalto Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu) | Course offering metadata for browsing and filtering | Authenticated, scheduled ingestion into Google Cloud Storage (GCS) |
+| SISU Kori API (`sisu.aalto.fi/kori/api`) | Course details, study groups, teaching events, and locations | On-demand requests through `sisu-wrapper` |
 
-## Data Pipeline (Aalto Open API)
+This page covers the **Course API ingestion pipeline**, not the runtime SISU wrapper. The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
-Sisukas maintains an up-to-date course database by automatically fetching course data from the [Aalto University API](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu), transforming it for efficient delivery, and detecting changes.
+## API access
 
-The process runs:
-- Daily at 6 AM UTC (automatic)
-- On demand via GitHub Actions workflow dispatch
-- On push to main or dev branches
+The pipeline calls `GET https://course.api.aalto.fi/api/sisu/v1/courseunitrealisations` with `USER_KEY` supplied from `AALTO_USER_KEY`. In GitHub Actions, this value comes from the `AALTO_USER_KEY` repository secret. Do not commit or print the key.
 
-## Data Flow
+**Access policy (October 2026).** Aalto IT confirmed on 28 October 2026 that the existing Sisukas Course API application remains active. New integrations require manual approval from a 3scale administrator. For access or subscription questions, contact **it-integ@aalto.fi**. Independent contributor access is not automatic; the approval procedure and whether regeneration of the existing key requires reapproval are still awaiting clarification. **Do not regenerate the production key without confirmation.**
 
-1. Aalto API
-2. Fetch Latest Courses (fetch_latest_courses.py)
-3. Transform (transform_courses.py)
-4. Compare with Previous (report_course_changes.py)
-5. Report Changes
-6. Upload to GCS (if changes detected)
-7. Frontend Loads courses.json
+This confirmation concerns the **Course API application in 3scale**; it does not establish a policy for the separate SISU Kori API.
 
-## Components
+## Ingestion and publication
 
-### 1. Data Fetch
+**Workflow:** `.github/workflows/check_course_updates.yml`
 
-**File:** `scripts/fetch_latest_courses.py`
+**Triggers:** daily at 06:00 UTC; manual `workflow_dispatch`; pushes to `main` or `dev`.
 
-Fetches course data from Aalto Open Courses API:
+1. **Load baselines.** Download and validate existing `courses.json` and `historical.json` from the selected GCS bucket. Both are required for normal operation; first-time bootstrap is a separate procedure.
+2. **Fetch and transform.** `scripts/fetch_latest_courses.py` requests realisations with `startTimeAfter=2024-01-01` and writes `latest_fetch.json`. `scripts/transform_courses.py` produces `latest.json`, retaining fields needed for course discovery (e.g., identifiers, names, dates, credits, organisations, instructors, language, and enrolment dates).
+3. **Validate and reconcile.** Validate `latest.json`, then use `scripts/reconcile_active_courses.py` to compare it with the previous active catalogue. The reconciliation produces the next active catalogue, archive candidates, and carried-forward records. An unexpectedly large archive transition (over **20%** of the previous active catalogue) is blocked unless explicitly approved in a manual run with the exact reviewed candidate count.
+4. **Detect changes.** `scripts/report_course_changes.py` reports added, removed, and updated records. `scripts/report_reactivated.py` checks whether records from the historical catalogue have become active again.
+5. **Update history when needed.** When removals or reactivations occur, `scripts/merge_expired_into_historical.py` produces the next historical catalogue. Validate the result and enforce disjointness between active and historical datasets.
+6. **Publish changed data.** Generate hashes, gzip JSON, and upload artifacts to GCS only when active or historical content requires publication. Historical files are uploaded only when the historical catalogue changes. Change logs are uploaded when present.
 
-```
-GET https://course.api.aalto.fi/api/sisu/v1/courseunitrealisations
-```
+The workflow separates `prepare_data` (ingestion, validation, reconciliation) from `upload_to_gcs` (publication). GCS authentication uses GitHub's Workload Identity Federation.
 
-**Parameters:**
-- `USER_KEY` — API authentication (from `AALTO_USER_KEY` secret)
-- `startTimeAfter` — Only courses after 2024-01-01
+### Published files
 
-**Output:** `latest_fetch.json` (raw API response)
+| File | Purpose |
+| --- | --- |
+| `courses.json` | Active course catalogue; stored with gzip content encoding |
+| `historical.json` | Historical course catalogue; stored with gzip content encoding |
+| `courses.hash.json` | Uncached active-catalogue change indicator |
+| `historical.hash.json` | Uncached historical-catalogue change indicator |
+| `logs/course_changes_*.json` | Change reports |
 
-**Requirements:**
-- `AALTO_USER_KEY` environment variable must be set
-- Requires internet connectivity to Aalto API
+`main` publishes to `gs://sisukas-core`; `dev` publishes to `gs://sisukas-core-test`. The frontend selects the corresponding GCS base URL through `VITE_GCS_BUCKET`, checks the hash metadata, and caches downloaded course data in IndexedDB for offline use. This separation prevents ordinary page loads from depending on the upstream Course API.
 
-### 2. Data Transform
+## Local development
 
-**File:** `scripts/transform_courses.py`
+Run commands from the repository root unless otherwise indicated.
 
-Reduces raw API data to include only necessary fields. This significantly reduces file size while retaining all information needed for filtering and display.
-
-**Input:** Raw API JSON from fetch
-
-**Included Fields:**
-```
-id, code, startDate, endDate, type, name
-summary (prerequisites, level)
-organizationName, credits, courseUnitId
-languageOfInstructionCodes, teachers
-enrolmentStartDate, enrolmentEndDate
-```
-
-**Excluded Fields:**
-- Detailed descriptions
-- Complex nested metadata
-- API-specific administrative fields
-- Historical versions
-
-**Size Reduction:**
-- Original API response: ~40-50 MB
-- Transformed output: ~10-15 MB
-- Gzipped: ~2-3 MB
-
-**Usage:**
 ```bash
+# Requires an approved API key; do not commit or share it.
+export AALTO_USER_KEY="your_api_key"
+python scripts/fetch_latest_courses.py
 python scripts/transform_courses.py latest_fetch.json latest.json
+python scripts/validate_course_catalog.py latest.json
 ```
 
-### 3. Change Detection
+To exercise reconciliation, use **existing, valid active and historical baselines** rather than treating the latest response as a complete replacement:
 
-**File:** `scripts/report_course_changes.py`
-
-Compares transformed courses with the previous `courses.json` to detect:
-- **Added** courses (new IDs)
-- **Removed** courses (IDs no longer in API)
-- **Updated** courses (same ID, changed fields)
-
-**Important Fields Compared:**
-- Course code
-- Course name (English)
-- Credits
-- Start/end dates
-- Enrollment dates
-
-**Output:**
-- Console summary (added/removed/updated counts)
-- Detailed JSON log in `logs/course_changes_*.json`
-- GitHub Actions output variables for workflow control
-
-**Example Summary:**
-```
-COURSE UPDATE SUMMARY
-==================================================
-Added: 12 | Removed: 3 | Updated: 45
-
-ADDED COURSES (12):
-  + CS-E4160 – Machine Learning
-       Credits: 5
-       Start: 2024-09-01 | End: 2024-12-31
-
-REMOVED COURSES (3):
-  - CS-E1234 – Old Course Name
-  
-UPDATED COURSES (45):
-  ? CS-E4000 – Advanced Algorithms
-      * Credits:
-          (old) 5
-          (new) 6
+```bash
+python scripts/reconcile_active_courses.py \
+  --previous courses.json --latest latest.json \
+  --active-out artifacts/courses.next.json \
+  --archive-out artifacts/archive_candidates.json \
+  --retained-out artifacts/carried_forward.json \
+  --max-archive-fraction 0.20
+python scripts/validate_course_catalog.py artifacts/courses.next.json
+python scripts/report_course_changes.py \
+  --old courses.json --new artifacts/courses.next.json
 ```
 
-## GitHub Actions Workflow
+Create `artifacts/` first if running these commands outside the workflow. The command above does not publish anything; the GitHub Actions workflow contains the full historical merge and publication steps.
 
-**File:** `.github/workflows/check_course_updates.yml`
+For frontend development:
 
-### Triggers
-
-```yaml
-on:
-  workflow_dispatch:        # Manual trigger
-  schedule:
-    - cron: '0 6 * * *'    # Daily at 6 AM UTC
-  push:
-    branches:
-      - main
-      - dev
-```
-
-### Workflow Steps
-
-**1. Prepare Data Job**
-
-- Checkout repository
-- Determine GCS bucket (main → sisukas-core, dev → sisukas-core-test)
-- Fetch existing courses.json from GCS
-- Fetch latest courses from API
-- Transform latest courses
-- Check for changes
-- Prepare artifacts (if changes detected)
-
-**2. Upload to GCS Job**
-
-Runs only if changes are detected.
-
-- Downloads prepared artifacts
-- Uploads courses.json.gz to GCS (renamed to courses.json)
-- Uploads courses.hash.json (no caching)
-- Uploads change logs
-
-### Environment Variables
-
-```yaml
-PYTHON_VERSION: '3.12'
-AALTO_USER_KEY: ${{ secrets.AALTO_USER_KEY }}  # Secret
-```
-
-### Bucket Strategy
-
-**Production (main branch):**
-- Bucket: `sisukas-core`
-- Used by live app at sisukas.eu
-- Only updates on changes
-
-**Development (dev branch):**
-- Bucket: `sisukas-core-test`
-- Used for testing new data schemas
-- Separate from production
-
-### GCS File Structure
-
-```
-gs://sisukas-core/
-├── courses.json              # Current course data (gzipped)
-├── courses.hash.json         # Hash/metadata (no caching)
-└── logs/
-    ├── course_changes_20240115_060000.json
-    ├── course_changes_20240116_060000.json
-    └── ...
-```
-
-**Cache Strategy:**
-- `courses.json` — Cached by browser and CDN (aggressive caching)
-- `courses.hash.json` — No cache (always fresh, used to check if data changed)
-- `logs/` — Long-term storage of all changes
-
-## Data Update Frequency
-
-**Automatic Updates:**
-- Daily at 6 AM UTC
-- Only if changes are detected
-- No update = no new deployment
-
-**Manual Updates:**
-- Trigger via GitHub Actions "workflow_dispatch"
-- Useful for immediate updates if API changes
-- Can force update even without changes
-
-**On Code Push:**
-- Updates when pushing to main or dev
-- Ensures data is fresh after code deployments
-
-## Local Development
-
-### Setting Up the Frontend
 ```bash
 cd frontend/course-browser
 npm run dev
 ```
 
-The frontend automatically loads course data from a Google Cloud Storage bucket via the `VITE_GCS_BUCKET` environment variable.
+Use `VITE_GCS_BUCKET` to change the catalogue source (for example, `https://storage.googleapis.com/sisukas-core-test`). If the source is unavailable, an existing IndexedDB cache can support offline browsing. For isolated tests, mock the cache/data-fetching boundary rather than using production credentials.
 
-**Default Configuration:**
-- Production: `https://storage.googleapis.com/sisukas-core` (from main branch)
-- Development: `https://storage.googleapis.com/sisukas-core-test` (from dev branch)
+## Monitoring and recovery
 
-**Data Loading:**
-- Courses are fetched from GCS using a Stale-While-Revalidate (SWR) caching strategy
-- Data is cached in IndexedDB for offline access and performance
-- On startup, the app checks if cached data is stale by fetching `courses.hash.json`
-- If stale, it downloads the fresh `courses.json` from GCS
+Check the **Check Course Updates** workflow in GitHub Actions and the change logs under the bucket's `logs/` prefix.
 
-**Configuring the Data Source:**
-1. Set `VITE_GCS_BUCKET` environment variable to your GCS bucket URL:
-```bash
-   export VITE_GCS_BUCKET="https://storage.googleapis.com/sisukas-core"
-```
-2. Ensure `courses.json` and `courses.hash.json` are available at that location
+| Symptom | Check |
+| --- | --- |
+| Missing `AALTO_USER_KEY` | GitHub Actions secret or local environment |
+| 401/403 or unexpected API access failure | Credential validity, 3scale application status, and Aalto IT (`it-integ@aalto.fi`) |
+| Empty or sharply reduced upstream response | Upstream availability/schema changes; inspect reconciliation and archive safeguards before publishing |
+| Missing baseline catalogue | Confirm bucket selection and published files; normal runs require both active and historical baselines |
+| GCS upload failure | Workload Identity Federation configuration, write permissions, and bucket availability |
 
-**For Offline Development:**
-- The app will use IndexedDB cache if GCS is unreachable
-- To test with local data, you can mock the `cache.fetch()` method in `LargeFileCache`
+Do not bypass catalogue validation or the archive threshold merely to restore a failing workflow. An upstream failure should not overwrite the last valid published catalogue.
 
-### Testing the Data Pipeline Locally
+## Extending the pipeline
 
-**1. Test Data Fetch**
-
-```bash
-export AALTO_USER_KEY="your_api_key"
-python scripts/fetch_latest_courses.py
-```
-
-This creates `latest_fetch.json` with raw API data.
-
-**2. Test Data Transform**
-
-```bash
-python scripts/transform_courses.py latest_fetch.json latest.json
-```
-
-This creates `latest.json` with transformed data.
-
-**3. Test Change Detection**
-
-```bash
-cp latest.json courses.json  # Make a "previous" version
-# Modify courses.json slightly
-python scripts/report_course_changes.py
-```
-
-This compares and reports changes.
-
-## Data Quality
-
-### What Gets Stored
-
-- Course metadata from Aalto API
-- Teacher information
-- Schedule and enrollment dates
-- Credits and prerequisites
-- Language of instruction
-
-### What Gets Filtered Out
-
-- Complex nested structures
-- Redundant administrative fields
-- Historical course versions
-- API-specific metadata
-
-### Validation
-
-The transformation includes basic validation:
-- All required fields present
-- Date formats consistent
-- IDs are unique
-- No null values in critical fields
-
-## Monitoring & Maintenance
-
-### Check Workflow Status
-
-1. Go to GitHub Actions
-2. Select "Check Course Updates" workflow
-3. View latest run:
-   - Green ✓ = Success (data updated or no changes)
-   - Red ✗ = Failure (API error, auth issue, etc.)
-
-### View Change Logs
-
-Change logs are stored in GCS and archived locally:
-- In repository: `logs/course_changes_*.json`
-- In GCS: `gs://sisukas-core/logs/`
-
-### Troubleshooting
-
-**"AALTO_USER_KEY not set"**
-
-The GitHub secret is not configured. Contact the project maintainer to add the API key.
-
-**"No existing courses.json"**
-
-First run of the workflow. This is expected. The workflow creates the initial courses.json.
-
-**"GCS upload failed"**
-
-Check:
-- Google Cloud authentication is configured
-- Service account has write permissions
-- GCS bucket exists and is accessible
-
-**API returns no data**
-
-Check:
-- Aalto API is accessible
-- API key is valid and hasn't expired
-- Network connectivity to Aalto servers
-
-## Design Rationale
-
-### Why Fetch → Transform → Upload?
-
-1. **Decouple API from frontend** — Frontend doesn't depend on API format
-2. **Reduce file size** — Transformed data is ~75% smaller
-3. **Enable change tracking** — Compare versions to understand what changed
-4. **Optimize browser caching** — Smaller files = faster downloads
-
-### Why GCS?
-
-- **Global distribution** — Files served from nearest region
-- **Automatic caching** — CDN integration for fast delivery
-- **Cost-effective** — Cheap storage, no server overhead
-- **Reliable** — Google's infrastructure
-- **Separate data from code** — Data doesn't bloat git history
-
-### Why Hash File?
-
-- **Cache busting** — Hash file is never cached
-- **Change detection** — Frontend can check if data changed without downloading full file
-- **Efficient updates** — Only download new data if something changed
-
-## Extending the Pipeline
-
-### Adding a New Data Source
-
-1. Create new fetch script: `scripts/fetch_*.py`
-2. Add transformation logic if needed
-3. Update workflow to include new step
-4. Test with manual workflow dispatch
-
-### Modifying Transformation
-
-1. Edit `scripts/transform_courses.py`
-2. Test locally with `python scripts/transform_courses.py input.json output.json`
-3. Compare file sizes and verify no data loss
-4. Commit and push to dev branch for testing
-
-### Adding New Fields
-
-1. Add field to `transform_course()` function
-2. Update `get_important_fields()` in report script if field is comparable
-3. Test the transformation
-4. Monitor change logs to see impact
-
-## Why Both Aalto Open API and Sisu API?
-
-> [!NOTE]
-> Terminology clarification: The Aalto API uses the term "offering" (formally "courseunitrealisations") to refer to specific semester instances. In Sisukas documentation, we use the term "instance" to mean the same thing from a user perspective.
-
-Sisukas uses two separate data sources by design:
-
-**Aalto Open API** provides course metadata (name, credits, description, teachers). 
-This data is:
-- Stable and slow-changing
-- Cacheable for long periods
-- Updated daily via automated pipeline
-- Suitable for search and filtering operations
-
-**Aalto Sisu API** (accessed via sisu-wrapper) provides study group details and schedules. 
-This data is:
-- More detailed (individual lecture times, exercise groups)
-- Changes more frequently
-- Requires real-time queries
-- Not suitable for bulk caching
-
-Separating them allows:
-1. **Fast search/filtering** on cached course data (Aalto Open API)
-2. **Detailed schedule queries** on demand (Aalto Sisu API via sisu-wrapper)
-3. **Better performance** – don't fetch schedule data for every course in search results
-4. **Cleaner architecture** – each service has a focused purpose
-5. **Efficient caching** – cache what's stable, query what's dynamic
-
-This design decision reflects a common pattern: use aggregate/summary data for exploration, 
-and detailed data only when needed.
+When changing the ingested schema, update the relevant fetch/transform scripts, validators, reconciliation behavior, and change-report fields together. Test against representative active and historical baselines, then run the workflow on `dev` before publishing to `main`. When introducing another upstream interface, assess its access requirements and caching behavior independently of the Course API.
 
 ## References
 
-- [Aalto Open Courses API](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu)
-- [Google Cloud Storage](https://cloud.google.com/storage)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Aalto Course API documentation](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu)
+- [Aalto API Gateway](https://3scale.apps.ocp4.aalto.fi/)
+- [GitHub Actions documentation](https://docs.github.com/en/actions)
