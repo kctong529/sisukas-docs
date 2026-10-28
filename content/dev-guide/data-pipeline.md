@@ -19,12 +19,19 @@ Sisukas uses two upstream interfaces for different kinds of course data:
 
 This page covers the Course API ingestion pipeline, not the runtime SISU wrapper. The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
-## API access
+## API Access and Authentication
 
-The pipeline calls `GET https://course.api.aalto.fi/api/sisu/v1/courseunitrealisations` with `USER_KEY` supplied from `AALTO_USER_KEY`. In GitHub Actions, this value comes from the `AALTO_USER_KEY` repository secret. Do not commit or print the key.
+The metadata pipeline uses Aalto University's authenticated [Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu), managed through the [Aalto API Gateway](https://3scale.apps.ocp4.aalto.fi/).
+
+The API key is supplied through the `AALTO_USER_KEY` environment variable, stored as a GitHub Actions secret. Credentials must never be committed to the repository.
 
 > [!IMPORTANT]
-> Aalto IT confirmed on 28 October 2026 that the existing Sisukas Course API application remains active. New integrations require manual approval from a 3scale administrator. For access or subscription questions, contact **it-integ@aalto.fi**. Independent contributor access is not automatic; the approval procedure and whether regeneration of the existing key requires reapproval are still awaiting clarification. **Do not regenerate the production key without confirmation.**
+> Aalto IT confirmed on 28 October 2026 that:
+> - Existing active integrations, including Sisukas, may continue operating.
+> - API keys can be rotated for existing applications.
+> - New developers requiring API access should contact **it-integ@aalto.fi** for approval.
+> 
+> Aalto plans to redesign its API management gateway over approximately seven months and will contact existing users about the transition.
 
 This confirmation concerns the Course API application in 3scale; it does not establish a policy for the separate SISU Kori API.
 
