@@ -1,6 +1,10 @@
 baseURL = 'https://docs.sisukas.eu/'
 languageCode = 'en-us'
 title = 'Sisukas Documentation'
+enableGitInfo = true
+
+[frontmatter]
+  lastmod = [":git"]
 
 [markup.goldmark.renderer]
   unsafe = true

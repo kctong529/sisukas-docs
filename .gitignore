@@ -1,2 +1,5 @@
 .DS_Store
-public/
+
+# Hugo build output
+/public/
+/resources/

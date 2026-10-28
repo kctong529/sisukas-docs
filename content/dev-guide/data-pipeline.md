@@ -4,6 +4,10 @@ title: "Data Pipeline"
 description: "How Sisukas ingests, reconciles, and publishes active and historical course catalogues."
 ---
 
+> [!NOTE]
+> This page is part of the Developer Guide. It documents how course data is
+> produced, validated, and distributed to runtime systems.
+
 ## Overview
 
 Sisukas uses two upstream interfaces for different kinds of course data:
@@ -11,17 +15,18 @@ Sisukas uses two upstream interfaces for different kinds of course data:
 | Source | Purpose | Access pattern |
 | --- | --- | --- |
 | [Aalto Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu) | Course offering metadata for browsing and filtering | Authenticated, scheduled ingestion into Google Cloud Storage (GCS) |
-| SISU Kori API (`sisu.aalto.fi/kori/api`) | Course details, study groups, teaching events, and locations | On-demand requests through `sisu-wrapper` |
+| [SISU Kori API](https://sisu.helsinki.fi/kori/docs/index.html) | Course details, study groups, teaching events, and locations | On-demand requests through `sisu-wrapper` |
 
-This page covers the **Course API ingestion pipeline**, not the runtime SISU wrapper. The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
+This page covers the Course API ingestion pipeline, not the runtime SISU wrapper. The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
 ## API access
 
 The pipeline calls `GET https://course.api.aalto.fi/api/sisu/v1/courseunitrealisations` with `USER_KEY` supplied from `AALTO_USER_KEY`. In GitHub Actions, this value comes from the `AALTO_USER_KEY` repository secret. Do not commit or print the key.
 
-**Access policy (October 2026).** Aalto IT confirmed on 28 October 2026 that the existing Sisukas Course API application remains active. New integrations require manual approval from a 3scale administrator. For access or subscription questions, contact **it-integ@aalto.fi**. Independent contributor access is not automatic; the approval procedure and whether regeneration of the existing key requires reapproval are still awaiting clarification. **Do not regenerate the production key without confirmation.**
+> [!IMPORTANT]
+> Aalto IT confirmed on 28 October 2026 that the existing Sisukas Course API application remains active. New integrations require manual approval from a 3scale administrator. For access or subscription questions, contact **it-integ@aalto.fi**. Independent contributor access is not automatic; the approval procedure and whether regeneration of the existing key requires reapproval are still awaiting clarification. **Do not regenerate the production key without confirmation.**
 
-This confirmation concerns the **Course API application in 3scale**; it does not establish a policy for the separate SISU Kori API.
+This confirmation concerns the Course API application in 3scale; it does not establish a policy for the separate SISU Kori API.
 
 ## Ingestion and publication
 
@@ -29,12 +34,23 @@ This confirmation concerns the **Course API application in 3scale**; it does not
 
 **Triggers:** daily at 06:00 UTC; manual `workflow_dispatch`; pushes to `main` or `dev`.
 
-1. **Load baselines.** Download and validate existing `courses.json` and `historical.json` from the selected GCS bucket. Both are required for normal operation; first-time bootstrap is a separate procedure.
-2. **Fetch and transform.** `scripts/fetch_latest_courses.py` requests realisations with `startTimeAfter=2024-01-01` and writes `latest_fetch.json`. `scripts/transform_courses.py` produces `latest.json`, retaining fields needed for course discovery (e.g., identifiers, names, dates, credits, organisations, instructors, language, and enrolment dates).
-3. **Validate and reconcile.** Validate `latest.json`, then use `scripts/reconcile_active_courses.py` to compare it with the previous active catalogue. The reconciliation produces the next active catalogue, archive candidates, and carried-forward records. An unexpectedly large archive transition (over **20%** of the previous active catalogue) is blocked unless explicitly approved in a manual run with the exact reviewed candidate count.
-4. **Detect changes.** `scripts/report_course_changes.py` reports added, removed, and updated records. `scripts/report_reactivated.py` checks whether records from the historical catalogue have become active again.
-5. **Update history when needed.** When removals or reactivations occur, `scripts/merge_expired_into_historical.py` produces the next historical catalogue. Validate the result and enforce disjointness between active and historical datasets.
-6. **Publish changed data.** Generate hashes, gzip JSON, and upload artifacts to GCS only when active or historical content requires publication. Historical files are uploaded only when the historical catalogue changes. Change logs are uploaded when present.
+1. **Load baselines**  
+   Download and validate existing `courses.json` and `historical.json` from the selected GCS bucket. Both are required for normal operation; first-time bootstrap is a separate procedure.
+
+2. **Fetch and transform**  
+   `scripts/fetch_latest_courses.py` requests realisations with `startTimeAfter=2024-01-01` and writes `latest_fetch.json`. `scripts/transform_courses.py` produces `latest.json`, retaining fields needed for course discovery (e.g., identifiers, names, dates, credits, organisations, instructors, language, and enrolment dates).
+
+3. **Validate and reconcile**  
+   Validate `latest.json`, then use `scripts/reconcile_active_courses.py` to compare it with the previous active catalogue. The reconciliation produces the next active catalogue, archive candidates, and carried-forward records. An unexpectedly large archive transition (over 20% of the previous active catalogue) is blocked unless explicitly approved in a manual run with the exact reviewed candidate count.
+
+4. **Detect changes**  
+   `scripts/report_course_changes.py` reports added, removed, and updated records. `scripts/report_reactivated.py` checks whether records from the historical catalogue have become active again.
+
+5. **Update history when needed**  
+   When removals or reactivations occur, `scripts/merge_expired_into_historical.py` produces the next historical catalogue. Validate the result and enforce disjointness between active and historical datasets.
+
+6. **Publish changed data**  
+   Generate hashes, gzip JSON, and upload artifacts to GCS only when active or historical content requires publication. Historical files are uploaded only when the historical catalogue changes. Change logs are uploaded when present.
 
 The workflow separates `prepare_data` (ingestion, validation, reconciliation) from `upload_to_gcs` (publication). GCS authentication uses GitHub's Workload Identity Federation.
 
@@ -62,7 +78,7 @@ python scripts/transform_courses.py latest_fetch.json latest.json
 python scripts/validate_course_catalog.py latest.json
 ```
 
-To exercise reconciliation, use **existing, valid active and historical baselines** rather than treating the latest response as a complete replacement:
+To exercise reconciliation, use existing, valid active and historical baselines rather than treating the latest response as a complete replacement:
 
 ```bash
 python scripts/reconcile_active_courses.py \

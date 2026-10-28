@@ -1,0 +1,10 @@
+{{ with .GitInfo }}
+  <div class="doc-last-updated">
+    <span>
+      Last updated:
+      <time datetime="{{ .AuthorDate.Format "2006-01-02" }}">
+        {{ .AuthorDate.Format "2 January 2006" }}
+      </time>
+    </span>
+  </div>
+{{ end }}
