@@ -33,7 +33,7 @@ If any command fails, install the missing tool:
 | mkcert | [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) |
 
 > [!IMPORTANT]
-> **mkcert is not optional.** Local authentication requires HTTPS even on localhost. Without valid local certificates, the sign-in flow will fail completely. If mkcert is missing, the setup step will alert you but may not prevent the rest of setup from completing.
+> **mkcert is optional for frontend-only development.** Vite enables HTTPS when `localhost.pem` and `localhost-key.pem` exist and otherwise runs over HTTP. The checked-in auth configuration expects an HTTPS frontend URL, so generate certificates and use HTTPS when testing the complete authentication flow.
 
 ## Clone the Repository
 
@@ -56,7 +56,7 @@ This command does the following:
 2. Installs Python dependencies using `uv`
 3. Installs Node.js dependencies via `npm ci`
 4. Copies `.env.example` to `.env` in each service (only if `.env` doesn't already exist)
-5. Generates localhost HTTPS certificates (`localhost.pem` and `localhost-key.pem`)
+5. Attempts to generate localhost HTTPS certificates (`localhost.pem` and `localhost-key.pem`) if `mkcert` is installed; otherwise skips the step
 
 **After setup completes**, verify that the HTTPS certificates were created:
 
@@ -65,7 +65,7 @@ ls frontend/course-browser/localhost*.pem
 ```
 
 > [!TIP]
-> You should see both `localhost.pem` and `localhost-key.pem`. If these files are missing, mkcert failed silently — reinstall mkcert and run `make setup` again.
+> You should see both `localhost.pem` and `localhost-key.pem`. If these files are missing, Vite can still run over HTTP. Install `mkcert` and run `make setup-certs` when you need the documented HTTPS auth setup.
 
 ### Troubleshooting Setup
 
@@ -103,7 +103,7 @@ ls frontend/course-browser/localhost*.pem
 
 ### Terminal 1: Frontend (Course Browser)
 
-The frontend is a Vite development server served over HTTPS. Start it first since other services depend on redirect URLs pointing to `https://localhost:5173/`.
+The frontend is a Vite development server. It uses HTTPS when the local certificate files exist; otherwise it uses HTTP. The example backend `.env` uses `https://localhost:5173` for auth callback/frontend URLs.
 
 ```
 cd frontend/course-browser
@@ -117,10 +117,10 @@ HTTPS server running...
 > Local:     https://localhost:5173/
 ```
 
-**Open `https://localhost:5173/` in your browser now.** Even without the backend running, you can browse and search courses, apply filters, inspect course metadata, and view basic schedules. You just won't be able to sign in, save Favourites, or create Plans until the backend is running.
+**Open the URL Vite actually prints (`https://localhost:5173/` with certificates, otherwise `http://localhost:5173/`).** Even without the backend running, you can browse and search courses, apply filters, inspect course metadata, and view basic schedules. You just won't be able to sign in, save Favourites, or create Plans until the backend is running.
 
 > [!IMPORTANT]
-> Do not use `http://` — the browser will refuse to authenticate over HTTP on localhost.
+> For the documented full-stack authentication setup, use HTTPS and keep the configured frontend origin consistent. HTTP is sufficient for frontend-only exploration.
 
 ### Terminal 2: Local Database (Postgres)
 
@@ -278,8 +278,8 @@ Copy this list and verify each item is running before concluding something is br
 ```
 Frontend:
   [ ] npm run dev in frontend/course-browser/
-  [ ] Running over HTTPS at https://localhost:5173/
-  [ ] localhost.pem and localhost-key.pem present
+  [ ] Running at the URL printed by Vite (HTTPS when certificates are present)
+  [ ] Certificates present if testing HTTPS authentication
 
 Database:
   [ ] docker-compose up in repository root
@@ -299,8 +299,8 @@ Filters API (optional):
   [ ] Running on http://127.0.0.1:8000
 
 Certificates:
-  [ ] localhost.pem exists in frontend/course-browser/
-  [ ] localhost-key.pem exists in frontend/course-browser/
+  [ ] localhost.pem exists if using HTTPS
+  [ ] localhost-key.pem exists if using HTTPS
 ```
 
 If all items are checked and something still doesn't work, check the respective service's terminal output for error messages.
@@ -320,7 +320,7 @@ Each service reads configuration from a `.env` file (created by `make setup`). C
 
 **Backend (`backend/.env`)**
 - `RESEND_API_KEY` — Optional; if missing, magic links print to terminal instead
-- `DATABASE_URL` — Automatically set by setup; don't change unless debugging
+- `DATABASE_URL` — Copied from the backend `.env.example` by setup; verify it matches your local PostgreSQL credentials
 
 **SISU Wrapper (`sisu-wrapper/.env`)**
 - Typically requires no changes for local development

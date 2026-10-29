@@ -32,9 +32,8 @@ Set up a local development environment if you want to:
 Local development is fully supported, but requires a few services to run together.
 
 > [!TIP]
-> Local authentication requires HTTPS.
-> The setup uses locally trusted certificates generated with `mkcert`.
-> Without HTTPS, sign-in will not work.
+> The documented full-stack local authentication configuration expects an HTTPS frontend URL.
+> Vite itself can run over HTTP if certificates are absent; use `mkcert` and align the frontend URL settings when testing authentication.
 
 See **[Running Sisukas Locally](../dev-guide/running-locally/)** for details.
 
@@ -69,9 +68,7 @@ These features work:
 
 ## Course Data
 
-Course data is fetched from the Aalto University API and updated daily.
-The frontend loads the latest `courses.json` automatically when the dev
-server starts.
+Course data is collected by the upstream data pipeline and published as datasets for frontend consumption. The frontend includes logic for active and historical course indexes, rather than simply loading a single `courses.json` when Vite starts. See the data pipeline and dataset lifecycle documentation for refresh and caching details.
 
 > [!NOTE]
 > For details on how course data is fetched, cached, and updated, see the
@@ -84,7 +81,7 @@ It is fully responsive and usable on mobile devices.
 
 > [!TIP]
 > `courses.json` cannot be accessed via `file://` URLs due to browser
-> security restrictions. Always use the dev server when running locally.
+> security restrictions. Use the Vite dev server when running locally.
 
 ## Where to Go Next
 

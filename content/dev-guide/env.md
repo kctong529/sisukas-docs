@@ -1,85 +1,72 @@
 ---
 weight: 4
 title: "Environment Variables Reference"
-description: "All supported environment variables for Sisukas components, plus required secrets and local setup notes."
+description: "Environment configuration for the frontend, backend, filters API and SISU wrapper."
 ---
 
-Each Sisukas component uses a `.env` file for configuration. Copy from `.env.example` when setting up.
+Each component has its own `.env.example`. Copy the relevant file to `.env` for local development; use the checked-in examples as the authoritative list of currently supported settings. Do not commit actual credentials.
 
 ## Frontend (`frontend/course-browser/.env`)
 
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| `VITE_GCS_BUCKET` | Google Cloud Storage bucket URL for course data | `https://storage.googleapis.com/sisukas-core` |
-| `VITE_API_URL` | Backend API base URL (optional, defaults to same origin) | `http://localhost:3000` |
+| Variable | Purpose |
+|----------|---------|
+| `VITE_GCS_BUCKET` | Base URL for hosted course datasets; the example points to the test bucket. |
+| `VITE_BACKEND_URL` | Backend API base URL (example: `http://localhost:3000`). |
+| `VITE_FRONTEND_URL` | Frontend origin (example: `https://localhost:5173`). |
+| `VITE_FILTERS_API` | Filters API base URL (example: `http://127.0.0.1:8000`). |
+| `VITE_WRAPPER_API` | SISU wrapper base URL (example: `http://127.0.0.1:8001`). |
+| `VITE_ENVIRONMENT` | Environment label used by the frontend. |
+| `VITE_DEBUG_PANELS`, `VITE_DEBUG_AUTH`, `VITE_DEBUG_COURSE_INDEX`, `VITE_DEBUG_STUDY_GROUP_STORE`, `VITE_DEBUG_PLAN_STORE`, `VITE_DEBUG_BLOCK_STORE`, `VITE_DEBUG_PERIOD_TIMELINE_STORE` | Development/debug controls. |
+
+`VITE_*` values are exposed to browser code: **never put secrets in them**. The old `VITE_API_URL` setting is not the setting used by the current frontend service clients.
 
 ## Backend (`backend/.env`)
 
-| Variable | Purpose | Required | Example |
-|----------|---------|----------|---------|
-| `ADMIN_USERNAME` | Username for admin dashboard | ✓ | `admin` |
-| `ADMIN_PASSWORD` | Password for admin dashboard | ✓ | (set to secure value) |
-| `SUPABASE_URL` | Your Supabase project URL | ✓ | `https://abc123.supabase.co` |
-| `SUPABASE_PUBLISHABLE_KEY` | Supabase public key (for client-side auth) | ✓ | `eyJhbGc...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role (for server-side admin tasks) | ✓ | `eyJhbGc...` |
-| `DATABASE_URL` | Direct database connection (if using Prisma) | Optional | `postgresql://...` |
+The backend uses PostgreSQL (`pg` and Drizzle) and Better Auth. It does **not** require Supabase project credentials for the main application runtime.
+
+| Variable | Purpose |
+|----------|---------|
+| `PORT` | Backend listening port (example: `3000`). |
+| `FRONTEND_URL` | Frontend origin for callbacks/links. |
+| `BACKEND_URL` | Backend origin. |
+| `BETTER_AUTH_URL` | Auth base URL, as configured for the deployment. |
+| `BETTER_AUTH_SECRET` | Secret used by Better Auth; replace the example before real deployment. |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL connection details. |
+| `DATABASE_URL` | PostgreSQL connection URI, also used by the Drizzle tooling. |
+| `CORS_ORIGINS` | Allowed cross-origin request origins. |
+| `SISU_WRAPPER_BASE_URL` | Wrapper service base URL. |
+| `RESEND_API_KEY` | Optional for local development: missing/invalid key causes magic-link output in backend logs. |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Credentials for the separate admin-token login mechanism. |
+
+Use the database credentials supplied by the local Compose configuration. `npm run db:push` is the current development schema command; migrations are separately supported via `npm run db:migrate`.
 
 ## Filters API (`filters-api/.env`)
 
-| Variable | Purpose | Required | Example |
-|----------|---------|----------|---------|
-| `SUPABASE_URL` | Your Supabase project URL | ✓ | `https://abc123.supabase.co` |
-| `SUPABASE_PUBLISHABLE_KEY` | Supabase public key | ✓ | `eyJhbGc...` |
-| `DATABASE_URL` | Direct database connection | Optional | `postgresql://...` |
+| Variable | Purpose |
+|----------|---------|
+| `GCS_BUCKET_NAME` | Bucket for saved filter configurations. |
+| `CORS_ORIGINS` | Origins accepted by the API. |
 
-## SISU Wrapper (`sisu-wrapper/.env`)
+## SISU wrapper (`sisu-wrapper/.env`)
 
-| Variable | Purpose | Required | Example |
-|----------|---------|----------|---------|
-| (None required for REST API) | SISU Wrapper doesn't need `.env` for basic operation | — | — |
+| Variable | Purpose |
+|----------|---------|
+| `AALTO_COURSE_API_KEY` | API credential for upstream course-data requests when needed. |
+| `CORS_ORIGINS` | Allowed frontend origins. |
 
-## GitHub Actions Secrets (`.github/workflows/check_course_updates.yml`)
+## Pipeline and test-only credentials
 
-These are configured as **GitHub Secrets** (not in `.env`):
+The course-update workflow uses the GitHub Actions secret `AALTO_USER_KEY`. Do not confuse this workflow secret with the wrapper's local `AALTO_COURSE_API_KEY`. See [Data Pipeline](../data-pipeline/).
 
-| Secret | Purpose |
-|--------|---------|
-| `AALTO_USER_KEY` | API key for Aalto's course data API (required for data pipeline) |
-| `GCS_SERVICE_ACCOUNT_KEY` | JSON key for Google Cloud Storage authentication |
+**Legacy RLS tests:** `backend/tests/rls.setup.ts` still uses Supabase clients and reads `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SERVICE_ROLE_KEY`. These are **test-harness credentials, not backend runtime requirements**; see [Row-Level Security](../../securities/row-level-security-testing/). The tests' ability to run against the current PostgreSQL/Better Auth development environment has not been established by this documentation audit.
 
-See [Data Pipeline](./data-pipeline/) for details.
+## Local setup
 
-## Getting Started with `.env` Files
-
-1. **Copy the example file:**
-````bash
-   cp backend/.env.example backend/.env
-````
-
-2. **Edit with your values:**
-````bash
-   nano backend/.env
-````
-
-3. **For local development:** Most variables have sensible defaults. The minimum you need:
-   - `ADMIN_USERNAME` and `ADMIN_PASSWORD` (required)
-   - Supabase credentials (required for backend to work)
-
-4. **For production:** All variables should be explicit and secure. Never commit `.env` files to git.
-
-## Never Commit `.env` Files
-
-Add to `.gitignore`:
-```
-.env
-.env.local
-.env.*.local
+```bash
+make setup
+# Then inspect and customize the relevant service .env files.
 ```
 
-`.env` files contain secrets. Always keep them private.
+`make setup` copies `.env.example` to `.env` for each service. Do not assume sample passwords, secrets, or URLs are production-safe. Keep `.env` files out of version control and rotate exposed secrets promptly.
 
-## Links to Detailed Setup
-
-- [Getting Started: Backend Setup](../../getting-started/#running-backend-services)
-- [Makefile Reference: Environment Variables](../makefile/#environment-variables)
-- [Data Pipeline: GitHub Actions](../data-pipeline/#github-actions-workflow)
+See [Running Sisukas Locally](../running-locally/) and [Makefile Reference](../makefile/).
