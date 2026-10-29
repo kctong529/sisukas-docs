@@ -14,7 +14,7 @@ The system therefore separates canonical published course datasets, runtime stud
 
 ![Verified Sisukas course data architecture, showing separate scheduled, runtime, and frontend data paths](/images/course-data-architecture.png)
 
-The arrows show implemented paths. They do not imply that runtime snapshots are automatically promoted into `historical.json`. Historical discovery/backfill is a separate maintenance workflow; proposed delayed candidate processing is not the same as an operating scheduled publication job.
+The diagram separates scheduled catalogue publication from independent runtime requests. Runtime snapshots can supplement the historical view, but they are not automatically promoted into the published `historical.json`. Delayed candidate processing is a proposal, not part of the deployed publication job.
 
 ## 1. Canonical catalogue: scheduled production
 

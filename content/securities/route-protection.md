@@ -1,292 +1,59 @@
 ---
 weight: 2
 title: "User Route Protection"
-description: "Layer 1 authorization: Express middleware, admin sessions, protected routes, and how requests are validated."
+description: "How Better Auth sessions, route authorization, and separate admin tokens protect the current Express backend."
 ---
 
-> [!NOTE]
-> See [Security Overview](../) for why defense in depth matters.
+This page describes the current Express middleware and selected routes in `backend/src/`. See [Security Overview](../) for how API authorization relates to database security.
 
-This document covers the implementation of **Layer 1: Route Protection**.
+## User authentication and authorization
 
-## Architecture
+The Better Auth configuration lives in `backend/src/lib/auth.ts`. `extractSession` calls `auth.api.getSession` using incoming request headers and stores the session and user in `res.locals`. `requireAuth` returns `401 Unauthorized` if no authenticated user was found.
 
-### Authentication Layers
+Authentication establishes identity; individual handlers still need to enforce ownership. For example, `GET /api/users/:id` and `DELETE /api/users/:id` check that the URL ID matches `res.locals.user.id` and return `403 Forbidden` on a mismatch.
 
-1. **User Authentication** (`extractSession` middleware)
-   - Validates BetterAuth sessions
-   - Extracts user info from request headers
-   - Available via `res.locals.user`
+The server mounts `extractSession` for `/api/users`, then again for later user-scoped routes. Route-specific protection should always be inspected rather than inferred from the presence of global middleware.
 
-2. **User Authorization** (`requireAuth` middleware)
-   - Ensures user is authenticated
-   - Validates `res.locals.user` exists
-   - Returns 401 if not authenticated
+## Admin tokens are separate
 
-3. **Admin Authorization** (`requireAdmin` middleware)
-   - Validates admin session token
-   - Checks token expiration (1 hour TTL)
-   - Returns 401 if token missing or expired
+The admin mechanism in `backend/src/middleware/auth.ts` is independent of Better Auth sessions:
 
-### Token-Based Admin Sessions
+1. `POST /api/admin/login` checks `ADMIN_USERNAME` and `ADMIN_PASSWORD` and creates an in-memory token.
+2. Tokens expire after one hour and are lost when the process restarts.
+3. `requireAdmin` looks for a bearer token, then `admin_token` cookie, then `admin_token` query parameter.
+4. `GET /api/admin/logout` invalidates the token and clears its cookie.
 
-**In-Memory Store:**
-```typescript
-const adminSessions = new Map<string, { expiresAt: number }>();
-```
+The login route also provides an HTML form at `GET /api/admin/login`. The cookie is HTTP-only, `sameSite: 'strict'`, and secure in production; the API response also returns a token to the caller.
 
-- Tokens stored in memory (cleared on server restart)
-- Each token has expiration time (1 hour)
-- Sessions automatically cleaned when expired
+**Security consideration:** Passing administrator tokens through URLs increases the risk of exposure through history, logs, or copied links. Although currently supported by `requireAdmin`, query-string authentication is not a recommended pattern for new routes. The token generator and token logging should also be reviewed before treating the admin scheme as hardened production security.
 
-**Token Sources (checked in order):**
-1. Authorization header: `Bearer <token>`
-2. Cookie: `admin_token=<token>`
-3. Query parameter: `?admin_token=<token>`
+## Representative routes
 
-## Protected Routes
+| Route | Requirement | Ownership / behavior |
+| --- | --- | --- |
+| `GET /api/users` | `requireAdmin` | Lists all users |
+| `GET /api/users/:id` | `requireAuth` | Caller may only view their own profile |
+| `POST /api/users` | Public route | Uses user service for registration |
+| `DELETE /api/users/:id` | `requireAuth` | Caller may only delete their own account |
+| `GET /api/admin/login` | Public route | Serves administrator login form |
+| `POST /api/admin/login` | Public route | Checks admin credentials and issues token |
+| `GET /api/admin/logout` | `requireAdmin` | Revokes an admin token |
 
-### `GET /api/users` - List All Users
-**Protection:** Admin only (token-based)
+The table describes the checked-in route definitions, not an exhaustive inventory of the backend API. Registration also exists through Better Auth integration; do not assume the custom user route is the only account-creation flow.
 
-```typescript
-router.get('/', requireAdmin, async (req: Request, res: Response) => {
-  // Only accessible with valid admin token
-  // Returns: { users: [], count: number, adminToken: string }
-});
-```
+## Testing the boundaries
 
-**Access Control:**
-- Requires valid admin session token
-- Token must not be expired
-- Returns 401 if no token or expired
-- Returns 200 with user list if authorized
+When changing protected routes, test at least an unauthenticated request, a correctly authenticated owner, and an authenticated user requesting someone else's resource. For admin routes, also test missing, expired, and revoked tokens.
 
-**Response:**
-```json
-{
-  "users": [
-    { "id": "...", "email": "...", "name": "..." },
-    ...
-  ],
-  "count": 42,
-  "adminToken": "8j9k3l2m..."
-}
-```
+With a running local backend and a valid administrator token:
 
----
-
-### `GET /api/users/:id` - Get Single User Profile
-**Protection:** Authenticated users can only view their own profile
-
-```typescript
-router.get('/:id', requireAuth, async (req: Request, res: Response) => {
-  // Users must authenticate via BetterAuth (requireAuth enforces this)
-  // Can only access their own profile (id must match res.locals.user.id)
-  // Returns: { user: {...} }
-});
-```
-
-**Access Control Flow:**
-1. User must be authenticated (BetterAuth session)
-2. Requested user ID must match authenticated user's ID
-3. Returns 403 if user tries to access someone else's profile
-4. Returns 404 if user not found
-5. Returns 200 with user data if authorized
-
----
-
-### `POST /api/users` - Register New User
-**Protection:** None (public registration)
-
-```typescript
-router.post('/', async (req: Request, res: Response) => {
-  // Public endpoint - anyone can register
-  // Body: { email: string, password: string, name?: string }
-  // Returns: { message: string, user: {...} }
-});
-```
-
-**Access Control:**
-- No authentication required
-- Validates email is unique (BetterAuth handles this)
-- Returns 201 on success
-- Returns 409 if email already exists
-- Returns 400/422 on validation errors
-
----
-
-### `DELETE /api/users/:id` - Delete User Account
-**Protection:** Authenticated users can only delete their own account
-
-```typescript
-router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
-  // Users must authenticate via BetterAuth (requireAuth enforces this)
-  // Can only delete their own account (id must match res.locals.user.id)
-  // Returns: { message: string, user: {...} }
-});
-```
-
-**Access Control Flow:**
-1. User must be authenticated (BetterAuth session)
-2. Can only delete their own account (ID must match)
-3. Returns 403 if trying to delete someone else's account
-4. Returns 404 if user not found
-5. Returns 200 with deleted user data if authorized
-
----
-
-## Admin Login Flow
-
-### 1. Initial Access
-```
-User visits: http://localhost:3000/api/admin/login
-↓
-Returns: HTML login form
-```
-
-### 2. Credential Submission
-```
-POST /api/admin/login
-Body: { username: "admin", password: "secret" }
-↓
-Backend validates credentials against:
-  - ADMIN_USERNAME env var
-  - ADMIN_PASSWORD env var
-↓
-If valid:
-  - Generate random token
-  - Store in adminSessions Map with 1-hour expiration
-  - Set httpOnly cookie: admin_token
-  - Return: { token: "..." }
-↓
-Frontend receives token:
-  - Stores in localStorage
-  - Redirects to /api/users
-```
-
-### 3. Accessing Protected Routes
-```
-GET /api/users (with token)
-↓
-requireAdmin middleware:
-  1. Check Authorization header for "Bearer TOKEN"
-  2. Check cookies for admin_token
-  3. Check query param ?admin_token=TOKEN
-↓
-If token found:
-  - Lookup in adminSessions Map
-  - Check expiration (Date.now() < expiresAt)
-  - If valid: continue to route handler
-  - If expired: delete session, return 401
-↓
-Route handler executes with access to res.locals.adminToken
-```
-
-### 4. Logout
-```
-User visits: /api/admin/logout
-↓
-requireAdmin validates token (same flow as above)
-↓
-If authorized:
-  - Delete token from adminSessions Map
-  - Clear admin_token cookie
-  - Return logout confirmation page
-↓
-Token is now invalid for future requests
-```
-
----
-
-## Security Features
-
-### Token Expiration
-- Tokens expire after 1 hour
-- Automatic cleanup when accessed after expiration
-- Admin must login again for new token
-
-### Multiple Token Sources
-- Supports Bearer token in Authorization header (API access)
-- Supports cookies (browser access)
-- Supports query params (bookmark-friendly links)
-
-### Session Logging
-All authentication attempts are logged:
-```
-[2026-01-17T10:30:45.123Z] [ADMIN LOGIN FAILED] Username: admin, IP: 127.0.0.1, User-Agent: Mozilla/5.0...
-[2026-01-17T10:30:52.456Z] [ADMIN LOGIN SUCCESS] Username: admin, IP: 127.0.0.1, Token: 8j9k3l2m..., User-Agent: Mozilla/5.0...
-[2026-01-17T10:35:20.789Z] [ADMIN LOGOUT] IP: 127.0.0.1, Token: 8j9k3l2m...
-```
-
-### Cookie Security
-```typescript
-res.cookie('admin_token', token, {
-  httpOnly: true,        // JavaScript can't access (XSS protection)
-  secure: production,    // HTTPS only in production
-  sameSite: 'strict',    // CSRF protection
-  maxAge: 1 * 60 * 60 * 1000  // 1 hour
-});
-```
-
-
-
-## Testing
-
-### Login as Admin
 ```bash
-curl -X POST http://localhost:3000/api/admin/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"your_password"}'
-# Returns: { "message": "Login successful", "token": "..." }
-```
-
-### Access Users List
-```bash
-TOKEN="your_token_from_login"
-
-curl -H "Authorization: Bearer $TOKEN" \
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
   http://localhost:3000/api/users
-# Returns: { "users": [...], "count": 42 }
 ```
 
-### View Own Profile
-```bash
-USER_TOKEN="your_user_auth_token"
-USER_ID="your_user_id"
+The actual listening port should match your local environment configuration. Better Auth browser sessions are normally conveyed by session cookies; an arbitrary bearer string is **not** a substitute for a valid user session.
 
-curl -H "Authorization: Bearer $USER_TOKEN" \
-  http://localhost:3000/api/users/$USER_ID
-# Returns: { "user": {...} }
-```
+## Relationship to database security
 
-### Logout
-```bash
-TOKEN="your_admin_token"
-
-curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:3000/api/admin/logout
-# Returns: HTML logout page
-# Token is now invalid
-```
-
----
-
-## Summary
-
-| Route | Method | Auth | Access | Notes |
-|-------|--------|------|--------|-------|
-| `/api/users` | GET | Admin Token | Admin only | Lists all users |
-| `/api/users/:id` | GET | BetterAuth | Own profile only | Protected with `requireAuth` |
-| `/api/users` | POST | None | Public | Registration endpoint |
-| `/api/users/:id` | DELETE | BetterAuth | Own account only | Protected with `requireAuth` |
-| `/api/admin/login` | GET | None | Public | Login form |
-| `/api/admin/login` | POST | None | Public | Credential verification |
-| `/api/admin/logout` | GET | Admin Token | Admin only | Session destruction |
-
-## Complete Security Picture
-
-This is Layer 1 (route protection). See:
-- **[Security Overview](../overview/)** – Defense in depth approach
-- **[Row-Level Security](../row-level-security-testing/)** – Layer 2 (database)
-- **[Data Pipeline](../../dev-guide/data-pipeline/#security)** – Layer 3 (data source)
+Route checks enforce application permissions. Database RLS can supplement these checks in deployments where relevant policies are configured and used by the querying role. The existing [RLS testing guide](../row-level-security-testing/) explains that mechanism and the limits of the Supabase-oriented tests; it does not establish that current production queries use the same policy context.

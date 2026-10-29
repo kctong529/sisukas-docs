@@ -27,6 +27,9 @@ This page is the source of truth for local setup. The repository README and othe
 
 Once the system is running, the next question is usually *where the data comes from*:
 
+- **[Course Data Architecture](./data-architecture/)**
+  Introduces canonical publication, runtime resolution, caching, and their ownership boundaries before diving into individual workflows.
+
 - **[Data Pipeline](./data-pipeline/)**  
   Explains how course metadata is fetched from the Aalto Open API, transformed, versioned, and distributed to runtime systems.
 
@@ -42,7 +45,7 @@ Sisukas is composed of several independent services with clear responsibilities:
 - **[API Reference](./api/)**  
   Documents the SISU Wrapper REST API and its Python library, including how study group and schedule data is accessed.
 
-This is the right place to look when modifying backend–frontend interactions or adding new endpoints.
+This is the reference for the SISU wrapper. Consult the corresponding backend routes when changing other API endpoints.
 
 - **[Study-event and Location Contract](./study-event-contract/)**  
   Describes event series identities, expanded occurrences, room/building resolution, and scheduling limitations.
