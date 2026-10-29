@@ -17,7 +17,7 @@ Sisukas uses two upstream interfaces for different kinds of course data:
 | [Aalto Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu) | Course offering metadata for browsing and filtering | Authenticated, scheduled ingestion into Google Cloud Storage (GCS) |
 | [SISU Kori API](https://sisu.helsinki.fi/kori/docs/index.html) | Course details, study groups, teaching events, and locations | On-demand requests through `sisu-wrapper` |
 
-This page covers the Course API ingestion pipeline, not the runtime SISU wrapper. The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
+This page covers the scheduled Course API ingestion and publication workflow, not the entire end-to-end data architecture. For how the canonical catalogues connect to historical discovery, runtime SISU requests, backend snapshots, curriculum metadata, and IndexedDB caching, see [Course Data Architecture](../data-architecture/). The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
 ## API Access and Authentication
 
