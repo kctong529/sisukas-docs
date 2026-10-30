@@ -1,7 +1,9 @@
 ---
-weight: 4
-title: "Canonical Store Patterns"
+weight: 8
+title: "Frontend State Management"
 description: "A consistent, performance-conscious architecture for state management using Svelte 5 runes, with clear separation between state, queries, and mutations."
+aliases:
+  - /under-dev/stores/
 ---
 
 > [!NOTE]
@@ -339,4 +341,4 @@ Actions should:
 ## Related documentation
 
 - [System Overview](../../system-overview/) — Frontend responsibilities.
-- [Running Sisukas Locally](../../dev-guide/running-locally/) — Frontend development environment.
+- [Running Sisukas Locally](../running-locally/) — Frontend development environment.

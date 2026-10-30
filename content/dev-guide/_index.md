@@ -33,7 +33,10 @@ Once the system is running, the next question is usually *where the data comes f
 - **[Data Pipeline](./data-pipeline/)**  
   Explains how course metadata is fetched from the Aalto Open API, transformed, versioned, and distributed to runtime systems.
 
-This document is essential for understanding why the frontend treats course data as immutable snapshots and why SISU data is handled separately at runtime.
+The scheduled workflow publishes canonical catalogues; the on-demand SISU wrapper serves a different runtime responsibility.
+
+- **[Historical Course Records](./historical/)**  
+  Covers historical discovery, checkpointed collection, normalization, and dataset maintenance.
 
 - **[Curriculum Metadata](./curriculum-metadata/)**  
   Explains how Aalto curriculum modules are catalogued, verified against official sources, and integrated into Sisukas. Covers module identifiers, source attribution, review decisions, and validation.
@@ -50,14 +53,22 @@ This is the reference for the SISU wrapper. Consult the corresponding backend ro
 - **[Study-event and Location Contract](./study-event-contract/)**  
   Describes event series identities, expanded occurrences, room/building resolution, and scheduling limitations.
 
-### 4. Configuration and environments
+### 4. User data and frontend state
+
+- **[Transcript Import](./transcript-import/)**  
+  Explains the implemented bulk import workflow and its transactional guarantees.
+
+- **[Frontend State Management](./stores/)**  
+  Defines Svelte 5 runes-based conventions for new and modernized stores, while acknowledging existing legacy state.
+
+### 5. Configuration and environments
 
 For changes that involve setup, credentials, or deployment differences:
 
 - **[Environment Variables Reference](./env/)**  
   Lists all supported `.env` variables by component, explains which ones are required, and clarifies what is safe to change in local development.
 
-### 5. Tooling and automation
+### 6. Tooling and automation
 
 Finally, for contributors working on setup, CI, or onboarding flows:
 

@@ -70,4 +70,4 @@ The design should define checkpointing, retention, replay behavior, provenance, 
 ## Related documentation
 
 - [Course Data Architecture](../../dev-guide/data-architecture/) — Canonical versus runtime data.
-- [Historical Course Records](../historical/) — Manual history collection and baseline construction.
+- [Historical Course Records](../../dev-guide/historical/) — Manual history collection and baseline construction.

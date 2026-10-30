@@ -1,7 +1,9 @@
 ---
-weight: 1
+weight: 3
 title: "Historical Course Records"
 description: "How Sisukas builds and maintains a historical course dataset to support the year timeline and tracking past courses."
+aliases:
+  - /under-dev/historical/
 ---
 
 > [!NOTE]
@@ -215,5 +217,5 @@ For incremental runs (when tweaking logic), keep the JSONL + dedupe pattern—do
 
 ## Related documentation
 
-- [Data Pipeline](../../dev-guide/data-pipeline/) — Scheduled active/historical publication.
-- [Course Data Architecture](../../dev-guide/data-architecture/) — Dataset ownership and recovery boundaries.
+- [Data Pipeline](../data-pipeline/) — Scheduled active/historical publication.
+- [Course Data Architecture](../data-architecture/) — Dataset ownership and recovery boundaries.

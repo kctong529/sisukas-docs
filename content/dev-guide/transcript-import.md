@@ -1,7 +1,9 @@
 ---
-weight: 2
+weight: 7
 title: "Transcript Import"
 description: "How Sisukas imports transcript-derived favourites, plan instances, and grades in one transactional operation."
+aliases:
+  - /under-dev/transcript-import/
 ---
 
 > [!NOTE]
@@ -210,4 +212,4 @@ Frontend behavior:
 ## Related documentation
 
 - [System Overview](../../system-overview/) — User-data persistence boundaries.
-- [Running Sisukas Locally](../../dev-guide/running-locally/) — Local backend setup.
+- [Running Sisukas Locally](../running-locally/) — Local backend setup.

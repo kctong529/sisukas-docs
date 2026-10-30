@@ -36,7 +36,7 @@ The historical crawl uses SISU Kori relationships to discover older course-unit 
 
 This discovery path differs from routine archiving: reconciliation preserves instances that leave the active catalogue, whereas a historical crawl can discover earlier instances never present in the previous active baseline. Neither raw crawl output nor a runtime snapshot is automatically a validated canonical record.
 
-See [Historical Course Records](../../under-dev/historical/) for the documented crawl procedure. Its date defaults and commands should be verified before use.
+See [Historical Course Records](../historical/) for the documented crawl procedure. Its date defaults and commands should be verified before use.
 
 ## 3. Runtime study details
 
@@ -101,5 +101,5 @@ Review **all** affected boundaries: upstream fetch and normalization, validators
 ## Related documentation
 
 - [Data Pipeline](../data-pipeline/) — Scheduled publication workflow.
-- [Historical Course Records](../../under-dev/historical/) — Manual historical discovery.
+- [Historical Course Records](../historical/) — Manual historical discovery.
 - [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Snapshots and proposed promotion.

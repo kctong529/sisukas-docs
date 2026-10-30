@@ -131,7 +131,7 @@ When changing the ingested schema, update the relevant fetch/transform scripts, 
 ## Related documentation
 
 - [Course Data Architecture](../data-architecture/) — End-to-end data flow and ownership.
-- [Historical Course Records](../../under-dev/historical/) — Manual historical data collection.
+- [Historical Course Records](../historical/) — Manual historical data collection.
 
 ## References
 
