@@ -3,8 +3,13 @@ weight: 4
 title: "Environment Variables Reference"
 description: "Environment configuration for the frontend, backend, filters API and SISU wrapper."
 ---
+> [!NOTE]
+> Configuration is component-specific. Use the repository’s current `.env.example` files as the authoritative variable inventory, and do not commit secrets.
 
 Each component has its own `.env.example`. Copy the relevant file to `.env` for local development; use the checked-in examples as the authoritative list of currently supported settings. Do not commit actual credentials.
+
+> [!WARNING]
+> Do not copy production credentials into a frontend `VITE_` variable: Vite exposes those values to the browser.
 
 ## Frontend (`frontend/course-browser/.env`)
 
@@ -70,3 +75,8 @@ make setup
 `make setup` copies `.env.example` to `.env` for each service. Do not assume sample passwords, secrets, or URLs are production-safe. Keep `.env` files out of version control and rotate exposed secrets promptly.
 
 See [Running Sisukas Locally](../running-locally/) and [Makefile Reference](../makefile/).
+
+## Related documentation
+
+- [Running Sisukas Locally](../running-locally/) — Create development environments.
+- [Makefile Reference](../makefile/) — Setup and lifecycle targets.

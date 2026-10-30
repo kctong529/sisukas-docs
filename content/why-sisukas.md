@@ -3,6 +3,8 @@ weight: 3
 title: "Why Sisukas: The Problem"
 description: "Why Sisukas exists: SISU is built for registration, but students need a workspace for exploration, comparison, and trade-offs."
 ---
+> [!NOTE]
+> This page explains the product motivation and design trade-offs. For technical implementation details, see [System Overview](../system-overview/).
 
 ## The Real Problem with SISU
 
@@ -153,3 +155,9 @@ Current features include:
 
 Planning features (Plans, Schedule Pairs, Decision Slots) are under active
 development. See [The Big Picture](../concepts/overview/) for the roadmap.
+
+## Related documentation
+
+- [Getting Started](../getting-started/) — Try the application.
+- [The Big Picture](../concepts/overview/) — Planning philosophy.
+- [System Overview](../system-overview/) — Technical responsibilities.

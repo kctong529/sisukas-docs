@@ -1,10 +1,10 @@
 ---
 weight: 2
-title: "User Route Protection"
+title: "Route Authentication and Authorization"
 description: "How Better Auth sessions, route authorization, and separate admin tokens protect the current Express backend."
 ---
-
-This page describes the current Express middleware and selected routes in `backend/src/`. See [Security Overview](../) for how API authorization relates to database security.
+> [!NOTE]
+> This guide covers Express route authentication and authorization in the current backend. User sessions and administrative token checks have different responsibilities.
 
 ## User authentication and authorization
 
@@ -57,3 +57,9 @@ The actual listening port should match your local environment configuration. Bet
 ## Relationship to database security
 
 Route checks enforce application permissions. Database RLS can supplement these checks in deployments where relevant policies are configured and used by the querying role. The existing [RLS testing guide](../row-level-security-testing/) explains that mechanism and the limits of the Supabase-oriented tests; it does not establish that current production queries use the same policy context.
+
+## Related documentation
+
+- [Security](../) — How the security boundaries fit together.
+- [Row-Level Security](../row-level-security-testing/) — Database policy concepts and the test harness.
+- [System Overview](../../system-overview/) — Backend responsibilities.

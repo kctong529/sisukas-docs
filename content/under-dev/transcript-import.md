@@ -206,3 +206,8 @@ Frontend behavior:
 * configurable replacement strategies (keep vs replace)
 * grade mapping options (pass/fail handling)
 * transcripts in other languages
+
+## Related documentation
+
+- [System Overview](../../system-overview/) — User-data persistence boundaries.
+- [Running Sisukas Locally](../../dev-guide/running-locally/) — Local backend setup.

@@ -46,9 +46,9 @@ For the conflicts that remain, you use **Decision Slots**. You explicitly mark w
 | **Schedule Pair** | A concrete timetable choice: one study group selected from each block across the courses in a Plan, ranked by fit |
 | **Decision Slot** | A specific time interval where selected study groups overlap, requiring a priority choice |
 
-## Next Steps
+## Related documentation
 
-- Explore how **[Filtering](../filtering/)** powers fast discovery
-- Understand the **[composable block model](../plans/)** behind planning
-- See how **[Schedule Pairs](../schedule-pairs/)** and **[Decision Slots](../decision-slots/)** work
-- For implementation details, see **[Planning Architecture](../../architecture/planning/)**
+- [Filtering](../filtering/) — Discover candidate courses.
+- [Plans](../plans/) — Organize course choices into a workspace.
+- [Schedule Pairs](../schedule-pairs/) — Evaluate possible combinations.
+- [Decision Slots](../decision-slots/) — Explore intended conflict-handling behavior.

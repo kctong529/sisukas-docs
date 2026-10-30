@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Course Backfill"
+title: "Runtime Course Recovery and Backfill"
 description: "Implemented runtime course recovery and the separately proposed canonical historical backfill workflow."
 ---
 
@@ -67,4 +67,7 @@ The design should define checkpointing, retention, replay behavior, provenance, 
 - `sisu-wrapper/api/routers/courses.py`
 - `frontend/course-browser/src/infrastructure/loaders/SnapshotHistoricalMerge.ts`
 
-For manual historical discovery and baseline construction, see [Historical Course Records](../historical/).
+## Related documentation
+
+- [Course Data Architecture](../../dev-guide/data-architecture/) — Canonical versus runtime data.
+- [Historical Course Records](../historical/) — Manual history collection and baseline construction.

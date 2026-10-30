@@ -3,21 +3,17 @@ weight: 7
 title: "Architecture"
 description: "Implementation-focused guides for Sisukas architecture, starting with the planning system and related components."
 ---
+> [!NOTE]
+> These guides focus on the implementation of individual subsystems. Start with [System Overview](../system-overview/) for the system-wide context or [Concepts](../concepts/) for the underlying planning ideas.
 
-# System Architecture
+Architecture documentation explains how the components and models of Sisukas fit together, including their responsibilities, contracts, and constraints.
 
-These guides explain **how Sisukas is built**.
+## In this section
 
-## Core Systems
+- **[Planning System Architecture](./planning/)** — Plans, schedule combinations, domain structures, scoring, and evolving decision-slot design.
 
-**[Planning System](../planning/)** – How Plans, Schedule Pairs, and Decision Slots work
-- Block composition model
-- Data structures and APIs
-- Algorithms and scoring
-- Current status and roadmap
+## Related documentation
 
-## See Also
-
-**[Concepts](../../concepts/)** – Understand the philosophy and ideas before diving into implementation
-**[API Reference](../../dev-guide/api/)** – Available endpoints
-**[Security](../../securities/)** – How data is protected
+- [System Overview](../system-overview/) — System-wide responsibilities.
+- [Course Data Architecture](../dev-guide/data-architecture/) — Dataset lifecycles and runtime flows.
+- [Concepts](../concepts/) — Planning terms and rationale.

@@ -128,6 +128,11 @@ Do not bypass catalogue validation or the archive threshold merely to restore a 
 
 When changing the ingested schema, update the relevant fetch/transform scripts, validators, reconciliation behavior, and change-report fields together. Test against representative active and historical baselines, then run the workflow on `dev` before publishing to `main`. When introducing another upstream interface, assess its access requirements and caching behavior independently of the Course API.
 
+## Related documentation
+
+- [Course Data Architecture](../data-architecture/) — End-to-end data flow and ownership.
+- [Historical Course Records](../../under-dev/historical/) — Manual historical data collection.
+
 ## References
 
 - [Aalto Course API documentation](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu)

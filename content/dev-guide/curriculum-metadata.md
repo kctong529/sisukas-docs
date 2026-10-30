@@ -153,3 +153,8 @@ npm run validate:curricula -- \
 - **Metadata compilation:** the role of `compile-metadata.js` is being investigated in [#113](https://github.com/kctong529/sisukas/issues/113). Do not assume its generated JSON is the authoritative curriculum catalogue.
 
 For each new curriculum period, refresh the candidate list, preserve previously verified history, recheck source URLs and module codes, record review decisions, and integrate the confirmed changes with regression tests.
+
+## Related documentation
+
+- [Course Data Architecture](../data-architecture/) — Metadata versus canonical dataset boundaries.
+- [Data Pipeline](../data-pipeline/) — Scheduled catalogue production.

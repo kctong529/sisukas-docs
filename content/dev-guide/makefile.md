@@ -5,7 +5,7 @@ description: "Make targets for setting up and maintaining the Sisukas dev enviro
 ---
 
 > [!NOTE]
-> Used in [Getting Started](../../getting-started/#setup-all-components). 
+> Used in [Running Sisukas Locally](../running-locally/).
 > See there for typical workflows.
 
 # Makefile Reference
@@ -242,3 +242,8 @@ Most targets are safe to rerun:
 - `.env` files are loaded by applications, not by make
 - HTTPS certificates are **mandatory for local authentication**
 - Clean targets are never run implicitly
+
+## Related documentation
+
+- [Running Sisukas Locally](../running-locally/) — Complete setup instructions.
+- [Environment Variables](../env/) — Configuration reference.

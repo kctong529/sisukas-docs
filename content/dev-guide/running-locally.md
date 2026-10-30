@@ -330,4 +330,8 @@ Each service reads configuration from a `.env` file (created by `make setup`). C
 
 If you need to modify environment variables, edit the `.env` file in the respective directory and restart that service.
 
-Check [Environment Variables Reference](../env/) for more details.
+## Related documentation
+
+- [Environment Variables](../env/) — Full configuration inventory.
+- [Makefile Reference](../makefile/) — Supported setup targets.
+- [System Overview](../../system-overview/) — Service responsibilities.

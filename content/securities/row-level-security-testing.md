@@ -3,6 +3,8 @@ weight: 3
 title: "Row-Level Security"
 description: "How database row-level security works, what it protects, and how Sisukas tests user isolation."
 ---
+> [!NOTE]
+> This page first explains PostgreSQL Row-Level Security (RLS), then describes the repository’s Supabase-based RLS tests. Those tests do not, by themselves, prove the present Better Auth runtime enforces RLS.
 
 # Row-Level Security (RLS)
 
@@ -120,6 +122,11 @@ The negative assertion only demonstrates RLS protection if the query actually ru
 | Tests pass but the application may be unprotected | Whether the production database actually uses the same policies, roles, and identity propagation |
 
 The current harness is a useful historical set of isolation tests, not proof of current production policy coverage. Any migration or redesign should validate the database's actual privilege boundaries as well as the route-level authorization tests.
+
+## Related documentation
+
+- [Security](../) — Current authentication and authorization boundaries.
+- [Route Authentication and Authorization](../route-protection/) — Application-level access control.
 
 ## Further reading
 

@@ -1,6 +1,6 @@
 ---
 weight: 5
-title: "Conflicts in Decision Slots"
+title: "Decision Slots"
 description: "How Sisukas models unavoidable overlaps as decision slots, so users explicitly choose what to attend and what to skip."
 ---
 
@@ -81,12 +81,9 @@ Decision Slots are the final step where plans turn into commitments:
 
 **[Discover](../filtering/) → [Plan](../plans/) → [Optimize](../schedule-pairs/) → Decide**
 
-## What Comes Next?
+Reflection and workload tools could eventually build on Decision Slot data to help you understand attendance patterns across a semester.
 
-Reflection and workload tools will build on Decision Slot data to help you
-understand your patterns across a semester.
+## Related documentation
 
-For now, see:
-
-- [The Big Picture](../overview/) – How all phases connect
-- [Planning Architecture](../../architecture/planning/) – How Decision Slots are implemented
+- [The Big Picture](../overview/) — The overall planning lifecycle.
+- [Planning System Architecture](../../architecture/planning/) — Current implementation and planned extensions.

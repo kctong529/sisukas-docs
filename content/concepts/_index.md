@@ -7,21 +7,21 @@ description: "The core ideas behind Sisukas: filtering philosophy, plans and blo
 > [!NOTE]
 > These guides explain the ideas and philosophy behind Sisukas.
 
-## Start Here: The Philosophy
+## Start here: the philosophy
 
 **[The Big Picture](./overview/)** – Why we design this way
 - Core belief: conflicts are inevitable, not errors
 - How discovery and planning work together
 - The phased planning approach
 
-## Discovery: Finding Courses
+## Discovery: finding courses
 
 **[How We Filter](./filtering/)** – Fast, expressive course discovery
 - Information should be accessible
 - Natural Boolean logic without query languages
 - Filtering as a core philosophy
 
-## Planning: Assembling Your Semester
+## Planning: assembling your semester
 
 **[Plans & The Block Model](./plans/)** – Grouping and composing
 - Why course instances are partitioned into blocks
@@ -41,6 +41,7 @@ description: "The core ideas behind Sisukas: filtering philosophy, plans and blo
 - Completed, ongoing, and planned studies in one view
 - Automation-first (no manual maintenance)
 
-## Ready to Build?
+## Related documentation
 
-See **[Planning Architecture](../../architecture/planning/)** for implementation details.
+- [Planning System Architecture](../../architecture/planning/) — Implementation details for the planning model.
+- [System Overview](../../system-overview/) — How planning connects to other services.

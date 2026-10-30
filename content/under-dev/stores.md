@@ -335,3 +335,8 @@ Actions should:
 * [ ] Reactive collections used only when justified
 * [ ] Legacy stores bridged locally, not leaked
 * [ ] Clear loading/error flags
+
+## Related documentation
+
+- [System Overview](../../system-overview/) — Frontend responsibilities.
+- [Running Sisukas Locally](../../dev-guide/running-locally/) — Frontend development environment.

@@ -3,6 +3,8 @@ weight: 4
 title: "Study-event and Location Contract"
 description: "SISU event identities, expanded occurrences, location enrichment, and verified limitations."
 ---
+> [!NOTE]
+> This contract distinguishes **observed upstream behavior** from the wrapper’s normalization decisions. Examples are representative, not a complete SISU specification.
 
 # Study-event and location contract
 
@@ -100,3 +102,8 @@ cancelled-session replacements or reconcile event identities after rescheduling.
 - Deferred: real relocation/cancellation examples, durable occurrence
   identity, DST ambiguity handling, and user preference persistence. These
   are **not** proven by the current tests.
+
+## Related documentation
+
+- [SISU Wrapper API](../api/) — Public wrapper endpoints.
+- [Course Data Architecture](../data-architecture/) — Where runtime study details fit.

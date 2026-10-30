@@ -3,6 +3,8 @@ weight: 6
 title: "Year Timeline"
 description: "Year-level view of workload: completed, ongoing, and planned studies shown across teaching periods with no manual upkeep."
 ---
+> [!NOTE]
+> The Year Timeline is a long-term planning concept, distinct from the detailed schedule-combination workflow. See [Plans](../plans/) for semester-level exploration.
 
 The Year Timeline is a conceptual view of your academic year. It exists to
 answer a single question:
@@ -59,9 +61,7 @@ The Year Timeline sits above semester-level planning tools.
 It helps you identify where attention is needed before moving on to more
 detailed reasoning using Plans, Schedule Pairs, and Decision Slots.
 
-## See Also
+## Related documentation
 
-- [The Big Picture](../overview/) – The planning philosophy
-- [Plans & The Block Model](../plans/) – Semester-level exploration
-- [Schedule Pairs](../schedule-pairs/) – Ranking combinations
-- [Decision Slots](../decision-slots/) – Making trade-offs explicit
+- [Plans](../plans/) — Semester-level planning.
+- [The Big Picture](../overview/) — How the timeline relates to the planning lifecycle.

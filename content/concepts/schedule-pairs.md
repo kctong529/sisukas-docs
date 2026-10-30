@@ -107,11 +107,8 @@ ranked options so you can decide which trade-offs you're willing to accept.
 > Schedule Pairs don't choose *for* you.  
 > They make the trade-offs visible so you can choose consciously.
 
-## Next Steps
+## Related documentation
 
-For any remaining conflicts, use **[Decision Slots](../decision-slots/)** to
-explicitly decide what you'll attend and what you'll skip.
-
-## See Also
-- [The Big Picture](../overview/) – Understand the three phases
-- [Getting Started](../../getting-started/) – Run it locally
+- [Decision Slots](../decision-slots/) — Proposed handling of remaining conflicts.
+- [The Big Picture](../overview/) — The planning lifecycle.
+- [Getting Started](../../getting-started/) — Explore the application.

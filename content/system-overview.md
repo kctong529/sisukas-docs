@@ -153,11 +153,8 @@ Sisukas does not register students for courses in SISU, guarantee that all teach
 
 These limits are deliberate boundaries, not merely missing UI features: Sisukas owns the planning experience, while registration and original academic records remain with the relevant Aalto systems.
 
-## Where to Go Next
+## Related documentation
 
-- Read [Why Sisukas](../why-sisukas/) for the motivation and user problem.
-- Use the [Concepts Overview](../concepts/overview/) for the planning vocabulary.
-- Continue to [Planning Architecture](../architecture/planning/) for domain models and computations.
-- See [Course Data Architecture](../dev-guide/data-architecture/) for the diagram, data ownership, and failure boundaries.
-- Read [Data Pipeline](../dev-guide/data-pipeline/) for the scheduled ingestion and publication workflow.
-- Use the [Developer Guide](../dev-guide/) for setup, APIs, and implementation references.
+- [Course Data Architecture](../dev-guide/data-architecture/) — Detailed catalogue, snapshot, and browser data flows.
+- [Planning System Architecture](../architecture/planning/) — Planning model and computation.
+- [Running Sisukas Locally](../dev-guide/running-locally/) — Start the development services.

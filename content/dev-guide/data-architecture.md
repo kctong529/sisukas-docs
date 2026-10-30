@@ -3,6 +3,8 @@ weight: 2
 title: "Course Data Architecture"
 description: "End-to-end overview of course ingestion, historical data, runtime resolution, caching, and their ownership boundaries."
 ---
+> [!NOTE]
+> This page connects the scheduled course-catalogue workflow with independent runtime and frontend paths. For operational commands and publication safeguards, see [Data Pipeline](../data-pipeline/).
 
 ## Why several data flows exist
 
@@ -50,6 +52,9 @@ See [API](../api/) and [Study Event Contract](../study-event-contract/) for the 
 
 **Operational implication:** a cached visit can show an older catalogue during background revalidation. Cache resilience is not a guarantee of an immediately refreshed UI or a successful first-time offline load.
 
+> [!IMPORTANT]
+> Runtime PostgreSQL snapshots are **not** automatically published into the canonical historical dataset.
+
 ## 5. Missing-course recovery: runtime snapshots
 
 A missing course code can be resolved through the backend `POST /api/course-snapshots/resolve`, which calls the wrapper's `/api/courses/resolve`. `CourseSnapshotsService.ts` stores eligible returned matches in PostgreSQL, keyed for upsert by course code and realisation identifier, with an expiry policy (currently 180 days for this route).
@@ -92,3 +97,9 @@ Review **all** affected boundaries: upstream fetch and normalization, validators
 - `frontend/course-browser/src/infrastructure/services/LargeFileCache.ts`
 - `frontend/course-browser/src/lib/stores/courseIndexStore.svelte.ts`
 - `frontend/course-browser/src/domain/parsers/CourseParser.ts`
+
+## Related documentation
+
+- [Data Pipeline](../data-pipeline/) — Scheduled publication workflow.
+- [Historical Course Records](../../under-dev/historical/) — Manual historical discovery.
+- [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Snapshots and proposed promotion.

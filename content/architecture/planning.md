@@ -612,8 +612,8 @@ Possible causes:
 
 **Solution:** Compute in smaller batches (2-4 instances at a time). If consistently slow, add benchmarking and optimize the algorithm.
 
+## Related documentation
 
-## See Also
-- **[Concepts Overview](../../concepts/overview/)** – Design philosophy
-- **[Security Overview](../../securities/overview/)** – Data protection
-- **[API Reference](../../dev-guide/api/)** – How to query the APIs
+- [Planning concepts](../../concepts/overview/) — Planning vocabulary and design rationale.
+- [Security](../../securities/) — Authentication and authorization boundaries.
+- [SISU Wrapper API](../../dev-guide/api/) — Runtime study-group and event access.

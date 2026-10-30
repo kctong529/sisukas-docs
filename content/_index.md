@@ -5,6 +5,8 @@ layout: docs
 bookFlatSection: true
 description: "Entry point for Sisukas docs: getting started, core concepts, architecture, and developer reference."
 ---
+> [!NOTE]
+> This is the entry point for users and contributors. Start with [Getting Started](../getting-started/) for the application or [System Overview](../system-overview/) for the architecture.
 
 # Sisukas Documentation
 

@@ -91,11 +91,8 @@ By treating a Plan as a set of blocks with explicit choices, you can:
 
 This shifts planning from *manual trial-and-error* to *exploring a ranked set of possibilities*.
 
-## Next Steps
+## Related documentation
 
-- Learn how **[Schedule Pairs](../schedule-pairs/)** combine and rank these choices
-
-## See Also
-
-- [The Big Picture](../overview/) – Why we design this way
-- [Getting Started](../../getting-started/) – Create your first Plan
+- [Schedule Pairs](../schedule-pairs/) — Combine and rank planning choices.
+- [The Big Picture](../overview/) — The wider planning lifecycle.
+- [Getting Started](../../getting-started/) — Try Sisukas.

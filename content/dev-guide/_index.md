@@ -9,7 +9,7 @@ description: "Contributor-focused guide to running, debugging, and extending Sis
 
 The Developer Guide is for contributors who want to understand how Sisukas is built, deployed, and operated in practice. It focuses on implementation details, system boundaries, and operational concerns rather than product philosophy or user-facing behavior.
 
-## How to Read This Section
+## In this section
 
 The documents under the Developer Guide are intentionally scoped and loosely ordered. You do not need to read everything linearly, but most contributors will benefit from the following progression.
 
@@ -42,7 +42,7 @@ This document is essential for understanding why the frontend treats course data
 
 Sisukas is composed of several independent services with clear responsibilities:
 
-- **[API Reference](./api/)**  
+- **[SISU Wrapper API](./api/)**
   Documents the SISU Wrapper REST API and its Python library, including how study group and schedule data is accessed.
 
 This is the reference for the SISU wrapper. Consult the corresponding backend routes when changing other API endpoints.
@@ -66,14 +66,7 @@ Finally, for contributors working on setup, CI, or onboarding flows:
 
 This page explains *what `make setup` actually does* and when it is appropriate to rerun or partially rerun it.
 
-## When to Use the Developer Guide
+## Related documentation
 
-Use this section when you want to:
-
-- modify system behavior or data flow,
-- add new features or services,
-- understand operational trade-offs,
-- debug local or deployment-specific issues,
-- or reason about why the system is structured the way it is.
-
-Individual pages explain not only **what** the system does, but **why** it is structured that way, to help future contributors make changes without breaking core invariants.
+- [System Overview](../system-overview/) — Start with the components and their responsibilities.
+- [Concepts](../concepts/) — Planning terminology and design goals.

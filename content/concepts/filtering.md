@@ -211,3 +211,8 @@ group matches if: (all rules in group pass)
 ```
 
 This simple, predictable logic handles complex requirements.
+
+## Related documentation
+
+- [The Big Picture](../overview/) — Discovery and planning concepts.
+- [Getting Started](../../getting-started/) — Use filtering in Sisukas.

@@ -1,8 +1,13 @@
 ---
 weight: 3
-title: "API Reference"
+title: "SISU Wrapper API"
 description: "SISU Wrapper REST API routes, study groups, and optional location resolution."
 ---
+> [!NOTE]
+> This reference covers the **SISU wrapper**, not every Sisukas backend endpoint. The deployed OpenAPI schema is authoritative for the version running on a particular environment.
+
+> [!TIP]
+> Check `/openapi.json` on the target wrapper deployment before relying on exact response or parameter shapes.
 
 ## SISU Wrapper REST API
 
@@ -67,4 +72,8 @@ with SisuClient() as client:
     )
 ```
 
-For setup and architecture, see [Running Sisukas Locally](../running-locally/) and the [Data Pipeline](../data-pipeline/).
+## Related documentation
+
+- [Study-event and Location Contract](../study-event-contract/) — Normalized SISU event and location semantics.
+- [Running Sisukas Locally](../running-locally/) — Local wrapper setup.
+- [Course Data Architecture](../data-architecture/) — How the wrapper is used.

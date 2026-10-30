@@ -3,6 +3,8 @@ weight: 2
 title: "Getting Started"
 description: "Start here to try sisukas.eu or run Sisukas locally, with pointers to the main concepts and developer guide."
 ---
+> [!NOTE]
+> Sisukas helps explore courses and planning options, but official course registration remains in SISU. You can use the hosted app without installing the developer stack.
 
 ## Which Path Is Right for You?
 
@@ -83,16 +85,8 @@ It is fully responsive and usable on mobile devices.
 > `courses.json` cannot be accessed via `file://` URLs due to browser
 > security restrictions. Use the Vite dev server when running locally.
 
-## Where to Go Next
+## Related documentation
 
-- **Want to understand the system?**  
-  Read **[System Overview](../system-overview/)** and **[Concepts Overview](../concepts/overview/)**
-
-- **Want to run or modify the code?**  
-  Start with **[Running Sisukas Locally](../dev-guide/running-locally/)**
-
-- **Looking for implementation details?**  
-  Continue to the **[Developer Guide](../dev-guide/)**
-
-Sisukas is designed to support deliberate exploration first and commitment later.  
-The documentation follows the same principle.
+- [Why Sisukas?](../why-sisukas/) — Product motivation.
+- [Concepts](../concepts/) — Planning ideas and terminology.
+- [Running Sisukas Locally](../dev-guide/running-locally/) — Developer setup.

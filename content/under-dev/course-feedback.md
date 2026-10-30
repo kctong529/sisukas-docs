@@ -1,8 +1,10 @@
 ---
 weight: 5
-title: "Course Feedback System"
+title: "Course Feedback Proposal"
 description: "How Sisukas collects concrete, experience-based course feedback."
 ---
+> [!NOTE]
+> **Design proposal:** The user experience described below is not a statement that the complete feedback feature is currently available.
 
 ## For Students: Understanding Course Feedback
 
@@ -288,3 +290,8 @@ Tags are:
 - **Current status:** Design specification, not yet implemented
 - **Target release:** Post–v1.0.0 of Sisukas
 - **Design stance:** Opinionated, concrete, expressive where it matters. Honest over diplomatic.
+
+## Related documentation
+
+- [Under Development](../) — Other designs and evolving implementations.
+- [The Big Picture](../../concepts/overview/) — Product and planning concepts.

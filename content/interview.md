@@ -3,6 +3,8 @@ weight: 2
 title: "Interview Prep"
 bookHidden: true
 ---
+> [!NOTE]
+> These are personal project-history and interview-preparation notes, not normative Sisukas architecture or contributor guidance.
 
 Sisukas is a course planning system I built that evolved from a static browser into a constraint-aware backend system with historical persistence and deterministic dataset guarantees.
 

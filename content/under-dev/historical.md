@@ -212,3 +212,8 @@ For incremental runs (when tweaking logic), keep the JSONL + dedupe pattern—do
   * increase timeouts
   * consider adding a small sleep or backoff
   * later improvement: parallelize Course API fetches with a small thread pool + max concurrency cap
+
+## Related documentation
+
+- [Data Pipeline](../../dev-guide/data-pipeline/) — Scheduled active/historical publication.
+- [Course Data Architecture](../../dev-guide/data-architecture/) — Dataset ownership and recovery boundaries.
