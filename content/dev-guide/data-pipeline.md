@@ -132,6 +132,7 @@ When changing the ingested schema, update the relevant fetch/transform scripts, 
 
 - [Course Data Architecture](../data-architecture/) — End-to-end data flow and ownership.
 - [Historical Course Records](../historical/) — Manual historical data collection.
+- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — investigated network discovery and the proposed separate course-unit catalogue.
 
 ## References
 

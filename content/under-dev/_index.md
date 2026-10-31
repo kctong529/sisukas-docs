@@ -13,6 +13,7 @@ These documents record work that is still changing. They are useful for understa
 - **[Study Calendar Design](./study-calendar/)** — planned active-Plan calendar, visibility controls, and future attendance decisions.
 - **[2026–2028 Curriculum Expansion](./curriculum-expansion/)** — first broad cross-school coverage of majors and minors, with verified sources and compatibility safeguards.
 - **[Runtime Course Recovery and Backfill](./snapshot-backfill/)** — implemented runtime snapshots and proposed canonical promotion.
+- **[Cross-institutional Course Discovery](./cross-institutional-courses/)** — verified cooperation-network APIs and proposed integration, not a deployed catalogue.
 - **[Course Feedback Proposal](./course-feedback/)** — exploratory design for course-instance feedback.
 
 ## Related documentation

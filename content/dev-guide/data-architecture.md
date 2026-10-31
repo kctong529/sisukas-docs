@@ -102,4 +102,5 @@ Review **all** affected boundaries: upstream fetch and normalization, validators
 
 - [Data Pipeline](../data-pipeline/) — Scheduled publication workflow.
 - [Historical Course Records](../historical/) — Manual historical discovery.
+- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — verified Kori discovery and proposed external course-unit boundary.
 - [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Snapshots and proposed promotion.
