@@ -4,8 +4,8 @@ title: "Composing Schedule Pairs"
 description: "How schedule pairs are generated and ranked: selecting one study group per block to form concrete timetable options."
 ---
 
-> [!NOTE]
-> This is Phase 2. After exploring Schedule Pairs, you'll use [Decision Slots](../decision-slots/) to handle conflicts.
+> [!WARNING]
+> **Legacy terminology and algorithm description.** *Schedule Pair* describes the existing narrower combination/ranking approach. The proposed domain term is [assembly candidate](../assemblies/). The future assembler is not required to select exactly one group per block, enumerate every combination, or eliminate conflicts. Decision Slots are not a mandatory next phase.
 
 ## The Problem: Selection Fatigue
 

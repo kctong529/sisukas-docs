@@ -20,27 +20,13 @@ Sisukas helps Aalto University students discover courses, explore schedules, and
 ## Find your way
 
 - **[Getting Started](../getting-started/)** — Start using Sisukas.
-- **[Concepts](../concepts/)** — Understand filtering, plans, and schedule combinations.
+- **[Concepts](../concepts/)** — Understand plans, LEGO blocks, assemblies, and calendars.
 - **[System Overview](../system-overview/)** — See how the application and services fit together.
 - **[Architecture](../architecture/)** — Explore the planning models and design decisions.
 - **[Developer Guide](../dev-guide/)** — Set up the project and understand its data pipelines and APIs.
 - **[Security](../securities/)** — Learn about authentication, authorization, and database security.
 
 For features still being designed, see [Under Development](../under-dev/).
-
-## Terminology
-
-As you read Sisukas documentation, you'll encounter these core concepts:
-
-| Term | Definition | Example |
-|------|-----------|---------|
-| **Course** | An abstract course that is stable across semesters | CS-A1110 Introduction to Programming |
-| **Course Instance** | A specific semester offering of a course with dates, study groups, and schedules | CS-A1110 Autumn 2025 |
-| **Plan** | A flexible workspace where you group course instances for a semester; exploration only, not commitments | "Spring 2025 Exploration" |
-| **Study Group** | A specific session within a course (lecture, exercise, etc.) that you attend or deliberately skip | Exercise H01 |
-| **Block** | A user-defined partition over study groups used during schedule computation. One study group is selected per block | Exercise Block: [H01, H02, H03] |
-| **Schedule Pair** | A complete selection of study groups (one per block, per course), ranked by how well it fits with others | CS-A1110 + MATH-A1020 |
-| **Decision Slot** | A time interval where selected study groups overlap, requiring an explicit attendance decision | Tue 14:00–15:00 |
 
 ## Project status
 

@@ -4,6 +4,10 @@ title: "Decision Slots"
 description: "How Sisukas models unavoidable overlaps as decision slots, so users explicitly choose what to attend and what to skip."
 ---
 
+> [!WARNING]
+> **Historical design proposal.** Decision Slots are not a required phase in the revised planning model. Conflict and attendance decisions are now considered part of the independently editable [study calendar](../../under-dev/study-calendar/). This page preserves the earlier concept for reference; it is not a current implementation contract.
+
+
 > [!NOTE]
 > This is Phase 3. See [Plans](../plans/) for how blocks are composed and 
 [Schedule Pairs](../schedule-pairs/) for how they're ranked.

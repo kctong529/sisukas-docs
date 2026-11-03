@@ -22,7 +22,7 @@ Students already skip sessions, watch recordings, or prioritize one course over 
 No more clicking through five menus to see a schedule. Details are front and center.
 
 3. **Conscious Choice**  
-We don't use a "black box" algorithm to solve your schedule; we show you the trade-offs so you can decide.
+Scheduling candidates are proposals, not decisions. Sisukas makes their trade-offs visible so students can choose how to proceed.
 
 ## The Planning Lifecycle
 
@@ -31,24 +31,30 @@ Planning moves from abstract ideas to concrete schedules in three phases:
 ### Phase 1: Workspace & Composition (Plans & Blocks)
 You create a **Plan**: a flexible workspace for a specific semester (e.g. "Autumn 2025"). Inside, course instances are broken into **Blocks** (user-defined groupings of study groups). By default, Sisukas suggests blocks like Lectures/Exercises/Exams, but you can partition study groups however you want.
 
-### Phase 2: Optimization (Schedule Pairs)
-The **Schedule Pairs** engine analyzes your Plan. It generates every possible combination by selecting one study group per block across your chosen courses and ranks them by "fit," showing you which combinations have the fewest conflicts.
+### Phase 2: Assembly (proposed model)
+The **assembler** takes selected LEGO blocks and returns ordered **assembly candidates**. Its ranking and course-inclusion rules are intentionally left open; conflicts may remain. The current implementation uses a narrower Schedule Pair algorithm.
 
-### Phase 3: Resolution (Decision Slots)
-For the conflicts that remain, you use **Decision Slots**. You explicitly mark which event is "Primary" (attendance) and which is "Secondary" (recording/self-study).
+### Phase 3: Calendar (under development)
 
-## Technical Vocabulary
+The **calendar** is the student's working timetable. A candidate may be explicitly applied to it after previewing proposed changes, including active courses and study-group defaults. Regenerating candidates does not modify the calendar. Students can adjust attendance and resolve or leave overlaps independently of the assembler.
+
+**Decision Slots** are historical terminology for an earlier proposed conflict-resolution stage, not a required phase of the new model.
+
+## Core Terminology
 
 | Term | Definition |
-| :--- | :--- |
-| **Instance** | A specific run of a course (e.g. "Fall 2025") |
-| **Block** | A user-defined partition (grouping) over study groups that defines one “choice slot” during computation. Defaults suggest Lecture/Exercise/Exam blocks |
-| **Schedule Pair** | A concrete timetable choice: one study group selected from each block across the courses in a Plan, ranked by fit |
-| **Decision Slot** | A specific time interval where selected study groups overlap, requiring a priority choice |
+| --- | --- |
+| **Instance** | A specific course offering |
+| **LEGO block** | A configurable grouping of study groups used as scheduling input |
+| **Assembly candidate** | One proposed configuration from an ordered assembler result |
+| **Saved assembly** | An explicitly retained candidate (future option) |
+| **Apply to calendar** | Explicit reconciliation and confirmation of proposed calendar changes |
+| **Calendar** | Persistent working timetable and attendance intent |
 
 ## Related documentation
 
 - [Filtering](../filtering/) — Discover candidate courses.
 - [Plans](../plans/) — Organize course choices into a workspace.
-- [Schedule Pairs](../schedule-pairs/) — Evaluate possible combinations.
+- [Assemblies](../assemblies/) — Proposed scheduling domain model.
+- [Legacy Schedule Pairs](../schedule-pairs/) — Existing terminology and assumptions.
 - [Decision Slots](../decision-slots/) — Explore intended conflict-handling behavior.

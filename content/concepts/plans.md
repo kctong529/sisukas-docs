@@ -5,7 +5,7 @@ description: "What a Plan is and how blocks turn course options into explicit ch
 ---
 
 > [!NOTE]
-> This is Phase 1. After exploring Plans, you'll use [Schedule Pairs](../schedule-pairs/) to find combinations.
+> Plans contain course instances and LEGO block choices. The proposed [assembly workflow](../assemblies/) produces ranked candidates without committing changes to the calendar.
 
 ## What is a Plan?
 
@@ -37,10 +37,9 @@ To reason about how courses interact, Sisukas needs a way to treat these as **ex
 
 To make this possible, Sisukas introduces **Blocks**.
 
-A **Block** is a user-defined partition over a set of study groups that represents
-one required selection during schedule computation.
+In the current implementation, a **Block** is a user-defined partition over study groups used to represent a selection during schedule computation. The proposed assembler treats LEGO blocks as inputs without fixing its future selection rules.
 
-- You must select **exactly one study group per block**
+- The **current algorithm** selects exactly one study group per block
 - Blocks define *where* choices exist, not *what* the choices must be
 - Blocks are **not fixed by SISU** — they come from your current partition
 

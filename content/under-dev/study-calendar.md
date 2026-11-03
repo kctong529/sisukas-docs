@@ -13,22 +13,20 @@ A Plan captures the courses a student intends to study, while teaching groups an
 
 The first version should be valuable without asking students to resolve every conflict or maintain a detailed attendance model. Students should be able to open their active Plan, see its teaching events, navigate weeks, and hide irrelevant options.
 
-## Relationship to Decision Slots
+## Relationship to assemblies
 
-[Schedule Pairs](../../concepts/schedule-pairs/) help compare combinations of study groups. [Decision Slots](../../concepts/decision-slots/) describe the *planning decision* that remains when chosen events overlap: which session to attend, skip, or attend partially.
-
-The calendar addresses a closely related, but broader, question: what is happening in a particular week, and what does the student currently intend to attend? It must represent recurring teaching groups, changes to individual weeks, cancelled events, and flexible exam windows even when no Schedule Pair or Decision Slot has been selected.
+[Assemblies](../../concepts/assemblies/) are proposed configurations generated from selected LEGO blocks. They may include unavoidable conflicts and may eventually influence both active calendar courses and default study groups. Their generation and ranking are separate from calendar state.
 
 > [!IMPORTANT]
-> The calendar is not dependent on LEGO blocks, Schedule Pairs, or Decision Slots. These are complementary concepts, not a shared technical workflow. The calendar derives its source events from the active Plan and SISU teaching data. Any future integration should reuse compatible overlap semantics without making one feature's state authoritative for another.
+> The calendar is independently editable. **Assembling or saving a candidate must not change it.** A future **Apply to calendar** action should preview and reconcile changes against existing course activity, study-group preferences, and attendance overrides before user confirmation. This integration is not part of the initial read-only calendar beta.
 
-For example, two lectures overlapping on Monday can be *visible* on the calendar before the student decides which one to attend. Hiding one lecture from the display does not count as choosing the other. A future attendance decision might resolve the overlap for one week without changing the student's usual teaching-group preference.
+An overlap can remain visible even after an assembly is applied. Hiding an event is not the same as choosing to attend another event. Weekly overrides and partial attendance belong to calendar intent, not to the assembly algorithm. Earlier documentation called some conflict choices *Decision Slots*; that is no longer a mandatory separate workflow.
 
 ## Data and responsibility boundaries
 
 | Concern | Source or owner | Design rule |
 | --- | --- | --- |
-| Active Plan membership | Authenticated user/Plan state | Only course instances in the active Plan contribute events. |
+| Active Plan membership | Authenticated user/Plan state | The beta projects course instances in the active Plan; future calendar-active course selection may be narrower after explicit application. |
 | Teaching groups and occurrences | SISU data through `sisu-wrapper` | Preserve institutional times, identifiers, cancellation state, and notices; do not mutate upstream facts. |
 | Calendar projection and layout | Frontend domain logic | Derive a locally queryable weekly view; week navigation should not require a backend round trip. |
 | Display visibility | User/Plan-scoped preference | Hiding an item does not express attendance, registration, or group equivalence. |
@@ -64,7 +62,7 @@ These features make the connection to Decision Slots stronger, but are post-beta
 - **Partial attendance** ([#104](https://github.com/kctong529/sisukas/issues/104)): represent an intended portion of an occurrence without modifying the institutional event.
 - **Planned e-exam sitting** ([#105](https://github.com/kctong529/sisukas/issues/105)): let the student place an intended sitting inside an availability window, clearly marked as *planned*, not externally booked.
 
-As these features mature, an overlap in a calendar week may be resolved by a concrete attendance choice analogous to a Decision Slot. The choice should remain scoped to the appropriate occurrence or recurring preference instead of silently rewriting a Schedule Pair.
+Attendance decisions remain scoped to occurrences or recurring preferences and never silently rewrite an assembly.
 
 ## Constraints and open questions
 
@@ -76,8 +74,8 @@ As these features mature, an overlap in a calendar week may be resolved by a con
 
 ## Related documentation
 
-- [Decision Slots](../../concepts/decision-slots/) — Conceptual choices for unresolved schedule conflicts.
-- [Composing Schedule Pairs](../../concepts/schedule-pairs/) — Comparing combinations of teaching groups.
+- [Assemblies](../../concepts/assemblies/) — Candidate generation and explicit calendar application.
+- [Legacy Decision Slots](../../concepts/decision-slots/) — Earlier conflict-handling proposal.
 - [Plans](../../concepts/plans/) — Course selection and the planning context.
 - [Study-event and Location Contract](../../dev-guide/study-event-contract/) — Source event metadata and temporal semantics.
 - [Course Data Architecture](../../dev-guide/data-architecture/) — Published catalogue and on-demand SISU data boundaries.

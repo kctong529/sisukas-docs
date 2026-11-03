@@ -1,11 +1,13 @@
 ---
 weight: 1
 title: "Planning System Architecture"
-description: "Implementation details of Plans, blocks, schedule pairs, and decision slots, including models, algorithms, and APIs."
+description: "Existing planning implementation and proposed assembly-to-calendar boundaries."
 ---
 
 > [!NOTE]
-> This page explains the **implementation** of:
+> This page documents the **existing implementation**, which still uses older terms and algorithm constraints. The proposed [assembly model](../../concepts/assemblies/) is a future-facing design, not an implemented replacement. Existing code/API names below are retained intentionally.
+>
+> Existing concepts:
 > - [Plans](../../concepts/plans/) – Flexible workspaces
 > - [Schedule Pairs](../../concepts/schedule-pairs/) – Ranked combinations
 > - [Decision Slots](../../concepts/decision-slots/) – Explicit trade-offs
@@ -64,7 +66,7 @@ Plans store only instance IDs (not full course data) because:
 
 Only one plan can be active per user at any time. This is enforced both at the database level and in the UI. When a user opens Favourites View, courses can be added to the active plan. When they activate a different plan in Lego View, the previous plan becomes inactive, and the new plan is always highlighted in Lego View. This constraint prevents confusion: users always know which plan receives new instances.
 
-## Phase 2: Schedule Pairs
+## Phase 2: Schedule Pairs (current implementation)
 
 ### Finding Good Combinations
 
@@ -202,13 +204,13 @@ When Lego View needs a partition for an instance, it checks in this order:
 
 When a user computes, their selection is saved if it's custom, or used directly if it's a cached default.
 
-## Phase 3: Decision Slots (Planned)
+## Historical proposal: Decision Slots (superseded as mandatory phase)
 
 **Purpose:** Make remaining conflicts explicit and force intentional choices
 
 **Concept:** After a user commits to a Schedule Pair, mark one event as primary (attend) and others as secondary (handle somehow).
 
-**Status:** Designed, not yet implemented. Waiting for Plans & Schedule Pairs to stabilize.
+**Status:** Historical proposal, not implemented as a required phase. Attendance and conflict choices now belong to calendar design.
 
 ---
 
@@ -225,6 +227,10 @@ When a user computes, their selection is saved if it's custom, or used directly 
 **Status:** Concept phase, depends on Phase 1 - 3
 
 ---
+
+## Proposed boundary: assembler and calendar
+
+The future assembler takes LEGO blocks (and potentially explicit context) and returns ordered candidates. Its optimization rules, course inclusion, and conflict tolerance are intentionally unspecified. Applying a candidate is a distinct, user-confirmed reconciliation operation against the persistent calendar. Generating candidates must not mutate calendar state. The existing Schedule Pair behavior documented above is **not** a binding specification for the redesign.
 
 ## Database Schema
 
