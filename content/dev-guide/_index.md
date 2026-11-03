@@ -5,7 +5,7 @@ description: "Contributor-focused guide to running, debugging, and extending Sis
 ---
 
 > [!NOTE]
-> This section assumes familiarity with the core concepts (Plans, Schedule Pairs, Decision Slots) and the overall system structure. If you are new to the project, start with the [System Overview](../system-overview/) and [Concepts](../concepts/) sections before diving in here.
+> This section assumes familiarity with the core concepts (plans, LEGO blocks, assemblies, and calendars) and the overall system structure. If you are new to the project, start with the [System Overview](../system-overview/) and [Concepts](../concepts/) sections before diving in here.
 
 The Developer Guide is for contributors who want to understand how Sisukas is built, deployed, and operated in practice. It focuses on implementation details, system boundaries, and operational concerns rather than product philosophy or user-facing behavior.
 

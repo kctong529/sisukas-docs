@@ -1,7 +1,7 @@
 ---
 weight: 5
 title: "Concepts"
-description: "The core ideas behind Sisukas: filtering philosophy, plans and blocks, schedule pairs, decision slots, and year timeline."
+description: "The core ideas behind Sisukas: discovery, plans, LEGO blocks, assemblies, calendars, and the year timeline."
 ---
 
 > [!NOTE]
@@ -28,14 +28,15 @@ description: "The core ideas behind Sisukas: filtering philosophy, plans and blo
 - How Plans work as exploration workspaces
 - The composability principle
 
-**[Schedule Pairs](./schedule-pairs/)** – Finding good combinations
-- How one study group per block forms complete timetable options
-- Ranking schedules to support informed choice
+**[Assemblies](./assemblies/)** – Exploring scheduling candidates
+- How selected LEGO blocks produce ordered candidates
+- Why candidate generation does not change the calendar
 
-**[Decision Slots](./decision-slots/)** – Making trade-offs explicit
-- Why some conflicts are unavoidable
-- Explicitly choosing how you will attend
-- Reflecting on repeated compromises
+**[Study Calendar](../under-dev/study-calendar/)** – Working with teaching events (under development)
+- Viewing overlaps and configuring intended attendance
+- Applying candidates explicitly in the proposed model
+
+**[Schedule Pairs](./schedule-pairs/)** and **[Decision Slots](./decision-slots/)** – Earlier scheduling terminology and designs
 
 **[Year Timeline](./year-timeline/)** – Seeing your academic year as a whole
 - Completed, ongoing, and planned studies in one view

@@ -30,7 +30,7 @@ For features still being designed, see [Under Development](../under-dev/).
 
 ## Project status
 
-Course discovery, saved filters, bookmarks, and core planning functionality are implemented. Some scheduling interactions are still evolving; decision slots remain a design proposal. The documentation distinguishes implemented behavior from planned work on the relevant pages.
+Course discovery, saved filters, bookmarks, and core planning functionality are implemented. The assembly-to-calendar workflow is proposed, and the study calendar is under development. The documentation distinguishes implemented behavior from planned work on the relevant pages.
 
 ## Contributing
 

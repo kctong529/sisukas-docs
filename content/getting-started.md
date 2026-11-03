@@ -62,7 +62,7 @@ Authenticated features include:
 
 - bookmarking courses
 - creating and persisting Plans
-- schedule evaluation and decision slots
+- saving plan choices and using authenticated planning features (where implemented)
 
 These features work:
 - on sisukas.eu, or

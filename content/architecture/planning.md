@@ -7,19 +7,19 @@ description: "Existing planning implementation and proposed assembly-to-calendar
 > [!NOTE]
 > This page documents the **existing implementation**, which still uses older terms and algorithm constraints. The proposed [assembly model](../../concepts/assemblies/) is a future-facing design, not an implemented replacement. Existing code/API names below are retained intentionally.
 >
-> Existing concepts:
-> - [Plans](../../concepts/plans/) – Flexible workspaces
-> - [Schedule Pairs](../../concepts/schedule-pairs/) – Ranked combinations
-> - [Decision Slots](../../concepts/decision-slots/) – Explicit trade-offs
+> Current implementation: [Plans](../../concepts/plans/) and [Schedule Pairs](../../concepts/schedule-pairs/).
+> Proposed direction: [Assemblies](../../concepts/assemblies/) and the [Study Calendar](../../under-dev/study-calendar/).
+> [Decision Slots](../../concepts/decision-slots/) document an earlier proposal.
 
 ## Quick Context
 
 This document describes how the planning system is built and how all pieces fit together.
 
 For the conceptual foundation, see:
-- [Plans](../../concepts/plans/) – Why you create them, the block model
-- [Schedule Pairs](../../concepts/schedule-pairs/) – Why you need them
-- [Decision Slots](../../concepts/decision-slots/) – Why trade-offs are explicit
+- [Plans](../../concepts/plans/) – Planning workspace and block model
+- [Assemblies](../../concepts/assemblies/) – Proposed candidate-generation contract
+- [Study Calendar](../../under-dev/study-calendar/) – Proposed calendar ownership and application rules
+- [Schedule Pairs](../../concepts/schedule-pairs/) – Existing scheduling approach
 
 ## Block Composability: Core Model
 

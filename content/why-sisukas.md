@@ -153,8 +153,8 @@ Current features include:
 - Up-to-date course data
 - Public APIs for integration
 
-Planning features (Plans, Schedule Pairs, Decision Slots) are under active
-development. See [The Big Picture](../concepts/overview/) for the roadmap.
+Core planning features are available, while the proposed assembly workflow and
+study calendar are evolving. See [The Big Picture](../concepts/overview/) for the roadmap.
 
 ## Related documentation
 

@@ -142,8 +142,8 @@ There is no single authority for every piece of information in a plan.
 | **Published canonical data** | Active/historical GCS catalogues | Validated and published Sisukas view of course records |
 | **User-authored state** | Saved plans, selected groups, grades | User-scoped state persisted by the application |
 | **Supplementary recovery data** | Runtime course snapshots | Noncanonical records that can help restore missing course references |
-| **Derived computation** | Conflicts, analytics, schedule pairs | Outputs calculated from available plan and teaching inputs |
-| **Planned user decisions** | Decision Slots | A conceptual workflow, not automatically an implemented persistence contract |
+| **Derived computation** | Conflicts, analytics, existing schedule-pair rankings | Outputs calculated from available plan and teaching inputs; the broader assembler is proposed |
+| **Proposed calendar decisions** | Active courses, group preferences, attendance overrides | Planned user-owned state, not an implemented persistence contract |
 
 Derived results should expose scheduling trade-offs rather than silently decide them for a user. For details on what has been implemented and what remains a design proposal, consult the corresponding Concepts and Planning Architecture pages.
 

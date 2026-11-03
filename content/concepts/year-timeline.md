@@ -59,7 +59,7 @@ The timeline is derived entirely from your study data:
 
 The Year Timeline sits above semester-level planning tools.
 It helps you identify where attention is needed before moving on to more
-detailed reasoning using Plans, Schedule Pairs, and Decision Slots.
+detailed reasoning using plans, LEGO blocks, assembly candidates, and the calendar.
 
 ## Related documentation
 
