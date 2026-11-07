@@ -5,8 +5,7 @@ description: "How Sisukas ingests, reconciles, and publishes active and historic
 ---
 
 > [!NOTE]
-> This page is part of the Developer Guide. It documents how course data is
-> produced, validated, and distributed to runtime systems.
+> This page is the operational reference for **scheduled canonical publication**: workflow execution, validation, safeguards, local commands, and recovery. For runtime snapshots, study groups, curriculum metadata, and browser-side composition, see [Course Data Architecture](../data-architecture/).
 
 ## Overview
 
@@ -19,7 +18,7 @@ Sisukas uses two upstream interfaces for different kinds of course data:
 
 This page covers the scheduled Course API ingestion and publication workflow, not the entire end-to-end data architecture. For how the canonical catalogues connect to historical discovery, runtime SISU requests, backend snapshots, curriculum metadata, and IndexedDB caching, see [Course Data Architecture](../data-architecture/). The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
-## API Access and Authentication
+## API access and authentication
 
 The metadata pipeline uses Aalto University's authenticated [Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu), managed through the [Aalto API Gateway](https://3scale.apps.ocp4.aalto.fi/).
 
@@ -35,7 +34,7 @@ The API key is supplied through the `AALTO_USER_KEY` environment variable, store
 
 This confirmation concerns the Course API application in 3scale; it does not establish a policy for the separate SISU Kori API.
 
-## Ingestion and publication
+## Workflow execution and publication
 
 **Workflow:** `.github/workflows/check_course_updates.yml`
 
@@ -59,7 +58,19 @@ This confirmation concerns the Course API application in 3scale; it does not est
 6. **Publish changed data**  
    Generate hashes, gzip JSON, and upload artifacts to GCS only when active or historical content requires publication. Historical files are uploaded only when the historical catalogue changes. Change logs are uploaded when present.
 
-The workflow separates `prepare_data` (ingestion, validation, reconciliation) from `upload_to_gcs` (publication). GCS authentication uses GitHub's Workload Identity Federation.
+### Job boundary and safeguards
+
+The workflow separates `prepare_data` (baseline loading, ingestion, validation, reconciliation, and artifact preparation) from `upload_to_gcs` (publication). **Publication follows successful preparation**, rather than treating the latest upstream payload as authoritative. GCS authentication uses GitHub's Workload Identity Federation.
+
+The principal safeguards are:
+
+- **Required baselines:** Normal runs load valid active and historical catalogues; bootstrap is separate.
+- **Validated transformation:** The normalized latest response must satisfy the catalogue contract before reconciliation.
+- **Reviewed archiving:** Archive candidates exceeding 20% of the previous active catalogue require explicit manual approval with the exact reviewed count.
+- **Disjoint catalogues:** The output must not leave the same realisation active and historical simultaneously.
+- **Conditional publication:** Active and historical artifacts are published when their content changes; historical hashes/objects are not rewritten unnecessarily.
+
+Do not bypass these checks to recover from a failed upstream request.
 
 ### Published files
 
@@ -71,7 +82,7 @@ The workflow separates `prepare_data` (ingestion, validation, reconciliation) fr
 | `historical.hash.json` | Uncached historical-catalogue change indicator |
 | `logs/course_changes_*.json` | Change reports |
 
-`main` publishes to `gs://sisukas-core`; `dev` publishes to `gs://sisukas-core-test`. The frontend selects the corresponding GCS base URL through `VITE_GCS_BUCKET`, checks the hash metadata, and caches downloaded course data in IndexedDB for offline use. This separation prevents ordinary page loads from depending on the upstream Course API.
+`main` publishes to `gs://sisukas-core`; `dev` publishes to `gs://sisukas-core-test`. The frontend selects its GCS base URL through `VITE_GCS_BUCKET`. Published datasets are independent of ordinary page loads; browser hash revalidation and IndexedDB composition are explained in [Course Data Architecture](../data-architecture/).
 
 ## Local development
 

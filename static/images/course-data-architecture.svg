@@ -1,0 +1,789 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="sisukas-arch" viewBox="0 0 2660 2290" width="2660" height="2290" xml:space="preserve" role="img" aria-labelledby="ttl dsc" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+<title id="ttl">Sisukas course data architecture</title>
+<desc id="dsc">System architecture of Sisukas course data. A daily GitHub Actions workflow (06:00 UTC) fetches course realisations from the Aalto Course API, transforms and validates them, reconciles them with the previously published catalogue, and publishes courses.json, historical.json and hash files to Google Cloud Storage, which is the authoritative canonical source. Separately, sisu-wrapper (FastAPI) queries SISU Kori and the Aalto Course API on demand to resolve missing courses and to return study groups and teaching events. The Node.js backend stores resolved course snapshots in PostgreSQL with a 180-day expiry; this storage is non-canonical. In the Svelte browser application, courses.json builds the active course index; historical.json builds a historical baseline; live snapshots from the backend are appended best-effort, duplicates are skipped and entries overlapping the active index are removed, producing an augmented historical index in memory without modifying any published dataset. The active view uses only the active index; the all-courses view merges active and augmented historical indexes with active records taking precedence. Curated curriculum, organisation and academic-period YAML is bundled at build time and loaded through separate loaders into filters. Study groups are fetched directly from sisu-wrapper into a separate study-group cache used by study-group, planning and schedule views.</desc>
+<style>
+#sisukas-arch { --bg:#F8FAFC;--card:#FFFFFF;--text:#0F172A;--muted:#475569;--line:#CBD5E1;--green:#15803D;--purple:#7C3AED;--blue:#2563EB;--orange:#C2410C;--slate:#64748B;--halo:#F8FAFC;--chip:#F1F5F9 }
+@media (prefers-color-scheme: dark) { #sisukas-arch:not(.theme-light) { --bg:#0B1220;--card:#111B2E;--text:#E2E8F0;--muted:#94A3B8;--line:#334155;--green:#4ADE80;--purple:#A78BFA;--blue:#60A5FA;--orange:#FB923C;--slate:#94A3B8;--halo:#0B1220;--chip:#1E293B } }
+#sisukas-arch.theme-dark { --bg:#0B1220;--card:#111B2E;--text:#E2E8F0;--muted:#94A3B8;--line:#334155;--green:#4ADE80;--purple:#A78BFA;--blue:#60A5FA;--orange:#FB923C;--slate:#94A3B8;--halo:#0B1220;--chip:#1E293B }
+#sisukas-arch .bg { fill: var(--bg); }
+#sisukas-arch text { fill: var(--text); }
+#sisukas-arch .h1 { font-size: 34px; font-weight: 750; letter-spacing: -0.4px; }
+#sisukas-arch .h2 { font-size: 16px; fill: var(--muted); }
+#sisukas-arch .bt { font-size: 19.5px; font-weight: 700; letter-spacing: -0.2px; }
+#sisukas-arch .bs { font-size: 13.5px; fill: var(--muted); }
+#sisukas-arch .ct { font-size: 15.5px; font-weight: 700; }
+#sisukas-arch .ct2 { font-size: 14.5px; font-weight: 700; }
+#sisukas-arch .b { font-size: 13.5px; }
+#sisukas-arch .bm { font-size: 13.5px; fill: var(--muted); }
+#sisukas-arch .bb { font-size: 13.5px; font-weight: 650; }
+#sisukas-arch .sm { font-size: 12.5px; fill: var(--muted); }
+#sisukas-arch .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 12.5px; }
+#sisukas-arch .monob { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace; font-size: 13.5px; font-weight: 700; }
+#sisukas-arch .lb { font-size: 13px; font-weight: 650; paint-order: stroke; stroke: var(--halo); stroke-width: 4px; stroke-linejoin: round; }
+#sisukas-arch .lbm { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11.5px; fill: var(--muted); paint-order: stroke; stroke: var(--halo); stroke-width: 4px; }
+#sisukas-arch .lbs { font-size: 12px; fill: var(--muted); paint-order: stroke; stroke: var(--halo); stroke-width: 4px; }
+#sisukas-arch .card { fill: var(--card); stroke: var(--line); stroke-width: 1.2; }
+#sisukas-arch .bnd { stroke-width: 1.8; }
+#sisukas-arch .bnd-slate { fill: var(--slate); fill-opacity: .07; stroke: var(--slate); stroke-opacity: .55; }
+#sisukas-arch .bnd-green { fill: var(--green); fill-opacity: .06; stroke: var(--green); stroke-opacity: .55; }
+#sisukas-arch .bnd-purple { fill: var(--purple); fill-opacity: .06; stroke: var(--purple); stroke-opacity: .55; }
+#sisukas-arch .bnd-blue { fill: var(--blue); fill-opacity: .06; stroke: var(--blue); stroke-opacity: .55; stroke-dasharray: 10 6; }
+#sisukas-arch .bnd-orange { fill: var(--orange); fill-opacity: .045; stroke: var(--orange); stroke-opacity: .6; stroke-width: 2.4; }
+#sisukas-arch .sub { fill: var(--card); stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 4 3; }
+#sisukas-arch .store-canon { fill: var(--card); stroke: var(--green); stroke-width: 2.2; }
+#sisukas-arch .store-temp { fill: var(--card); stroke: var(--purple); stroke-width: 2; stroke-dasharray: 7 4; }
+#sisukas-arch .cache { fill: var(--card); stroke: var(--orange); stroke-width: 1.6; stroke-dasharray: 2 3; }
+#sisukas-arch .stage { fill: var(--card); stroke: var(--green); stroke-opacity: .55; stroke-width: 1.4; }
+#sisukas-arch .bstage { fill: var(--card); stroke: var(--orange); stroke-opacity: .55; stroke-width: 1.4; }
+#sisukas-arch .rstage { fill: var(--card); stroke: var(--purple); stroke-opacity: .55; stroke-width: 1.4; }
+#sisukas-arch .mstage { fill: var(--card); stroke: var(--blue); stroke-opacity: .6; stroke-width: 1.4; }
+#sisukas-arch .muted-card { fill: none; stroke: var(--slate); stroke-opacity: .7; stroke-width: 1.2; stroke-dasharray: 5 4; }
+#sisukas-arch .ar { fill: none; stroke-width: 3.2; stroke-linejoin: round; stroke-linecap: round; }
+#sisukas-arch .ar.dash { stroke-dasharray: 9 6; stroke-linecap: butt; }
+#sisukas-arch .ar-green { stroke: var(--green); }
+#sisukas-arch .ar-purple { stroke: var(--purple); }
+#sisukas-arch .ar-blue { stroke: var(--blue); }
+#sisukas-arch .ar-orange { stroke: var(--orange); }
+#sisukas-arch .ar-slate { stroke: var(--slate); }
+#sisukas-arch .mk-green { fill: var(--green); }
+#sisukas-arch .mk-purple { fill: var(--purple); }
+#sisukas-arch .mk-blue { fill: var(--blue); }
+#sisukas-arch .mk-orange { fill: var(--orange); }
+#sisukas-arch .mk-slate { fill: var(--slate); }
+#sisukas-arch .ic-t { color: var(--text); }
+#sisukas-arch .ic-green { color: var(--green); }
+#sisukas-arch .ic-purple { color: var(--purple); }
+#sisukas-arch .ic-blue { color: var(--blue); }
+#sisukas-arch .ic-orange { color: var(--orange); }
+#sisukas-arch .ic-slate { color: var(--slate); }
+#sisukas-arch .bdg { stroke: var(--card); stroke-width: 1.5; }
+#sisukas-arch .bdg-green { fill: var(--green); }
+#sisukas-arch .bdg-purple { fill: var(--purple); }
+#sisukas-arch .bdg-blue { fill: var(--blue); }
+#sisukas-arch .bdg-orange { fill: var(--orange); }
+#sisukas-arch .bdg-slate { fill: var(--slate); }
+#sisukas-arch .bdgt { font-size: 11px; font-weight: 800; fill: var(--card); }
+#sisukas-arch .pill { stroke-width: 1.6; fill: var(--card); }
+#sisukas-arch .pill-green { stroke: var(--green); }
+#sisukas-arch .pill-purple { stroke: var(--purple); }
+#sisukas-arch .pill-orange { stroke: var(--orange); }
+#sisukas-arch .pill-blue { stroke: var(--blue); }
+#sisukas-arch .pt { font-size: 13.5px; font-weight: 700; }
+#sisukas-arch .pt-green { fill: var(--green); }
+#sisukas-arch .pt-purple { fill: var(--purple); }
+#sisukas-arch .pt-orange { fill: var(--orange); }
+#sisukas-arch .pt-blue { fill: var(--blue); }
+#sisukas-arch .chip { stroke-width: 1.1; fill: var(--chip); }
+#sisukas-arch .chip-green { stroke: var(--green); }
+#sisukas-arch .chip-purple { stroke: var(--purple); }
+#sisukas-arch .chip-blue { stroke: var(--blue); }
+#sisukas-arch .chip-orange { stroke: var(--orange); }
+#sisukas-arch .chip-slate { stroke: var(--slate); }
+#sisukas-arch .cht { font-size: 11.5px; font-weight: 700; }
+#sisukas-arch .cht-green { fill: var(--green); }
+#sisukas-arch .cht-purple { fill: var(--purple); }
+#sisukas-arch .cht-blue { fill: var(--blue); }
+#sisukas-arch .cht-orange { fill: var(--orange); }
+#sisukas-arch .cht-slate { fill: var(--slate); }
+#sisukas-arch .num { font-size: 14px; font-weight: 800; fill: var(--card); }
+#sisukas-arch .numc-green { fill: var(--green); }
+#sisukas-arch .numc-orange { fill: var(--orange); }
+#sisukas-arch .numc-purple { fill: var(--purple); }
+#sisukas-arch .rule { stroke: var(--line); stroke-width: 1; }
+#sisukas-arch .warn { font-size: 12.5px; font-weight: 700; fill: var(--purple); }
+#sisukas-arch .ok { font-size: 12.5px; font-weight: 700; fill: var(--green); }
+</style>
+<defs>
+<marker id="mk-green" viewBox="0 0 18 16" refX="16.5" refY="8" markerWidth="18" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L18,8 L0,16 L4,8 z" class="mk-green"/></marker>
+<marker id="mk-purple" viewBox="0 0 18 16" refX="16.5" refY="8" markerWidth="18" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L18,8 L0,16 L4,8 z" class="mk-purple"/></marker>
+<marker id="mk-blue" viewBox="0 0 18 16" refX="16.5" refY="8" markerWidth="18" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L18,8 L0,16 L4,8 z" class="mk-blue"/></marker>
+<marker id="mk-orange" viewBox="0 0 18 16" refX="16.5" refY="8" markerWidth="18" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L18,8 L0,16 L4,8 z" class="mk-orange"/></marker>
+<marker id="mk-slate" viewBox="0 0 18 16" refX="16.5" refY="8" markerWidth="18" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L18,8 L0,16 L4,8 z" class="mk-slate"/></marker>
+<symbol id="i-api" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 9 L6 12 L9 15 M15 9 L18 12 L15 15 M13 8.5 L11 15.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5h10.5a4 4 0 0 0 .6-7.95A5.6 5.6 0 0 0 7.3 9.2 4.7 4.7 0 0 0 7 18.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 11.5v5M9.8 14.5 12 16.7l2.2-2.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2.8h8l4.5 4.5v13.9H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2.8v4.5h4.5M8.8 12h7M8.8 15h7M8.8 18h4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-hash" viewBox="0 0 24 24"><path d="M9.5 3.5 7.5 20.5M16.5 3.5l-2 17M4 8.5h16.5M3.5 15.5H20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+<symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 5.5v13c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-13M4.5 12c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="3.5" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13.5" width="18" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/><circle cx="7" cy="17" r="1.2" fill="currentColor"/><path d="M11 7h6M11 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.2 5.5 8 13h4l-1.2 5.5L16 11h-4z" fill="currentColor"/></symbol>
+<symbol id="i-browser" viewBox="0 0 24 24"><rect x="2.5" y="3.5" width="19" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 8.2h19" stroke="currentColor" stroke-width="1.6"/><circle cx="5.4" cy="5.9" r=".9" fill="currentColor"/><circle cx="8.1" cy="5.9" r=".9" fill="currentColor"/><circle cx="10.8" cy="5.9" r=".9" fill="currentColor"/></symbol>
+<symbol id="i-yaml" viewBox="0 0 24 24"><path d="M6 2.8h8l4.5 4.5v13.9H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 11.5h2M8.5 14.5h2M8.5 17.5h2M12 11.5h4M12 14.5h4M12 17.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3 21 8l-9 5-9-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5.2l3.4 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="7" y="13" width="3" height="3" rx=".6" fill="currentColor"/><rect x="13" y="13" width="3" height="3" rx=".6" fill="currentColor"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m15.4 15.4 5.3 5.3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M3.5 4v4h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.5l3 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9.5 12 5l10 4.5-10 4.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6.5 11.6v4.2c0 1.4 2.5 2.7 5.5 2.7s5.5-1.3 5.5-2.7v-4.2M21 10v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-plan" viewBox="0 0 24 24"><rect x="4.5" y="4" width="15" height="17.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="8.5" y="2.5" width="7" height="3.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8 12 1.8 1.8L13 10.5M8 17.5h8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8" height="5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="10" width="8" height="11" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.6" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20.5c.8-3.9 3.8-6 7.5-6s6.7 2.1 7.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-org" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="2.5" y="16.5" width="6" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="15.5" y="16.5" width="6" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5v4.5M5.5 16.5V12h13v4.5" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.8 19.5 6v5.5c0 4.6-3.1 8.4-7.5 9.7-4.4-1.3-7.5-5.1-7.5-9.7V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.6 12 2.4 2.4 4.4-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 9.5v4l2.5 1.8M9.5 2.8h5M19 6.5l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</defs>
+<rect x="0" y="0" width="2660" height="2290" rx="0" class="bg"/>
+<text x="40" y="58" class="h1" text-anchor="start">Sisukas — Course Data Architecture</text>
+<text x="40" y="88" class="h2" text-anchor="start">Where course data originates, who owns it, how canonical datasets are published, and how the browser composes them with runtime snapshots, curated metadata and study groups.</text>
+<text x="2620" y="58" class="sm" text-anchor="end">Source of truth: github.com/kctong529/sisukas @ 59870e9</text>
+<text x="2620" y="80" class="sm" text-anchor="end">Inspected 2026-11-07 · implementation-verified</text>
+<g id="b-external" role="group" aria-label="External Aalto systems">
+<rect x="30" y="120" width="280" height="1720" rx="20" class="bnd bnd-slate"/>
+<use href="#i-users" x="44" y="137" width="30" height="30" class="ic-slate"/>
+<text x="82" y="158" class="bt" text-anchor="start">External Aalto systems</text>
+<text x="82" y="178" class="bs" text-anchor="start">Upstream · not owned by Sisukas</text>
+</g>
+<g data-box="50,190,240,235">
+<rect x="50" y="190" width="240" height="235" rx="10" class="card"/>
+<use href="#i-api" x="62" y="201" width="22" height="22" class="ic-green"/>
+<text x="92" y="218" class="ct" text-anchor="start">Aalto Course API</text>
+<text x="64" y="238" class="mono" text-anchor="start">course.api.aalto.fi</text>
+<text x="79.0" y="257" class="mono" text-anchor="start">/api/sisu/v1</text>
+<text x="64" y="276" class="b" text-anchor="start">Official course catalogue:</text>
+<text x="64" y="295" class="b" text-anchor="start">course-unit realisations (CURs)</text>
+<text x="64" y="314" class="bm" text-anchor="start">Authenticated · AALTO_USER_KEY</text>
+<rect x="64" y="330" width="151" height="22" rx="11" class="chip chip-green"/>
+<text x="139.5" y="345.5" class="cht cht-green" text-anchor="middle">Scheduled ingestion</text>
+<rect x="64" y="360" width="186" height="22" rx="11" class="chip chip-purple"/>
+<text x="157.0" y="375.5" class="cht cht-purple" text-anchor="middle">CUR payloads for resolve</text>
+<text x="64" y="404" class="sm" text-anchor="start">Feeds canonical publication</text>
+</g>
+<g data-box="50,1080,240,235">
+<rect x="50" y="1080" width="240" height="235" rx="10" class="card"/>
+<use href="#i-api" x="62" y="1091" width="22" height="22" class="ic-purple"/>
+<text x="92" y="1108" class="ct" text-anchor="start">SISU Kori API</text>
+<text x="64" y="1130" class="mono" text-anchor="start">sisu.aalto.fi/kori/api</text>
+<text x="64" y="1149" class="b" text-anchor="start">Course units, assessment items,</text>
+<text x="64" y="1168" class="b" text-anchor="start">CUR ids, study groups, teaching</text>
+<text x="64" y="1187" class="b" text-anchor="start">events, locations</text>
+<text x="64" y="1206" class="bm" text-anchor="start">Public · via sisu-wrapper</text>
+<rect x="64" y="1236" width="116" height="22" rx="11" class="chip chip-purple"/>
+<text x="122.0" y="1251.5" class="cht cht-purple" text-anchor="middle">On demand only</text>
+<text x="64" y="1284" class="sm" text-anchor="start">Not used by the daily</text>
+<text x="64" y="1300" class="sm" text-anchor="start">publication workflow</text>
+</g>
+<g data-box="50,1600,240,210">
+<rect x="50" y="1600" width="240" height="210" rx="10" class="card"/>
+<use href="#i-cap" x="62" y="1611" width="22" height="22" class="ic-blue"/>
+<text x="92" y="1628" class="ct2" text-anchor="start">Curriculum pages</text>
+<text x="64" y="1650" class="b" text-anchor="start">Official aalto.fi pages for</text>
+<text x="64" y="1669" class="b" text-anchor="start">degree programmes, majors,</text>
+<text x="64" y="1688" class="b" text-anchor="start">minors and modules</text>
+<text x="64" y="1707" class="bm" text-anchor="start">Consulted during manual</text>
+<text x="64" y="1726" class="bm" text-anchor="start">curation — no scheduled or</text>
+<text x="64" y="1745" class="bm" text-anchor="start">runtime feed into Sisukas</text>
+</g>
+<g id="b-gha" role="group" aria-label="GitHub Actions">
+<rect x="450" y="120" width="400" height="730" rx="20" class="bnd bnd-green"/>
+<use href="#i-gear" x="464" y="137" width="30" height="30" class="ic-green"/>
+<text x="502" y="158" class="bt" text-anchor="start">GitHub Actions</text>
+<text x="502" y="178" class="bs" text-anchor="start">Scheduled course data publication</text>
+</g>
+<rect x="470" y="186" width="360" height="30" rx="8" class="chip chip-green"/>
+<use href="#i-clock" x="478" y="190" width="22" height="22" class="ic-green"/>
+<text x="506" y="206" class="bb" text-anchor="start">cron 0 6 * * * — daily 06:00 UTC</text>
+<text x="470" y="236" class="sm" text-anchor="start">check_course_updates.yml · also on push (main/dev) &amp; manual run</text>
+<g data-box="470,252,360,110">
+<rect x="470" y="252" width="360" height="110" rx="10" class="stage"/>
+<circle cx="492" cy="274" r="13" class="numc-green"/>
+<text x="492" y="279" class="num" text-anchor="middle">1</text>
+<text x="514" y="280" class="ct" text-anchor="start">Fetch</text>
+<text x="486" y="304" class="mono" text-anchor="start">fetch_latest_courses.py</text>
+<text x="486" y="322" class="b" text-anchor="start">GET /courseunitrealisations</text>
+<text x="486" y="340" class="bm" text-anchor="start">startTimeAfter=2024-01-01 → latest_fetch.json</text>
+</g>
+<g data-box="470,390,360,108">
+<rect x="470" y="390" width="360" height="108" rx="10" class="stage"/>
+<circle cx="492" cy="412" r="13" class="numc-green"/>
+<text x="492" y="417" class="num" text-anchor="middle">2</text>
+<text x="514" y="418" class="ct" text-anchor="start">Transform &amp; validate</text>
+<text x="486" y="442" class="mono" text-anchor="start">transform_courses.py → Sisukas course model</text>
+<text x="486" y="460" class="b" text-anchor="start">Reduce fields, normalise dates</text>
+<text x="486" y="478" class="mono" text-anchor="start">validate_course_catalog.py · JSON Schema</text>
+</g>
+<g data-box="470,526,360,166">
+<rect x="470" y="526" width="360" height="166" rx="10" class="stage"/>
+<circle cx="492" cy="548" r="13" class="numc-green"/>
+<text x="492" y="553" class="num" text-anchor="middle">3</text>
+<text x="514" y="554" class="ct" text-anchor="start">Reconcile with history</text>
+<text x="486" y="578" class="mono" text-anchor="start">reconcile_active_courses.py</text>
+<text x="486" y="596" class="b" text-anchor="start">• missing, endDate ≥ today → kept active</text>
+<text x="486" y="614" class="b" text-anchor="start">• older missing → archive candidates (≤20 % guard)</text>
+<text x="486" y="632" class="b" text-anchor="start">• duplicate ids → run fails (not merged)</text>
+<text x="486" y="650" class="mono" text-anchor="start">merge_expired_into_historical.py</text>
+<text x="494.4" y="668" class="bm" text-anchor="start">+ archived · − reactivated · disjoint check</text>
+</g>
+<g data-box="470,720,360,112">
+<rect x="470" y="720" width="360" height="112" rx="10" class="stage"/>
+<circle cx="492" cy="742" r="13" class="numc-green"/>
+<text x="492" y="747" class="num" text-anchor="middle">4</text>
+<text x="514" y="748" class="ct" text-anchor="start">Publish canonical datasets</text>
+<text x="486" y="772" class="mono" text-anchor="start">generate_hash.py · gzip · upload_to_gcs job</text>
+<text x="486" y="790" class="b" text-anchor="start">Only when active or historical changed;</text>
+<text x="486" y="808" class="bm" text-anchor="start">historical.json + hash only if it changed</text>
+</g>
+<path d="M650,362 L650,390" class="ar ar-green" marker-end="url(#mk-green)" style="stroke-width:3"></path>
+<path d="M650,498 L650,526" class="ar ar-green" marker-end="url(#mk-green)" style="stroke-width:3"></path>
+<path d="M650,692 L650,720" class="ar ar-green" marker-end="url(#mk-green)" style="stroke-width:3"></path>
+<g id="b-gcs" role="group" aria-label="Google Cloud Storage">
+<rect x="990" y="150" width="340" height="700" rx="20" class="bnd bnd-green"/>
+<use href="#i-cloud" x="1004" y="167" width="30" height="30" class="ic-green"/>
+<text x="1042" y="188" class="bt" text-anchor="start">Google Cloud Storage</text>
+<text x="1042" y="208" class="bs" text-anchor="start">Public canonical datasets</text>
+</g>
+<rect x="1010" y="216" width="300" height="34" rx="8" class="chip chip-green"/>
+<use href="#i-shield" x="1017" y="222" width="22" height="22" class="ic-green"/>
+<text x="1046" y="238" class="ok" text-anchor="start">AUTHORITATIVE · CANONICAL</text>
+<text x="1010" y="270" class="sm" text-anchor="start">gs://sisukas-core (main) · sisukas-core-test (dev)</text>
+<g data-box="1010,288,300,118">
+<rect x="1010" y="288" width="300" height="118" rx="10" class="store-canon"/>
+<use href="#i-file" x="1022" y="299" width="22" height="22" class="ic-green"/>
+<text x="1052" y="316" class="ct" text-anchor="start">courses.json</text>
+<text x="1024" y="338" class="b" text-anchor="start">Current active catalogue</text>
+<text x="1024" y="357" class="bm" text-anchor="start">gzip-encoded JSON array of</text>
+<text x="1024" y="376" class="bm" text-anchor="start">course instances (CURs)</text>
+</g>
+<g data-box="1010,424,300,158">
+<rect x="1010" y="424" width="300" height="158" rx="10" class="store-canon"/>
+<use href="#i-file" x="1022" y="435" width="22" height="22" class="ic-green"/>
+<text x="1052" y="452" class="ct" text-anchor="start">historical.json</text>
+<text x="1024" y="474" class="b" text-anchor="start">Accumulated historical records</text>
+<text x="1024" y="493" class="bm" text-anchor="start">Disjoint from courses.json by id</text>
+<text x="1024" y="512" class="bm" text-anchor="start">Uploaded only when the historical</text>
+<text x="1024" y="531" class="bm" text-anchor="start">dataset changes</text>
+</g>
+<g data-box="1010,600,300,160">
+<rect x="1010" y="600" width="300" height="160" rx="10" class="store-canon"/>
+<use href="#i-hash" x="1022" y="611" width="22" height="22" class="ic-green"/>
+<text x="1052" y="628" class="ct" text-anchor="start">Hashes &amp; metadata</text>
+<text x="1024" y="650" class="mono" text-anchor="start">courses.hash.json</text>
+<text x="1024" y="669" class="mono" text-anchor="start">historical.hash.json</text>
+<text x="1024" y="688" class="bm" text-anchor="start">{hash, timestamp} · no-store caching</text>
+<text x="1024" y="707" class="mono" text-anchor="start">logs/course_changes_*.json</text>
+</g>
+<text x="1010" y="790" class="sm" text-anchor="start">Read by the browser and the next run.</text>
+<text x="1010" y="808" class="sm" text-anchor="start">Never written by the browser, backend</text>
+<text x="1010" y="826" class="sm" text-anchor="start">or PostgreSQL.</text>
+<g id="b-wrapper" role="group" aria-label="sisu-wrapper — FastAPI">
+<rect x="450" y="890" width="400" height="630" rx="20" class="bnd bnd-purple"/>
+<use href="#i-bolt" x="464" y="907" width="30" height="30" class="ic-purple"/>
+<text x="502" y="928" class="bt" text-anchor="start">sisu-wrapper — FastAPI</text>
+<text x="502" y="948" class="bs" text-anchor="start">Python · Cloud Run · stateless adapter</text>
+</g>
+<g data-box="470,955,360,180">
+<rect x="470" y="955" width="360" height="180" rx="10" class="rstage"/>
+<text x="484" y="983" class="ct" text-anchor="start">Course resolution</text>
+<text x="484" y="1004" class="mono" text-anchor="start">GET /api/courses/resolve?course_code=</text>
+<text x="484" y="1025" class="b" text-anchor="start">1  Kori: search course units → assessment items</text>
+<text x="484" y="1046" class="b" text-anchor="start">2  Kori: list CUR ids in the date window</text>
+<text x="484" y="1067" class="b" text-anchor="start">3  Course API: fetch each CUR payload</text>
+<text x="484" y="1088" class="mono" text-anchor="start">→ {status, courseUnitIds, matches[]}</text>
+</g>
+<g data-box="470,1150,360,90">
+<rect x="470" y="1150" width="360" height="90" rx="10" class="sub"/>
+<text x="484" y="1178" class="ct2" text-anchor="start">Upstream clients &amp; normalisation</text>
+<text x="484" y="1198" class="mono" text-anchor="start">SisuClient (Kori) · AaltoCourseApiClient</text>
+<text x="484" y="1217" class="bm" text-anchor="start">Map responses to StudyGroup / StudyEvent</text>
+</g>
+<g data-box="470,1255,360,250">
+<rect x="470" y="1255" width="360" height="250" rx="10" class="rstage"/>
+<use href="#i-calendar" x="482" y="1266" width="22" height="22" class="ic-purple"/>
+<text x="512" y="1283" class="ct" text-anchor="start">Study groups &amp; teaching events</text>
+<text x="484" y="1306" class="mono" text-anchor="start">GET  /api/courses/study-groups</text>
+<text x="484" y="1327" class="mono" text-anchor="start">POST /api/courses/batch/study-groups</text>
+<text x="484" y="1348" class="mono" text-anchor="start">POST /api/courses/batch/offerings</text>
+<text x="492.4" y="1369" class="bm" text-anchor="start">params: course_unit_id, course_offering_id</text>
+<text x="484" y="1390" class="b" text-anchor="start">Expanded event occurrences, cancellation</text>
+<text x="484" y="1411" class="b" text-anchor="start">flags and location references</text>
+<text x="484" y="1432" class="bm" text-anchor="start">No persistence; no PostgreSQL access</text>
+<text x="484" y="1453" class="bm" text-anchor="start">Called by the browser (VITE_WRAPPER_API)</text>
+</g>
+<g id="b-backend" role="group" aria-label="Sisukas backend — Node.js">
+<rect x="990" y="890" width="340" height="350" rx="20" class="bnd bnd-purple"/>
+<use href="#i-server" x="1004" y="907" width="30" height="30" class="ic-purple"/>
+<text x="1042" y="928" class="bt" text-anchor="start">Sisukas backend — Node.js</text>
+<text x="1042" y="948" class="bs" text-anchor="start">Express · Cloud Run · owns PostgreSQL</text>
+</g>
+<g data-box="1010,955,300,270">
+<rect x="1010" y="955" width="300" height="270" rx="10" class="rstage"/>
+<text x="1024" y="983" class="ct2" text-anchor="start">Course-snapshot API</text>
+<text x="1024" y="1002" class="mono" text-anchor="start">GET  /api/course-snapshots/all</text>
+<text x="1076.5" y="1021" class="mono" text-anchor="start">?liveOnly=1</text>
+<text x="1024" y="1040" class="mono" text-anchor="start">GET  /api/course-snapshots</text>
+<text x="1024" y="1059" class="mono" text-anchor="start">GET  /api/course-snapshots/status</text>
+<text x="1024" y="1078" class="mono" text-anchor="start">POST /api/course-snapshots/resolve</text>
+<text x="1024" y="1097" class="b" text-anchor="start">Serve stored snapshots; on resolve,</text>
+<text x="1024" y="1116" class="b" text-anchor="start">call sisu-wrapper and upsert results</text>
+<text x="1024" y="1135" class="mono" text-anchor="start">CourseSnapshotsService.ts</text>
+<rect x="1024" y="1162" width="165" height="22" rx="11" class="chip chip-purple"/>
+<text x="1106.5" y="1177.5" class="cht cht-purple" text-anchor="middle">source = user_request</text>
+<rect x="1024" y="1192" width="221" height="22" rx="11" class="chip chip-purple"/>
+<text x="1134.5" y="1207.5" class="cht cht-purple" text-anchor="middle">TTL extended on every resolve</text>
+</g>
+<g id="b-pg" role="group" aria-label="PostgreSQL">
+<rect x="990" y="1290" width="340" height="152" rx="20" class="bnd bnd-purple"/>
+<use href="#i-db" x="1004" y="1307" width="30" height="30" class="ic-purple"/>
+<text x="1042" y="1328" class="bt" text-anchor="start">PostgreSQL</text>
+<text x="1042" y="1348" class="bs" text-anchor="start">Private runtime storage</text>
+</g>
+<g data-box="990,1290,340,152">
+<text x="1010" y="1374" class="mono" text-anchor="start">course_snapshots · unique(code, cur_id)</text>
+<text x="1010" y="1393" class="b" text-anchor="start">payload JSONB · snapshot_hash · timestamps</text>
+<text x="1010" y="1412" class="bb" text-anchor="start">expires_at = last request + 180 days</text>
+<rect x="1180" y="1300" width="140" height="24" rx="12" class="chip chip-purple"/>
+<text x="1250" y="1316.5" class="warn" text-anchor="middle">NON-CANONICAL</text>
+</g>
+<rect x="986" y="1286" width="348" height="160" rx="22" class="store-temp" style="fill:none"/>
+<g id="b-curated" role="group" aria-label="Curated metadata">
+<rect x="450" y="1560" width="880" height="280" rx="20" class="bnd bnd-blue"/>
+<use href="#i-yaml" x="464" y="1577" width="30" height="30" class="ic-blue"/>
+<text x="502" y="1598" class="bt" text-anchor="start">Curated metadata</text>
+<text x="502" y="1618" class="bs" text-anchor="start">Sisukas repository · frontend/course-browser/src/data · bundled at build time</text>
+</g>
+<g data-box="470,1630,270,190">
+<rect x="470" y="1630" width="270" height="190" rx="10" class="mstage"/>
+<use href="#i-cap" x="482" y="1641" width="22" height="22" class="ic-blue"/>
+<text x="512" y="1658" class="ct" text-anchor="start">Curricula</text>
+<text x="484" y="1680" class="mono" text-anchor="start">major.yaml · minor.yaml</text>
+<text x="484" y="1699" class="mono" text-anchor="start">master.yaml</text>
+<text x="484" y="1718" class="b" text-anchor="start">Programmes &amp; modules: code,</text>
+<text x="484" y="1737" class="b" text-anchor="start">name, period, sourceUrl and</text>
+<text x="484" y="1756" class="b" text-anchor="start">member course codes</text>
+</g>
+<g data-box="755,1630,175,190">
+<rect x="755" y="1630" width="175" height="190" rx="10" class="mstage"/>
+<use href="#i-org" x="767" y="1641" width="22" height="22" class="ic-blue"/>
+<text x="797" y="1658" class="ct2" text-anchor="start">Organisations</text>
+<text x="769" y="1680" class="mono" text-anchor="start">organizations.yaml</text>
+<text x="769" y="1699" class="b" text-anchor="start">Organisation names</text>
+<text x="769" y="1718" class="b" text-anchor="start">for organisation</text>
+<text x="769" y="1737" class="b" text-anchor="start">filters</text>
+</g>
+<g data-box="945,1630,175,190">
+<rect x="945" y="1630" width="175" height="190" rx="10" class="mstage"/>
+<use href="#i-calendar" x="957" y="1641" width="22" height="22" class="ic-blue"/>
+<text x="987" y="1658" class="ct2" text-anchor="start">Academic periods</text>
+<text x="959" y="1680" class="mono" text-anchor="start">periods.yaml</text>
+<text x="959" y="1699" class="b" text-anchor="start">Period I–V dates</text>
+<text x="959" y="1718" class="b" text-anchor="start">per academic year</text>
+</g>
+<g data-box="1130,1630,190,190">
+<rect x="1130" y="1630" width="190" height="190" rx="10" class="muted-card"/>
+<text x="1144" y="1658" class="ct2" text-anchor="start">Review catalogue</text>
+<text x="1142" y="1678" class="mono" text-anchor="start">data/curricula/</text>
+<text x="1142" y="1697" class="mono" text-anchor="start">catalogue-reviewed.csv</text>
+<text x="1142" y="1716" class="bm" text-anchor="start">Maintainer review aid;</text>
+<text x="1142" y="1735" class="bm" text-anchor="start">not loaded by the app;</text>
+<text x="1142" y="1754" class="bm" text-anchor="start">YAML edited by hand</text>
+</g>
+<g id="b-browser" role="group" aria-label="Frontend application — Browser / Svelte">
+<rect x="1480" y="120" width="1150" height="1720" rx="20" class="bnd bnd-orange"/>
+<use href="#i-browser" x="1494" y="137" width="30" height="30" class="ic-orange"/>
+<text x="1532" y="158" class="bt" text-anchor="start">Frontend application — Browser / Svelte</text>
+<text x="1532" y="178" class="bs" text-anchor="start">frontend/course-browser · runs in the user's browser · all composition happens in memory</text>
+</g>
+<g data-box="1510,200,340,262">
+<rect x="1510" y="200" width="340" height="262" rx="10" class="bstage"/>
+<circle cx="1532" cy="222" r="13" class="numc-orange"/>
+<text x="1532" y="227" class="num" text-anchor="middle">A</text>
+<text x="1554" y="228" class="ct" text-anchor="start">Load active catalogue</text>
+<text x="1526" y="254" class="mono" text-anchor="start">RemoteCourseLoader · loadCoursesWithCache</text>
+<text x="1526" y="272" class="b" text-anchor="start">LargeFileCache (IndexedDB): returns cached</text>
+<text x="1526" y="290" class="b" text-anchor="start">copy at once, checks courses.hash.json in</text>
+<text x="1526" y="308" class="b" text-anchor="start">background and re-downloads on change</text>
+<text x="1526" y="326" class="b" text-anchor="start">CourseParser validates; invalid records skipped</text>
+<text x="1526" y="344" class="mono" text-anchor="start">buildIndexes(): byInstanceId, idsByCode</text>
+<text x="1526" y="362" class="bm" text-anchor="start">Required — failure shows an error</text>
+<rect x="1526" y="418" width="308" height="30" rx="15.0" class="pill pill-orange "/>
+<text x="1680.0" y="438.0" class="pt pt-orange" text-anchor="middle">▸ Active course index</text>
+</g>
+<g data-box="1510,486,340,246">
+<rect x="1510" y="486" width="340" height="246" rx="10" class="bstage"/>
+<circle cx="1532" cy="508" r="13" class="numc-orange"/>
+<text x="1532" y="513" class="num" text-anchor="middle">B</text>
+<text x="1554" y="514" class="ct" text-anchor="start">Load historical baseline</text>
+<text x="1526" y="540" class="mono" text-anchor="start">loadHistoricalCoursesWithCache</text>
+<text x="1526" y="558" class="b" text-anchor="start">Same IndexedDB cache + historical.hash.json</text>
+<text x="1526" y="576" class="b" text-anchor="start">CourseParser + buildIndexes(), kept separate</text>
+<text x="1526" y="594" class="b" text-anchor="start">from the active index</text>
+<text x="1526" y="612" class="bm" text-anchor="start">Required for the historical bootstrap</text>
+<text x="1526" y="630" class="bm" text-anchor="start">Lazy: on “all” mode or warm-up after A</text>
+<rect x="1526" y="688" width="308" height="30" rx="15.0" class="pill pill-orange "/>
+<text x="1680.0" y="708.0" class="pt pt-orange" text-anchor="middle">▸ Historical baseline</text>
+</g>
+<g data-box="1510,880,340,230">
+<rect x="1510" y="880" width="340" height="230" rx="10" class="rstage"/>
+<circle cx="1532" cy="902" r="13" class="numc-purple"/>
+<text x="1532" y="907" class="num" text-anchor="middle">C</text>
+<text x="1554" y="908" class="ct" text-anchor="start">Fetch runtime snapshots</text>
+<text x="1526" y="934" class="mono" text-anchor="start">SnapshotHistoricalMerge</text>
+<text x="1526" y="952" class="b" text-anchor="start">Backend returns only live rows (liveOnly=1)</text>
+<text x="1526" y="970" class="b" text-anchor="start">payload → RawCourse; incomplete payloads</text>
+<text x="1526" y="988" class="b" text-anchor="start">skipped; CourseParser validates the rest</text>
+<text x="1526" y="1006" class="bb" text-anchor="start">Best effort: failure keeps baseline only</text>
+<rect x="1526" y="1066" width="308" height="30" rx="15.0" class="pill pill-purple "/>
+<text x="1680.0" y="1086.0" class="pt pt-purple" text-anchor="middle">▸ Eligible runtime snapshots</text>
+</g>
+<g data-box="1510,1128,340,122">
+<rect x="1510" y="1128" width="340" height="122" rx="10" class="rstage"/>
+<use href="#i-search" x="1522" y="1139" width="22" height="22" class="ic-purple"/>
+<text x="1552" y="1156" class="ct2" text-anchor="start">Missing-course resolution</text>
+<text x="1526" y="1176" class="b" text-anchor="start">“Couldn't find your course?” in CourseTable</text>
+<text x="1526" y="1195" class="bm" text-anchor="start">Only if the code is absent from both indexes</text>
+<text x="1526" y="1214" class="bm" text-anchor="start">Stored rows appear on the next historical load</text>
+</g>
+<g data-box="1510,1268,340,252">
+<rect x="1510" y="1268" width="340" height="252" rx="10" class="rstage"/>
+<use href="#i-calendar" x="1522" y="1279" width="22" height="22" class="ic-purple"/>
+<text x="1552" y="1296" class="ct2" text-anchor="start">Study-group loading</text>
+<text x="1526" y="1316" class="b" text-anchor="start">1  User opens a course instance or plan block</text>
+<text x="1526" y="1335" class="b" text-anchor="start">2  Key: courseUnitId + offering id (Course.id)</text>
+<text x="1526" y="1354" class="b" text-anchor="start">3  StudyGroupService → sisu-wrapper (single</text>
+<text x="1542.8" y="1373" class="b" text-anchor="start">or batch; de-duplicated, chunked, limited</text>
+<text x="1542.8" y="1392" class="b" text-anchor="start">concurrency)</text>
+<text x="1526" y="1411" class="b" text-anchor="start">4  Merge events sharing a time slot; combine</text>
+<text x="1542.8" y="1430" class="b" text-anchor="start">their locations</text>
+<text x="1526" y="1500" class="sm" text-anchor="start">Independent of the catalogue merge</text>
+</g>
+<g data-box="1510,1600,340,220">
+<rect x="1510" y="1600" width="340" height="220" rx="10" class="mstage"/>
+<use href="#i-yaml" x="1522" y="1611" width="22" height="22" class="ic-blue"/>
+<text x="1552" y="1628" class="ct2" text-anchor="start">Curated metadata loaders</text>
+<text x="1526" y="1650" class="mono" text-anchor="start">CurriculumLoader.ts → CurriculaMap</text>
+<text x="1526" y="1670" class="mono" text-anchor="start">OrganizationLoader.ts → names</text>
+<text x="1526" y="1690" class="mono" text-anchor="start">AcademicPeriodLoader.ts → periods</text>
+<text x="1526" y="1710" class="b" text-anchor="start">Run once at app start (App.svelte)</text>
+<text x="1526" y="1730" class="bm" text-anchor="start">No network request · not merged with</text>
+<text x="1526" y="1750" class="bm" text-anchor="start">course data · not stored in PostgreSQL</text>
+</g>
+<g data-box="1930,200,370,286">
+<rect x="1930" y="200" width="370" height="286" rx="10" class="bstage"/>
+<circle cx="1952" cy="222" r="13" class="numc-orange"/>
+<text x="1952" y="227" class="num" text-anchor="middle">E</text>
+<text x="1974" y="228" class="ct" text-anchor="start">Course catalogue views</text>
+<text x="1946" y="252" class="sm" text-anchor="start">courseIndexStore.svelte.ts · derived per mode</text>
+</g>
+<g data-box="1946,266,338,84">
+<rect x="1946" y="266" width="338" height="84" rx="10" class="card"/>
+<text x="1960" y="294" class="ct2" text-anchor="start">Active view  ·  mode “active”</text>
+<text x="1960" y="312" class="b" text-anchor="start">Active course index only</text>
+<text x="1960" y="331" class="bm" text-anchor="start">current &amp; upcoming instances</text>
+</g>
+<g data-box="1946,366,338,106">
+<rect x="1946" y="366" width="338" height="106" rx="10" class="card"/>
+<text x="1960" y="394" class="ct2" text-anchor="start">All courses view  ·  mode “all”</text>
+<text x="1960" y="412" class="mono" text-anchor="start">mergePreferActive(active, augmented)</text>
+<text x="1960" y="431" class="b" text-anchor="start">Active ∪ augmented historical;</text>
+<text x="1960" y="450" class="bb" text-anchor="start">active record wins on id overlap</text>
+</g>
+<g data-box="1930,560,370,600">
+<rect x="1930" y="560" width="370" height="600" rx="10" class="bstage"/>
+<circle cx="1952" cy="582" r="13" class="numc-orange"/>
+<text x="1952" y="587" class="num" text-anchor="middle">D</text>
+<text x="1974" y="588" class="ct" text-anchor="start">Augment historical index</text>
+<text x="1946" y="612" class="sm" text-anchor="start">bootstrapHistorical() · in browser memory</text>
+<g data-box="1946,636,338,74">
+<rect x="1946" y="636" width="338" height="74" rx="10" class="card"/>
+<circle cx="1966" cy="656" r="11" class="numc-orange"/>
+<text x="1966" y="661" class="num" text-anchor="middle">1</text>
+<text x="1986" y="661" class="bb" text-anchor="start">Start with canonical baseline</text>
+<text x="1960" y="683" class="b" text-anchor="start">historical.json indexes from B</text>
+</g>
+<g data-box="1946,736,338,92">
+<rect x="1946" y="736" width="338" height="92" rx="10" class="card"/>
+<circle cx="1966" cy="756" r="11" class="numc-orange"/>
+<text x="1966" y="761" class="num" text-anchor="middle">2</text>
+<text x="1986" y="761" class="bb" text-anchor="start">Append eligible snapshots</text>
+<text x="1960" y="783" class="mono" text-anchor="start">appendHistoricalCourses()</text>
+<text x="1960" y="801" class="b" text-anchor="start">adds snapshots from C</text>
+</g>
+<g data-box="1946,854,338,74">
+<rect x="1946" y="854" width="338" height="74" rx="10" class="card"/>
+<circle cx="1966" cy="874" r="11" class="numc-orange"/>
+<text x="1966" y="879" class="num" text-anchor="middle">3</text>
+<text x="1986" y="879" class="bb" text-anchor="start">Skip duplicate instance ids</text>
+<text x="1960" y="901" class="b" text-anchor="start">id already in historical → skipped</text>
+</g>
+<g data-box="1946,954,338,92">
+<rect x="1946" y="954" width="338" height="92" rx="10" class="card"/>
+<circle cx="1966" cy="974" r="11" class="numc-orange"/>
+<text x="1966" y="979" class="num" text-anchor="middle">4</text>
+<text x="1986" y="979" class="bb" text-anchor="start">Remove overlaps with active</text>
+<text x="1960" y="1001" class="mono" text-anchor="start">pruneHistoricalAgainstActive()</text>
+<text x="1960" y="1019" class="b" text-anchor="start">drop ids in Active course index</text>
+</g>
+<path d="M2115.0,710 L2115.0,736" class="ar ar-orange" marker-end="url(#mk-orange)" style="stroke-width:2.6"></path>
+<path d="M2115.0,828 L2115.0,854" class="ar ar-orange" marker-end="url(#mk-orange)" style="stroke-width:2.6"></path>
+<path d="M2115.0,928 L2115.0,954" class="ar ar-orange" marker-end="url(#mk-orange)" style="stroke-width:2.6"></path>
+<rect x="1946" y="1064" width="338" height="32" rx="16.0" class="pill pill-orange "/>
+<text x="2115.0" y="1085.0" class="pt pt-orange" text-anchor="middle">▸ Augmented historical index</text>
+<text x="1946" y="1122" class="bm" text-anchor="start">Writes nothing back: historical.json, GCS and</text>
+<text x="1946" y="1140" class="bb" text-anchor="start">PostgreSQL remain unchanged</text>
+<path d="M2115.0,1046 L2115.0,1064" class="ar ar-orange" marker-end="url(#mk-orange)" style="stroke-width:2.6"></path>
+</g>
+<g data-box="1930,1268,370,252">
+<rect x="1930" y="1268" width="370" height="252" rx="10" class="cache"/>
+<use href="#i-layers" x="1942" y="1279" width="22" height="22" class="ic-purple"/>
+<text x="1972" y="1296" class="ct" text-anchor="start">Study-group cache</text>
+<text x="1946" y="1316" class="bb" text-anchor="start">Separate from course catalogue</text>
+<text x="1946" y="1340" class="mono" text-anchor="start">studyGroupStore.svelte.ts</text>
+<text x="1946" y="1359" class="b" text-anchor="start">In memory, keyed courseUnitId:offeringId</text>
+<text x="1946" y="1378" class="b" text-anchor="start">localStorage summaries · 24 h TTL fallback</text>
+<rect x="1946" y="1408" width="67" height="22" rx="11" class="chip chip-slate"/>
+<text x="1979.5" y="1423.5" class="cht cht-slate" text-anchor="middle">loading</text>
+<rect x="2019" y="1408" width="53" height="22" rx="11" class="chip chip-slate"/>
+<text x="2045.5" y="1423.5" class="cht cht-slate" text-anchor="middle">ready</text>
+<rect x="2078" y="1408" width="144" height="22" rx="11" class="chip chip-slate"/>
+<text x="2150.0" y="1423.5" class="cht cht-slate" text-anchor="middle">stale → refreshing</text>
+<rect x="2228" y="1408" width="53" height="22" rx="11" class="chip chip-slate"/>
+<text x="2254.5" y="1423.5" class="cht cht-slate" text-anchor="middle">error</text>
+<text x="1946" y="1452" class="bm" text-anchor="start">SWR refresh with 30-min cooldown;</text>
+<text x="1946" y="1470" class="bm" text-anchor="start">no separate refresh-failed state</text>
+<text x="1946" y="1500" class="sm" text-anchor="start">Never writes courses.json / historical.json</text>
+</g>
+<g data-box="1930,1600,370,220">
+<rect x="1930" y="1600" width="370" height="220" rx="10" class="bstage"/>
+<use href="#i-search" x="1942" y="1611" width="22" height="22" class="ic-orange"/>
+<text x="1972" y="1628" class="ct" text-anchor="start">Filter rule blueprints</text>
+<text x="1946" y="1650" class="mono" text-anchor="start">createRuleBlueprints({ curriculaMap,</text>
+<text x="1961.0" y="1670" class="mono" text-anchor="start">organizations, periods })</text>
+<text x="1946" y="1690" class="b" text-anchor="start">Curriculum-membership, organisation</text>
+<text x="1946" y="1710" class="b" text-anchor="start">and period filters, matched against</text>
+<text x="1946" y="1730" class="b" text-anchor="start">course codes / fields in the views</text>
+<text x="1946" y="1750" class="bm" text-anchor="start">Metadata never enters the course index</text>
+</g>
+<g data-box="2380,200,230,1620">
+<rect x="2380" y="200" width="230" height="1620" rx="10" class="card"/>
+<text x="2396" y="232" class="ct" text-anchor="start">User-facing functions</text>
+<text x="2396" y="252" class="sm" text-anchor="start">chips = data sources used</text>
+<use href="#i-search" x="2394" y="278" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="296" class="bb" text-anchor="start">Course browsing</text>
+<text x="2428" y="314" class="bb" text-anchor="start">&amp; search</text>
+<rect x="2396" y="332" width="52" height="22" rx="11" class="chip chip-orange"/>
+<text x="2422.0" y="347.5" class="cht cht-orange" text-anchor="middle">Views</text>
+<rect x="2454" y="332" width="66" height="22" rx="11" class="chip chip-blue"/>
+<text x="2487.0" y="347.5" class="cht cht-blue" text-anchor="middle">Filters</text>
+<line x1="2394" x2="2596" y1="372" y2="372" class="rule"/>
+<use href="#i-history" x="2394" y="455" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="473" class="bb" text-anchor="start">Current &amp; historical</text>
+<text x="2428" y="491" class="bb" text-anchor="start">exploration, timeline</text>
+<rect x="2396" y="509" width="142" height="22" rx="11" class="chip chip-orange"/>
+<text x="2467.0" y="524.5" class="cht cht-orange" text-anchor="middle">Active / All views</text>
+<line x1="2394" x2="2596" y1="549" y2="549" class="rule"/>
+<use href="#i-cap" x="2394" y="632" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="650" class="bb" text-anchor="start">Curriculum-aware</text>
+<text x="2428" y="668" class="bb" text-anchor="start">filtering</text>
+<rect x="2396" y="686" width="80" height="22" rx="11" class="chip chip-blue"/>
+<text x="2436.0" y="701.5" class="cht cht-blue" text-anchor="middle">Curricula</text>
+<rect x="2482" y="686" width="52" height="22" rx="11" class="chip chip-orange"/>
+<text x="2508.0" y="701.5" class="cht cht-orange" text-anchor="middle">Views</text>
+<line x1="2394" x2="2596" y1="726" y2="726" class="rule"/>
+<use href="#i-plan" x="2394" y="809" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="827" class="bb" text-anchor="start">Course planning</text>
+<text x="2428" y="845" class="bb" text-anchor="start">(plans, favourites)</text>
+<rect x="2396" y="863" width="52" height="22" rx="11" class="chip chip-orange"/>
+<text x="2422.0" y="878.5" class="cht cht-orange" text-anchor="middle">Views</text>
+<rect x="2454" y="863" width="93" height="22" rx="11" class="chip chip-slate"/>
+<text x="2500.5" y="878.5" class="cht cht-slate" text-anchor="middle">Plans API †</text>
+<line x1="2394" x2="2596" y1="903" y2="903" class="rule"/>
+<use href="#i-search" x="2394" y="986" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="1004" class="bb" text-anchor="start">Missing-course</text>
+<text x="2428" y="1022" class="bb" text-anchor="start">lookup</text>
+<rect x="2396" y="1040" width="80" height="22" rx="11" class="chip chip-purple"/>
+<text x="2436.0" y="1055.5" class="cht cht-purple" text-anchor="middle">Snapshots</text>
+<rect x="2482" y="1040" width="52" height="22" rx="11" class="chip chip-orange"/>
+<text x="2508.0" y="1055.5" class="cht cht-orange" text-anchor="middle">Views</text>
+<line x1="2394" x2="2596" y1="1080" y2="1080" class="rule"/>
+<use href="#i-calendar" x="2394" y="1290" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="1308" class="bb" text-anchor="start">Study-group &amp;</text>
+<text x="2428" y="1326" class="bb" text-anchor="start">teaching-event</text>
+<text x="2428" y="1344" class="bb" text-anchor="start">inspection</text>
+<rect x="2396" y="1362" width="100" height="22" rx="11" class="chip chip-purple"/>
+<text x="2446.0" y="1377.5" class="cht cht-purple" text-anchor="middle">Study groups</text>
+<line x1="2394" x2="2596" y1="1402" y2="1402" class="rule"/>
+<use href="#i-grid" x="2394" y="1450" width="26" height="26" class="ic-orange"/>
+<text x="2428" y="1468" class="bb" text-anchor="start">Schedule</text>
+<text x="2428" y="1486" class="bb" text-anchor="start">construction</text>
+<rect x="2396" y="1504" width="66" height="22" rx="11" class="chip chip-slate"/>
+<text x="2429.0" y="1519.5" class="cht cht-slate" text-anchor="middle">Plans †</text>
+<rect x="2468" y="1504" width="100" height="22" rx="11" class="chip chip-purple"/>
+<text x="2518.0" y="1519.5" class="cht cht-purple" text-anchor="middle">Study groups</text>
+<rect x="2396" y="1532" width="52" height="22" rx="11" class="chip chip-orange"/>
+<text x="2422.0" y="1547.5" class="cht cht-orange" text-anchor="middle">Views</text>
+<line x1="2394" x2="2596" y1="1572" y2="1572" class="rule"/>
+<text x="2396" y="1640" class="sm" text-anchor="start">† Plans and favourites are</text>
+<text x="2396" y="1657" class="sm" text-anchor="start">user data served by the</text>
+<text x="2396" y="1674" class="sm" text-anchor="start">backend (/api/plans), outside</text>
+<text x="2396" y="1691" class="sm" text-anchor="start">this course-data diagram.</text>
+<text x="2396" y="1708" class="sm" text-anchor="start">Combining sources here does</text>
+<text x="2396" y="1725" class="sm" text-anchor="start">not feed anything back into</text>
+<text x="2396" y="1742" class="sm" text-anchor="start">the publication pipeline.</text>
+</g>
+<path d="M290,300 L470,300" class="ar ar-green" marker-end="url(#mk-green)"><title>Fetch course realisations (scheduled)</title></path>
+<circle cx="327" cy="257" r="9" class="bdg bdg-green"/>
+<text x="327" y="261.5" class="bdgt" text-anchor="middle">C</text>
+<text x="341" y="262" class="lb" text-anchor="start">Fetch course</text>
+<text x="341" y="278" class="lb" text-anchor="start">realisations</text>
+<text x="341" y="294" class="lbs" text-anchor="start">daily, scheduled</text>
+<path d="M990,588 L830,588" class="ar ar-green" marker-end="url(#mk-green)"><title>Download previous published baseline</title></path>
+<circle cx="857" cy="535" r="9" class="bdg bdg-green"/>
+<text x="857" y="539.5" class="bdgt" text-anchor="middle">C</text>
+<text x="871" y="540" class="lb" text-anchor="start">Download</text>
+<text x="871" y="556" class="lb" text-anchor="start">previous</text>
+<text x="871" y="572" class="lb" text-anchor="start">baseline</text>
+<text x="852" y="612" class="lbs" text-anchor="start">courses.json +</text>
+<text x="852" y="627" class="lbs" text-anchor="start">historical.json</text>
+<path d="M830,776 L990,776" class="ar ar-green" marker-end="url(#mk-green)"><title>Publish canonical datasets</title></path>
+<circle cx="857" cy="723" r="9" class="bdg bdg-green"/>
+<text x="857" y="727.5" class="bdgt" text-anchor="middle">C</text>
+<text x="871" y="728" class="lb" text-anchor="start">Publish</text>
+<text x="871" y="744" class="lb" text-anchor="start">canonical</text>
+<text x="871" y="760" class="lb" text-anchor="start">datasets</text>
+<text x="852" y="800" class="lbs" text-anchor="start">only if changed</text>
+<path d="M1310,345 L1510,345" class="ar ar-green" marker-end="url(#mk-green)"><title>Download courses.json</title></path>
+<path d="M1310,505 L1510,505" class="ar ar-green" marker-end="url(#mk-green)"><title>Download historical.json</title></path>
+<circle cx="1355" cy="265" r="9" class="bdg bdg-green"/>
+<text x="1355" y="269.5" class="bdgt" text-anchor="middle">C</text>
+<text x="1369" y="270" class="lb" text-anchor="start">Download</text>
+<text x="1369" y="286" class="lb" text-anchor="start">canonical</text>
+<text x="1369" y="302" class="lb" text-anchor="start">datasets</text>
+<text x="1350" y="370" class="lbs" text-anchor="start">courses.json + hash</text>
+<text x="1350" y="530" class="lbs" text-anchor="start">historical.json + hash</text>
+<path d="M290,395 L378,395 L378,1010 L450,1010" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Fetch CUR payloads by id (resolve only)</title></path>
+<g transform="translate(366,700) rotate(-90)">
+<text x="0" y="0" class="lb" text-anchor="middle">Fetch CUR payloads by id (resolve only)</text>
+</g>
+<circle cx="366" cy="900" r="9" class="bdg bdg-purple"/>
+<text x="366" y="904.5" class="bdgt" text-anchor="middle">R</text>
+<path d="M450,1175 L290,1175" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Query Kori</title></path>
+<path d="M290,1225 L450,1225" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Kori JSON responses</title></path>
+<circle cx="327" cy="1151" r="9" class="bdg bdg-purple"/>
+<text x="327" y="1155.5" class="bdgt" text-anchor="middle">R</text>
+<text x="341" y="1156" class="lb" text-anchor="start">Query Kori</text>
+<text x="318" y="1252" class="lb" text-anchor="start">Kori JSON</text>
+<text x="318" y="1267" class="lb" text-anchor="start">responses</text>
+<path d="M1010,990 L830,990" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Request resolution</title></path>
+<path d="M830,1062 L1010,1062" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Return CUR matches</title></path>
+<circle cx="857" cy="953" r="9" class="bdg bdg-purple"/>
+<text x="857" y="957.5" class="bdgt" text-anchor="middle">R</text>
+<text x="871" y="958" class="lb" text-anchor="start">Request</text>
+<text x="871" y="974" class="lb" text-anchor="start">resolution</text>
+<text x="852" y="1012" class="lbs" text-anchor="start">course code</text>
+<text x="852" y="1086" class="lb" text-anchor="start">Return CUR</text>
+<text x="852" y="1101" class="lb" text-anchor="start">matches</text>
+<path d="M1050,1225 L1050,1290" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Upsert snapshots</title></path>
+<path d="M1210,1290 L1210,1225" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Select live snapshots</title></path>
+<text x="1062" y="1266" class="lb" text-anchor="start">Upsert (TTL 180 d)</text>
+<text x="1222" y="1266" class="lb" text-anchor="start">Read live rows</text>
+<path d="M1310,960 L1510,960" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Retrieve live snapshots</title></path>
+<circle cx="1355" cy="917" r="9" class="bdg bdg-purple"/>
+<text x="1355" y="921.5" class="bdgt" text-anchor="middle">R</text>
+<text x="1369" y="922" class="lb" text-anchor="start">Retrieve live</text>
+<text x="1369" y="938" class="lb" text-anchor="start">snapshots</text>
+<text x="1350" y="984" class="lbm" text-anchor="start">/all?liveOnly=1</text>
+<path d="M1510,1170 L1310,1170" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Request resolution (course code)</title></path>
+<path d="M1310,1222 L1510,1222" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Stored snapshots returned</title></path>
+<circle cx="1355" cy="1145" r="9" class="bdg bdg-purple"/>
+<text x="1355" y="1149.5" class="bdgt" text-anchor="middle">R</text>
+<text x="1369" y="1150" class="lb" text-anchor="start">Request resolution</text>
+<text x="1350" y="1194" class="lbm" text-anchor="start">POST /resolve</text>
+<text x="1350" y="1246" class="lb" text-anchor="start">Stored snapshots (201)</text>
+<path d="M1510,1470 L830,1470" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Fetch study groups</title></path>
+<path d="M830,1505 L1510,1505" class="ar ar-purple" marker-end="url(#mk-purple)"><title>Normalised study groups and events</title></path>
+<circle cx="1009" cy="1457" r="9" class="bdg bdg-purple"/>
+<text x="1009" y="1461.5" class="bdgt" text-anchor="middle">R</text>
+<text x="1023" y="1462" class="lb" text-anchor="start">Fetch study groups — direct to sisu-wrapper, not via backend</text>
+<text x="1023" y="1530" class="lb" text-anchor="start">Normalised study groups + expanded teaching events</text>
+<path d="M290,1700 L470,1700" class="ar ar-blue dash" marker-end="url(#mk-blue)"><title>Curate manually</title></path>
+<circle cx="327" cy="1663" r="9" class="bdg bdg-blue"/>
+<text x="327" y="1667.5" class="bdgt" text-anchor="middle">M</text>
+<text x="341" y="1668" class="lb" text-anchor="start">Curate</text>
+<text x="341" y="1684" class="lb" text-anchor="start">manually</text>
+<text x="322" y="1724" class="lbs" text-anchor="start">human review</text>
+<path d="M1315,1700 L1510,1700" class="ar ar-blue dash" marker-end="url(#mk-blue)"><title>Load bundled YAML</title></path>
+<circle cx="1355" cy="1663" r="9" class="bdg bdg-blue"/>
+<text x="1355" y="1667.5" class="bdgt" text-anchor="middle">M</text>
+<text x="1369" y="1668" class="lb" text-anchor="start">Load bundled</text>
+<text x="1369" y="1684" class="lb" text-anchor="start">YAML</text>
+<text x="1350" y="1724" class="lbs" text-anchor="start">Vite YAML import</text>
+<text x="1350" y="1740" class="lbs" text-anchor="start">at build time</text>
+<path d="M1850,300 L1946,300" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Build active view</title></path>
+<path d="M1850,420 L1946,420" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Merge into all-courses view</title></path>
+<text x="1858" y="290" class="lbs" text-anchor="start">Build</text>
+<text x="1858" y="410" class="lbs" text-anchor="start">Merge</text>
+<path d="M1850,450 L1890,450 L1890,596 L1930,596" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Active ids used for pruning in step 4</title></path>
+<text x="1896" y="505" class="lbs" text-anchor="start">active</text>
+<text x="1896" y="520" class="lbs" text-anchor="start">ids</text>
+<text x="1896" y="535" class="lbs" text-anchor="start">→ 4</text>
+<path d="M1850,672 L1946,672" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Historical baseline into step 1</title></path>
+<text x="1858" y="662" class="lbs" text-anchor="start">Load</text>
+<path d="M1850,1000 L1890,1000 L1890,782 L1946,782" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Append eligible snapshots in step 2</title></path>
+<text x="1896" y="900" class="lbs" text-anchor="start">Append</text>
+<path d="M2284,1080 L2340,1080 L2340,436 L2284,436" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Augmented historical index into all-courses view</title></path>
+<g transform="translate(2334,760) rotate(-90)">
+<text x="0" y="0" class="lbs" text-anchor="middle">Augmented historical → All view</text>
+</g>
+<path d="M1850,1394 L1930,1394" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Store normalised groups</title></path>
+<text x="1858" y="1384" class="lbs" text-anchor="start">Store</text>
+<path d="M1850,1700 L1930,1700" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Build filter blueprints</title></path>
+<text x="1858" y="1690" class="lbs" text-anchor="start">Build</text>
+<path d="M2300,300 L2380,300" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Consume course views</title></path>
+<text x="2306" y="290" class="lbs" text-anchor="start">Consume</text>
+<path d="M2300,1394 L2380,1394" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Consume cached study groups</title></path>
+<text x="2306" y="1384" class="lbs" text-anchor="start">Consume</text>
+<path d="M2300,1700 L2380,1700" class="ar ar-orange" marker-end="url(#mk-orange)"><title>Consume filters</title></path>
+<text x="2306" y="1690" class="lbs" text-anchor="start">Consume</text>
+<g data-box="30,1880,900,380">
+<rect x="30" y="1880" width="900" height="380" rx="10" class="card"/>
+<text x="50" y="1914" class="ct" text-anchor="start">Legend</text>
+<path d="M52,1952 L132,1952" class="ar ar-green" marker-end="url(#mk-green)"></path>
+<circle cx="150" cy="1952" r="9" class="bdg bdg-green"/>
+<text x="150" y="1956.5" class="bdgt" text-anchor="middle">C</text>
+<text x="168" y="1957" class="bb" text-anchor="start">Canonical data</text>
+<text x="340" y="1957" class="bm" text-anchor="start">Scheduled fetch, publication and download of the authoritative datasets</text>
+<path d="M52,1990 L132,1990" class="ar ar-purple" marker-end="url(#mk-purple)"></path>
+<circle cx="150" cy="1990" r="9" class="bdg bdg-purple"/>
+<text x="150" y="1994.5" class="bdgt" text-anchor="middle">R</text>
+<text x="168" y="1995" class="bb" text-anchor="start">Runtime data</text>
+<text x="340" y="1995" class="bm" text-anchor="start">On-demand resolution, snapshots and study-group requests</text>
+<path d="M52,2028 L132,2028" class="ar ar-blue dash" marker-end="url(#mk-blue)"></path>
+<circle cx="150" cy="2028" r="9" class="bdg bdg-blue"/>
+<text x="150" y="2032.5" class="bdgt" text-anchor="middle">M</text>
+<text x="168" y="2033" class="bb" text-anchor="start">Curated metadata</text>
+<text x="340" y="2033" class="bm" text-anchor="start">Manually maintained YAML, loaded at build time (dashed)</text>
+<path d="M52,2066 L132,2066" class="ar ar-orange" marker-end="url(#mk-orange)"></path>
+<circle cx="150" cy="2066" r="9" class="bdg bdg-orange"/>
+<text x="150" y="2070.5" class="bdgt" text-anchor="middle">P</text>
+<text x="168" y="2071" class="bb" text-anchor="start">In-browser processing</text>
+<text x="340" y="2071" class="bm" text-anchor="start">Indexing, merging, de-duplication and consumption in memory</text>
+<text x="50" y="2116" class="bm" text-anchor="start">Arrowheads point where data moves. “Fetch / Download / Retrieve” labels: the receiving side starts the request.</text>
+<text x="50" y="2136" class="bm" text-anchor="start">Paired arrows show a request and its response separately. Badges (C R M P) repeat the colour meaning.</text>
+<rect x="50" y="2162" width="58" height="34" rx="8" class="bnd bnd-slate"/>
+<text x="116" y="2184" class="sm" text-anchor="start">System boundary (owner / runtime)</text>
+<rect x="370" y="2162" width="58" height="34" rx="8" class="store-canon"/>
+<text x="436" y="2184" class="sm" text-anchor="start">Canonical persistent file</text>
+<rect x="680" y="2162" width="58" height="34" rx="8" class="store-temp"/>
+<text x="746" y="2184" class="sm" text-anchor="start">Temporary runtime storage</text>
+<rect x="50" y="2208" width="58" height="34" rx="8" class="cache"/>
+<text x="116" y="2230" class="sm" text-anchor="start">Browser cache (memory / local storage)</text>
+<rect x="370" y="2210" width="58" height="30" rx="15.0" class="pill pill-orange "/>
+<text x="399.0" y="2230.0" class="pt pt-orange" text-anchor="middle"></text>
+<text x="436" y="2230" class="sm" text-anchor="start">In-memory index produced by a stage</text>
+<rect x="680" y="2208" width="58" height="34" rx="8" class="muted-card"/>
+<text x="746" y="2230" class="sm" text-anchor="start">Not loaded at runtime</text>
+</g>
+<g data-box="950,1880,1680,380">
+<rect x="950" y="1880" width="1680" height="380" rx="10" class="card"/>
+<text x="970" y="1914" class="ct" text-anchor="start">Architectural notes</text>
+<text x="970" y="1944" class="b" text-anchor="start">1  GCS is the only authoritative source of current and historical course data. IndexedDB copies, PostgreSQL snapshots and the study-group cache are derived or supplementary.</text>
+<text x="970" y="1966" class="b" text-anchor="start">2  Runtime snapshots are never published to GCS or written into historical.json. They reach the browser only through the backend and only enter the in-memory historical index.</text>
+<text x="970" y="1988" class="b" text-anchor="start">3  Active records take precedence: the pipeline enforces active ∩ historical = ∅ before publishing, and the browser prunes historical ids that overlap the active index.</text>
+<text x="970" y="2010" class="b" text-anchor="start">4  Curated metadata and study groups use independent paths and never modify the course catalogue. Snapshot failures leave the canonical views working.</text>
+<text x="970" y="2046" class="ct2" text-anchor="start">Implementation findings that differ from the brief</text>
+<text x="970" y="2074" class="bm" text-anchor="start">• Wrapper endpoints are /api/courses/resolve, /study-groups, /batch/study-groups and /batch/offerings; no /batch-resolve or /{id}/study-groups exists.</text>
+<text x="970" y="2096" class="bm" text-anchor="start">• Resolution uses SISU Kori to find CUR ids and the Aalto Course API for CUR payloads. The daily workflow uses only the Aalto Course API.</text>
+<text x="970" y="2118" class="bm" text-anchor="start">• The pipeline rejects duplicate ids rather than de-duplicating them. Curriculum YAML holds programme course lists; no credit-requirement rules were found.</text>
+<text x="970" y="2140" class="bm" text-anchor="start">• The backend resolve call uses a fixed window (2022-09-01 → 2025-12-31). Snapshot expiry is filtered by the backend; the browser checks payload completeness only.</text>
+<text x="970" y="2162" class="bm" text-anchor="start">• A newly resolved course appears in the browser after the next historical load. The sisu-wrapper historical crawl CLI is a manual tool and is not drawn here.</text>
+</g>
+</svg>

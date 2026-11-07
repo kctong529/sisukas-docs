@@ -1,106 +1,177 @@
 ---
 weight: 2
 title: "Course Data Architecture"
-description: "End-to-end overview of course ingestion, historical data, runtime resolution, caching, and their ownership boundaries."
+description: "System boundaries and data lifecycles for canonical catalogues, runtime resolution, teaching details, and browser-side composition."
 ---
+
 > [!NOTE]
-> This page connects the scheduled course-catalogue workflow with independent runtime and frontend paths. For operational commands and publication safeguards, see [Data Pipeline](../data-pipeline/).
+> This page explains **where course data originates, which system owns it, and how the browser combines it**. For workflow triggers, exact processing commands, publication safeguards, and recovery, see [Data Pipeline](../data-pipeline/).
 
 ## Why several data flows exist
 
-Sisukas cannot rely on a single live upstream endpoint for every course view. Discovery needs a stable, validated catalogue; planning needs current teaching details; earlier study periods need records that may disappear upstream; and an imported plan may refer to courses absent from either published catalogue.
+Sisukas cannot rely on a single live upstream endpoint for every course view. Discovery needs a stable, validated catalogue; planning needs current teaching details; earlier study periods need records that may disappear upstream; and imported plans may refer to courses absent from both published catalogues.
 
-The system therefore separates canonical published course datasets, runtime study details, and noncanonical runtime snapshots. These paths have different refresh, validation, and persistence rules.
+The architecture therefore separates canonical published datasets, temporary runtime course snapshots, on-demand study groups and events, and curated curriculum and organization metadata. Their refresh, validation, storage, and failure rules are intentionally different.
 
-## End-to-end map
+## End-to-end system map
 
-![Verified Sisukas course data architecture, showing separate scheduled, runtime, and frontend data paths](/images/course-data-architecture.png)
+[![Sisukas course data architecture showing system boundaries, publication, runtime services, and browser-side composition](/images/course-data-architecture.svg)](/images/course-data-architecture.svg)
 
-The diagram separates scheduled catalogue publication from independent runtime requests. Runtime snapshots can supplement the historical view, but they are not automatically promoted into the published `historical.json`. Delayed candidate processing is a proposal, not part of the deployed publication job.
+| Data path | Owner and source | Browser consumption |
+| --- | --- | --- |
+| Canonical catalogue | GitHub Actions publishes Aalto Course API data to GCS | Active and historical course indexes |
+| Runtime snapshots | Node.js backend and PostgreSQL, resolving through `sisu-wrapper` | Best-effort augmentation of historical records |
+| Study groups and teaching events | SISU Kori via `sisu-wrapper` | Independent study-group cache and scheduling views |
+| Curriculum and organization metadata | Curated frontend repository data | Curriculum- and organization-aware features |
 
-## 1. Canonical catalogue: scheduled production
+**Canonical publication and runtime enrichment are separate ownership boundaries.** Runtime snapshots may supplement what a user sees, but they are not automatically promoted into published `historical.json`. Delayed candidate processing is a proposal, not part of the deployed publication job.
 
-**Source:** authenticated Aalto Course API. **Orchestrator:** `.github/workflows/check_course_updates.yml`.
+## 1. Canonical catalogue: scheduled publication
 
-The workflow fetches realisations (`scripts/fetch_latest_courses.py`), normalizes them (`scripts/transform_courses.py`), validates the normalized contract, and reconciles the latest response against the previously published active catalogue (`scripts/reconcile_active_courses.py`). The latest upstream response is **not** blindly substituted for the active dataset.
+**Upstream:** authenticated Aalto Course API. **Orchestrator:** GitHub Actions. **Published storage:** Google Cloud Storage (GCS).
 
-Reconciliation creates the next active dataset plus archive candidates. A safeguard blocks unusually large archive transitions unless the manual override provides the exact reviewed candidate count. When removals or reactivations occur, `scripts/merge_expired_into_historical.py` updates the historical dataset. The workflow validates the output and checks active/historical disjointness before publication.
+The workflow `.github/workflows/check_course_updates.yml` loads the previous active and historical baselines, fetches current course realisations, transforms and validates them, and reconciles the latest response with previously published data. Reconciliation preserves appropriate existing records and identifies archive candidates; the latest upstream response is **not** blindly substituted for the active catalogue.
 
-The `prepare_data` job runs before `upload_to_gcs`. GitHub Actions uses workload identity to publish `courses.json`, `historical.json`, hash files, and change logs to environment-specific GCS buckets. Historical objects and their hashes are only published when historical content changes.
+The pipeline updates history when removals or reactivations require it, checks the resulting active/historical datasets, and publishes validated changes. Its stages include fetch, transformation, reconciliation, historical maintenance, and publication; the diagram shows the ownership and direction of the resulting data transfers.
 
-**Source of truth:** published GCS catalogues, not the raw response, the frontend cache, or a runtime snapshot. For exact commands, authentication, schedules, and recovery safeguards, read [Data Pipeline](../data-pipeline/).
+| Published artifact | Architectural purpose |
+| --- | --- |
+| `courses.json` | Canonical current active course catalogue |
+| `historical.json` | Canonical accumulated historical course records |
+| Hashes and change metadata | Change detection, integrity/revalidation, and publication reporting |
 
-## 2. Historical discovery and maintenance
+**Source of truth:** the published GCS catalogues—not raw upstream responses, IndexedDB contents, or runtime PostgreSQL snapshots. The operational rules, including exact workflow jobs, archive thresholds, hash publishing, authentication, and recovery procedures, are documented in [Data Pipeline](../data-pipeline/).
 
-The historical crawl uses SISU Kori relationships to discover older course-unit realisation identifiers and the Aalto Course API to retrieve corresponding payloads. It supports checkpointed JSONL collection, deduplication by realisation identifier, and normalization before historical records are considered for catalogue maintenance.
+### Historical discovery is different from routine archiving
 
-This discovery path differs from routine archiving: reconciliation preserves instances that leave the active catalogue, whereas a historical crawl can discover earlier instances never present in the previous active baseline. Neither raw crawl output nor a runtime snapshot is automatically a validated canonical record.
+The routine reconciliation path preserves instances leaving the active catalogue. Historical crawling can discover older instances that were **never present in the previous active baseline**. It uses SISU Kori relationships to discover course-unit realisation identifiers and the Aalto Course API to retrieve corresponding payloads.
 
-See [Historical Course Records](../historical/) for the documented crawl procedure. Its date defaults and commands should be verified before use.
+Crawl output is checkpointed, deduplicated, and normalized before it is considered for catalogue maintenance; it is not canonical merely because it was fetched. See [Historical Course Records](../historical/) for the collection procedure and its safeguards.
 
-## 3. Runtime study details
+## 2. Runtime course resolution and snapshot storage
 
-The `sisu-wrapper` calls SISU Kori endpoints for course details, study groups, events, and locations on demand. These records serve operational scheduling needs; they are not produced by `courses.json` ingestion. Changes or failures in SISU Kori can therefore affect detailed teaching views independently of the last valid published catalogue.
+**Systems:** `sisu-wrapper` (FastAPI), Sisukas backend (Node.js), PostgreSQL. **Upstream:** SISU Kori.
 
-See [API](../api/) and [Study Event Contract](../study-event-contract/) for the relevant interfaces.
+Missing-course recovery supplies course instances absent from the published catalogues, without requiring an immediate canonical publication:
 
-## 4. Browser distribution and caching
+1. The frontend requests resolution through `POST /api/course-snapshots/resolve` on the backend.
+2. The backend invokes the wrapper's `/api/courses/resolve` endpoint, which resolves the required upstream information.
+3. `CourseSnapshotsService.ts` saves eligible matches in PostgreSQL, keyed for upsert by course code and realisation identifier.
+4. The browser retrieves saved snapshots from the backend snapshot endpoint when building its historical view.
 
-`RemoteCourseLoader.ts` loads `courses.json` and `historical.json` from the configured `VITE_GCS_BUCKET` URLs. `LargeFileCache.ts` stores files in IndexedDB, keyed by their data URLs. It returns existing cached content immediately and checks the published hash in the background; without a cached copy, loading must obtain network data.
-
-`CourseParser.ts` validates individual records and skips invalid entries. `courseIndexStore.svelte.ts` builds indexes by instance identifier and course code. It supports an active-only view and a combined active/historical view, with active instances preferred when identifiers overlap.
-
-**Operational implication:** a cached visit can show an older catalogue during background revalidation. Cache resilience is not a guarantee of an immediately refreshed UI or a successful first-time offline load.
+The current resolution route uses a **180-day expiry policy**. These stored records are **noncanonical, temporary runtime enrichments**. PostgreSQL is private to the backend: the browser accesses snapshots through the API, not through a database connection.
 
 > [!IMPORTANT]
-> Runtime PostgreSQL snapshots are **not** automatically published into the canonical historical dataset.
+> Storing or displaying a resolved snapshot does **not** update `historical.json`, publish anything to GCS, or establish a validated canonical record.
 
-## 5. Missing-course recovery: runtime snapshots
+The separate [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) documentation includes a proposed delayed canonical backfill process. Do not confuse that proposal with deployed snapshot recovery.
 
-A missing course code can be resolved through the backend `POST /api/course-snapshots/resolve`, which calls the wrapper's `/api/courses/resolve`. `CourseSnapshotsService.ts` stores eligible returned matches in PostgreSQL, keyed for upsert by course code and realisation identifier, with an expiry policy (currently 180 days for this route).
+## 3. Browser-side catalogue composition
 
-The frontend loads live snapshots through the backend snapshot endpoint and `SnapshotHistoricalMerge.ts`, normalizes supported payloads into the same course parser contract, and appends them to the historical index after the base historical catalogue has loaded. Snapshot merging is best-effort; the canonical historical dataset remains required for a successful historical bootstrap.
+**Owner:** Svelte frontend. **Inputs:** `courses.json`, `historical.json`, and backend runtime snapshots.
 
-**Important distinction:** storing and displaying a snapshot does not publish it to GCS and does not make it canonical. The current backend route passes a fixed resolution window (`2022-09-01` to `2025-12-31`), which should be reviewed as a separate implementation task.
+The browser constructs the course catalogue views locally. The three inputs do not have equal authority, and the merge is more than a simple concatenation.
 
-The existing [Course Backfill](../../under-dev/snapshot-backfill/) page mixes implemented runtime behavior with a proposed delayed canonical backfill pipeline. Do not treat that delayed promotion workflow as deployed without implementation evidence.
+### Load the canonical baselines
 
-## 6. Curriculum metadata is curated independently
+`RemoteCourseLoader.ts` loads `courses.json` and `historical.json` using the configured `VITE_GCS_BUCKET` URLs. `CourseParser.ts` validates individual records and skips invalid entries.
 
-Curriculum membership and module metadata are maintained separately from fetched course realisations, principally in `frontend/course-browser/src/data/` YAML and the review catalogue. A valid curriculum reference may be historical-only or missing from a particular published course dataset; it should not be silently deleted solely on that basis.
+`courseIndexStore.svelte.ts` builds indexes by instance identifier and course code:
 
-See [Curriculum Metadata](../curriculum-metadata/).
+- **Active index:** current records from `courses.json`.
+- **Historical baseline:** records from `historical.json`.
+
+### Augment historical records with snapshots
+
+The frontend retrieves eligible resolved snapshots through the backend. `SnapshotHistoricalMerge.ts` normalizes supported payloads to the course parser contract. Snapshot fetching and augmentation are **best-effort**; the canonical historical baseline is still required for historical bootstrap.
+
+The effective composition is:
+
+1. Start with the historical baseline from `historical.json`.
+2. Append eligible resolved snapshots, skipping duplicate instance identifiers.
+3. Prune historical entries whose instance IDs overlap with the active index.
+4. Keep active records authoritative when forming a combined view.
+
+This produces an **augmented historical index**, in browser memory, without writing the result back to GCS or PostgreSQL.
+
+| View | Composition |
+| --- | --- |
+| **Active** | Active index from `courses.json` |
+| **All courses** | Active index plus augmented historical index, preferring active records on overlap |
+
+### Distribution and browser caching
+
+`LargeFileCache.ts` stores downloaded canonical files in IndexedDB keyed by data URL. On a cached visit, it can return the existing copy immediately and check the published hash in the background. Without a cached copy, loading must obtain network data.
+
+**Implication:** a returning user may temporarily see an older catalogue during revalidation. IndexedDB resilience does not guarantee immediate UI freshness or a successful first-time offline load. This browser-local cache is distinct from the backend's PostgreSQL snapshot storage.
+
+## 4. Study groups and teaching events: a separate runtime path
+
+**Upstream:** SISU Kori. **Adapter:** `sisu-wrapper`. **Consumer:** frontend study-group cache and teaching/calendar functionality.
+
+Teaching arrangements are fetched on demand, independently of canonical catalogue ingestion and snapshot augmentation. The frontend selects the relevant **course unit and offering** and uses `StudyGroupService.ts` to fetch normalized study-group data through the wrapper (including the study-group route `/api/courses/{id}/study-groups` and supported batch requests).
+
+The results are associated with the requested course unit/offering and retained in a **separate study-group cache**. Consumers use these groups and their teaching events for detailed course and calendar functionality. They are **not appended to the course catalogue**, and failed study-group retrieval does not change GCS datasets.
+
+The cache tracks more than the presence of a value: it can distinguish missing, loading, ready, and failed data, including refresh states that retain previously loaded groups if refresh fails. This is a separate lifecycle from loading the active or historical course indexes.
+
+See [SISU Wrapper API](../api/) and [Study-event and Location Contract](../study-event-contract/) for the interfaces and normalized event model.
+
+## 5. Curriculum and organization metadata
+
+**Owner:** curated Sisukas frontend data, principally YAML under `frontend/course-browser/src/data/` and the review catalogue.
+
+Curriculum membership, programme modules, requirements, and organization metadata are maintained independently of fetched course realisations. Frontend loaders such as `CurriculumLoader.ts` and `OrganizationLoader.ts` make this metadata available to curriculum-aware views and planning functionality.
+
+Metadata is **combined at the point of use**, not inserted into the historical snapshot merge. A valid curriculum reference may identify a historical-only course or a course missing from the current published dataset, and should not be silently removed for that reason.
+
+See [Curriculum Metadata](../curriculum-metadata/) for sources, verification, and maintenance rules.
 
 ## Data ownership and failure boundaries
 
-| Layer | Ownership | Effect of failure or stale data |
+| Boundary | Responsibility | Failure or stale-data behavior |
 | --- | --- | --- |
-| Aalto Course API | Upstream, externally controlled | Scheduled ingestion can fail; safeguards should preserve previously valid published data. |
-| Validation and reconciliation | Sisukas pipeline | Publication must stop on invalid datasets or unsafe archive transitions. |
-| Published GCS catalogues | Sisukas canonical publication | Browser cannot obtain fresh catalogue; existing IndexedDB may continue to serve cached data. |
-| SISU Kori and wrapper | External data + Sisukas adapter | On-demand study details or missing-course resolution may be unavailable independently of browsing. |
-| PostgreSQL snapshots | Sisukas backend | Previously published catalogues remain distinct; live snapshot recovery/merge may fail. |
-| IndexedDB | User browser | Cache can be stale; first load requires network access. |
-| Curriculum YAML | Manually curated Sisukas metadata | Incorrect/missing membership impacts filtering rather than automatically modifying course catalogues. |
+| Aalto Course API | Official catalogue source | Fetch can fail without replacing the last valid published catalogue. |
+| GitHub Actions validation/reconciliation | Prepare authoritative publications | Invalid output or unsafe transitions block publication. |
+| GCS | Published canonical catalogues | Fresh downloads may fail; an existing IndexedDB copy may remain available. |
+| SISU Kori / `sisu-wrapper` | On-demand course and teaching details | Runtime details or resolution may fail independently of canonical browsing. |
+| Backend / PostgreSQL | Temporary course snapshots | Recovery and snapshot fetch may fail without changing the GCS catalogues. |
+| IndexedDB | Browser-local canonical file cache | Cached files may be stale; first-time load needs the network. |
+| Study-group cache | Course-unit/offering teaching state | A failed refresh can leave previously loaded groups available. |
+| Curated curriculum YAML | Curriculum and organization structure | Incorrect references affect curriculum-aware features, not canonical publication. |
 
-## When changing the data contract
+## Architectural constraints and implementation notes
 
-Review **all** affected boundaries: upstream fetch and normalization, validators, reconciliation/history merge, published artifact format and hashes, `CourseParser.ts`, snapshot normalization, frontend indexing, and curriculum reference validation. Do not assume a change in one pipeline automatically updates the others.
+- **Canonical publication is gated.** A raw response or temporary snapshot cannot bypass validation and become canonical by itself.
+- **Historical discovery is not routine archiving.** Historical crawl output requires its own maintenance and validation steps.
+- **Runtime snapshot augmentation is best-effort.** It must not be mistaken for updating canonical history.
+- **The backend's current resolution window is fixed:** `2022-09-01` through `2025-12-31`. This limitation warrants separate review.
+- **Delayed canonical promotion is not implemented** merely because it is discussed in backfill documentation.
 
-## Implementation entry points
+### When changing a data contract
 
-- `.github/workflows/check_course_updates.yml`
-- `scripts/fetch_latest_courses.py`, `scripts/transform_courses.py`, `scripts/reconcile_active_courses.py`, `scripts/merge_expired_into_historical.py`
-- `sisu-wrapper/api/routers/courses.py`
-- `backend/src/routes/courseSnapshots.ts`, `backend/src/services/CourseSnapshotsService.ts`
-- `frontend/course-browser/src/infrastructure/loaders/RemoteCourseLoader.ts`, `SnapshotHistoricalMerge.ts`
-- `frontend/course-browser/src/infrastructure/services/LargeFileCache.ts`
-- `frontend/course-browser/src/lib/stores/courseIndexStore.svelte.ts`
-- `frontend/course-browser/src/domain/parsers/CourseParser.ts`
+Review **all** affected boundaries: upstream fetch/normalization, validators, reconciliation/history maintenance, published artifact formats and hashes, `CourseParser.ts`, snapshot normalization, frontend indexing, study-group normalization, and curriculum reference validation. A contract change in one system does not automatically update the others.
+
+### Implementation entry points
+
+| Concern | Relevant entry points |
+| --- | --- |
+| Scheduled publishing | `.github/workflows/check_course_updates.yml` (operational detail in [Data Pipeline](../data-pipeline/)) |
+| Runtime adapter | `sisu-wrapper/api/routers/courses.py` |
+| Snapshot API/persistence | `backend/src/routes/courseSnapshots.ts`, `backend/src/services/CourseSnapshotsService.ts` |
+| Canonical loading and caching | `RemoteCourseLoader.ts`, `LargeFileCache.ts` |
+| Parsing and browser composition | `CourseParser.ts`, `courseIndexStore.svelte.ts`, `SnapshotHistoricalMerge.ts` |
+| Study groups | `StudyGroupService.ts` |
+| Curated metadata | `CurriculumLoader.ts`, `OrganizationLoader.ts` |
+
+Frontend filenames above refer to components within `frontend/course-browser/src/`.
 
 ## Related documentation
 
-- [Data Pipeline](../data-pipeline/) — Scheduled publication workflow.
-- [Historical Course Records](../historical/) — Manual historical discovery.
-- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — verified Kori discovery and proposed external course-unit boundary.
-- [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Snapshots and proposed promotion.
+- [Data Pipeline](../data-pipeline/) — Exact scheduled workflow, safeguards, publication, and recovery.
+- [Historical Course Records](../historical/) — Historical discovery and maintenance.
+- [SISU Wrapper API](../api/) — Runtime adapter interfaces.
+- [Study-event and Location Contract](../study-event-contract/) — Teaching events and locations.
+- [Curriculum Metadata](../curriculum-metadata/) — Curated metadata maintenance.
+- [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Implemented snapshots and proposed promotion.
+- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — Verified Kori discovery and proposed external course-unit boundary.

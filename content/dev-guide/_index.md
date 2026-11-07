@@ -23,23 +23,23 @@ If you want to run, debug, or modify Sisukas, start here:
 
 This page is the source of truth for local setup. The repository README and other pages intentionally defer to it.
 
-### 2. Understanding where data comes from
+### 2. Understanding course data
 
-Once the system is running, the next question is usually *where the data comes from*:
+Once the system is running, the next question is where course data originates, how it crosses system boundaries, and how it reaches the frontend:
 
-- **[Course Data Architecture](./data-architecture/)**
-  Introduces canonical publication, runtime resolution, caching, and their ownership boundaries before diving into individual workflows.
+- **[Course Data Architecture](./data-architecture/)**  
+  Explains canonical catalogues, runtime snapshots, study-group loading, curriculum metadata, and browser-side composition. **Start here to understand the design and ownership boundaries.**
 
 - **[Data Pipeline](./data-pipeline/)**  
-  Explains how course metadata is fetched from the Aalto Open API, transformed, versioned, and distributed to runtime systems.
-
-The scheduled workflow publishes canonical catalogues; the on-demand SISU wrapper serves a different runtime responsibility.
+  Documents the scheduled GitHub Actions workflow that fetches, validates, reconciles, and publishes canonical course catalogues. Includes operational safeguards, local commands, and recovery procedures.
 
 - **[Historical Course Records](./historical/)**  
-  Covers historical discovery, checkpointed collection, normalization, and dataset maintenance.
+  Covers historical discovery, checkpointed collection, normalization, and maintenance, including how crawling differs from routine catalogue archiving.
 
 - **[Curriculum Metadata](./curriculum-metadata/)**  
-  Explains how Aalto curriculum modules are catalogued, verified against official sources, and integrated into Sisukas. Covers module identifiers, source attribution, review decisions, and validation.
+  Explains curated curriculum modules and organization metadata: official-source verification, references, review decisions, and validation.
+
+**Suggested reading:** Start with Course Data Architecture, then follow Data Pipeline, Historical Course Records, or Curriculum Metadata based on the system you intend to change.
 
 ### 3. Service boundaries and APIs
 
