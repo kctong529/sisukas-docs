@@ -11,6 +11,7 @@ Architecture documentation explains how the components and models of Sisukas fit
 ## In this section
 
 - **[Planning System Architecture](./planning/)** — Plans, schedule combinations, domain structures, scoring, and evolving decision-slot design.
+- **[Study-group Loading Architecture](./study-group-loading/)** — Proposed full-data caching, request coordination, and consumer contracts.
 
 ## Related documentation
 
