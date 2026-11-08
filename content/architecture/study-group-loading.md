@@ -5,7 +5,7 @@ description: "Authoritative full-data caching, shared retrieval, failure handlin
 ---
 
 > [!NOTE]
-> **Implementation status — November 2026.** `StudyGroupCache`, `StudyGroupCacheLoader`, `StudyGroupRequestCoordinator`, the strict HTTP transport adapter, and framework-independent cache notifications are implemented and tested. The new pipeline is **not yet wired into the production Svelte store or all consumers**. Reactive adapter and composition work remains under [#172](https://github.com/kctong529/sisukas/issues/172); loading policy, consumer migration, and legacy removal belong to [#173](https://github.com/kctong529/sisukas/issues/173), [#174](https://github.com/kctong529/sisukas/issues/174), and [#175](https://github.com/kctong529/sisukas/issues/175), respectively.
+> **Implementation status — November 2026.** The authoritative `StudyGroupCache`, `StudyGroupCacheLoader`, `StudyGroupRequestCoordinator`, strict HTTP transport, Svelte readable-store adapter, and shared `StudyGroupDataRuntime` are implemented and tested under [#172](https://github.com/kctong529/sisukas/issues/172). The new runtime has a production composition entry point, but **existing production consumers still use the legacy loading path**. Centralized loading policy, consumer migration, and legacy removal remain in [#173](https://github.com/kctong529/sisukas/issues/173), [#174](https://github.com/kctong529/sisukas/issues/174), and [#175](https://github.com/kctong529/sisukas/issues/175), respectively.
 
 ## Why this architecture exists
 
@@ -23,9 +23,38 @@ The new design separates **data ownership**, **cache-aware retrieval decisions**
 | `StudyGroupCacheLoader` | `ensure()`/`refresh()` decisions, shared loader promises, cache outcome application, and invalidation of its lifecycle | Batch size, transport concurrency, HTTP normalization |
 | `StudyGroupRequestCoordinator` | Per-offering pending work, FIFO queue, microtask coalescing, batching, global concurrency, outcome delivery, cancellation generation | Cache availability, active-plan policy, Svelte reactivity |
 | `createStudyGroupTransport()` / `StudyGroupService` | One strict HTTP request per coordinator batch and source-preserving normalization | Cross-caller queueing or a second scheduler |
-| Future reactive adapter and loading policy | Presentation-facing reads and triggers for relevant offerings | Another authoritative copy of full study-group data |
+| `createStudyGroupEntryStore()` | Read-only, per-offering Svelte `Readable<StudyGroupEntry>` snapshots and notification subscriptions | Data ownership, fetching, freshness decisions |
+| `StudyGroupDataRuntime` | Shared composition and public `entry()`/`ensure()`/`refresh()`/`clear()` operations | Active-plan selection, automatic hydration, TTL policy |
+
+`createStudyGroupDataRuntime({ service, now?, chunkSize?, concurrency? })` constructs an isolated cache, coordinator, loader, and transport for testing or controlled use. `getStudyGroupDataRuntime()` lazily constructs a shared browser-side runtime using the configured wrapper API. Both forms are inert until retrieval is requested, and the facade does not expose mutable cache operations or coordinator internals. The Svelte adapter is a view over this same cache, not a second authoritative dataset.
 
 The coordinator's default configuration is `chunkSize: 20` and `concurrency: 2`. These are **transport-batch** limits, not per-component or per-caller limits. The strict service operation rejects more than 50 offerings in one call. The older `fetchStudyGroupsBatch()` retains its separate legacy scheduler for existing consumers; the **new path does not call that scheduler**.
+
+## Public runtime API
+
+The [shared runtime](https://github.com/kctong529/sisukas/issues/172) is the intended entry point for new consumers. It exposes four methods:
+
+| Method | Behavior |
+| --- | --- |
+| `entry(request)` | Returns a read-only Svelte `Readable<StudyGroupEntry>` for one offering; observing it does **not** trigger HTTP |
+| `ensure(requests)` | Joins pending retrievals and fetches only offerings without full cached data; a successful empty array counts as available |
+| `refresh(requests)` | Joins existing pending work or explicitly fetches again, retaining previously successful groups during refresh |
+| `clear()` | Delegates to the loader to clear entries and invalidate outstanding logical requests; cancelled operations reject |
+
+```ts
+import { getStudyGroupDataRuntime } from "@infrastructure/studyGroups/StudyGroupDataRuntime";
+
+const runtime = getStudyGroupDataRuntime();
+const request = { courseUnitId: "unit-id", courseOfferingId: "offering-id" };
+const entry = runtime.entry(request); // Observation only; no HTTP.
+
+// Retrieval is explicit until #173 introduces a centralized loading policy.
+await runtime.ensure([request]);
+```
+
+`entry()` creates a lightweight observable view of a shared authoritative cache. It listens to changes for its offering and to global `clear` events; unrelated offering updates are ignored. The Svelte store subscribes to the cache while it has consumers, unsubscribes when the last one leaves, and rereads current state on resubscription. Returned snapshots are defensive copies of cached groups, but consumers should still treat store snapshots as immutable.
+
+The production singleton shares work **among callers using this runtime**. Legacy consumers do not automatically share its cache or request queue until [#174](https://github.com/kctong529/sisukas/issues/174) migrates them. There is no automatic active-plan hydration or time-based refresh policy in #172.
 
 ## Offering identity and cache entry
 
@@ -115,13 +144,15 @@ unsubscribe();
 
 The notifications contain **keys, not mutable `StudyGroup[]` payloads**. Observers read the latest snapshot only when needed. Exceptions thrown by one observer do not prevent other observers from being notified or roll back a cache mutation. Notifications remain registered across `clear()` until explicitly unsubscribed.
 
-The **Svelte-facing adapter is not yet implemented**. It should turn these notifications into reactive reads while retaining `StudyGroupCache` as the only owner of authoritative full data. The existing [Frontend State Management](../../dev-guide/stores/) conventions (`.state`, `.read`, `.actions`) govern the eventual public store API, not this framework-independent cache class.
+The implemented `createStudyGroupEntryStore(cache, request)` converts those notifications to a per-offering Svelte `Readable<StudyGroupEntry>`. The shared runtime's `entry(request)` exposes that adapter without returning the mutable cache. This uses the standard Svelte readable-store interface; the existing [Frontend State Management](../../dev-guide/stores/) conventions describe broader UI-store patterns and do not require this adapter to expose `.state`, `.read`, or `.actions`. Neither the cache observer nor the Svelte adapter performs HTTP retrieval.
 
 ## Current scope, guarantees, and migration
 
-**Implemented and tested:** complete offering-level data with successful emptiness, safe refresh retention, common scheduling, progressive outcomes, bounded transport execution, reset-safe invalidation, and cache change notifications. Application-level integration tests cover progressive success/failure, shared retrieval, and clear during active transport.
+**Implemented and tested:** complete offering-level data with successful emptiness, safe refresh retention, shared scheduling, progressive per-offering outcomes, bounded transport execution, reset-safe invalidation, synchronous cache notifications, Svelte read-only entry stores, and an isolated factory plus shared production composition entry point. Tests exercise the composed runtime through the real `StudyGroupService` with mocked HTTP, including source-event identities, offset-aware timestamps, resolved locations, progressive completion, HTTP failure isolation, and successful empty results.
 
-**Not yet implemented in the new production path:** Svelte adapter/composition, active-plan and authentication-driven loading policy, freshness/TTL decisions, migration of Calendar/Favourites/LEGO/other consumers, persistent authoritative study-group storage, and physical cancellation of HTTP requests. None of those behaviors should be inferred from the standalone application tests.
+**Validation (8 November 2026):** 128 focused study-group tests passed across 11 files; the complete frontend suite passed **609 tests across 54 files**. ESLint and Svelte/TypeScript checks passed with no diagnostics, and the production build succeeded. Vite reported its non-blocking warning about chunks above 500 kB.
+
+**Still pending:** active-plan and authentication-driven loading policy, freshness/TTL decisions, migration of Calendar/Favourites/StudyGroupsSection/LEGO and other legacy consumers, and legacy queue/summary cleanup and performance comparison. The new runtime is available for adoption but is **not yet the source of data for existing production consumers**. Authoritative study-group persistence and physical abort of dispatched HTTP requests are not part of this in-memory runtime.
 
 | Work item | Scope |
 | --- | --- |
