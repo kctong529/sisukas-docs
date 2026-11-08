@@ -1,11 +1,11 @@
 ---
 weight: 3
 title: "Frontend Architecture and Module Organization"
-description: "Feature-oriented frontend ownership, reusable domain modules, dependency boundaries, and migration conventions."
+description: "Capability-oriented frontend ownership, public module contracts, dependency boundaries, and incremental migration conventions."
 ---
 
 > [!NOTE]
-> **Architecture direction — November 2026.** This page defines the intended frontend organization under [#177](https://github.com/kctong529/sisukas/issues/177). It is **not a description of a completed migration**. The current `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use while modules are relocated incrementally. Existing paths and imports are valid until their respective migrations are merged.
+> **Architecture direction — November 2026.** This page defines the capability-oriented frontend organization established under [#177](https://github.com/kctong529/sisukas/issues/177). The study-group data subsystem is the first reference implementation. The broader frontend migration remains incremental, and existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use until their respective capabilities are relocated.
 
 ## Goals and organizing principles
 
@@ -56,14 +56,15 @@ For example, the first proposed migration is the study-group data subsystem:
 src/
 └── modules/
     └── study-groups/
-        ├── cache/          # Full-data entries and cache lifecycle
-        ├── retrieval/      # Requests, coordination, transport, API access
-        ├── stores/         # Svelte-facing observable adapters
-        ├── StudyGroupDataRuntime.ts  # Runtime composition (initially)
-        └── index.ts        # Deliberate public exports, if needed
+        ├── cache/                    # Full-data entries and cache lifecycle
+        ├── formatters/               # Existing study-group formatting utilities
+        ├── infrastructure/           # API access and transport
+        ├── models/                   # Source-data contracts
+        ├── retrieval/                # Requests, coordination, cancellation
+        ├── stores/                   # Svelte-facing observable adapters
+        ├── StudyGroupDataRuntime.ts
+        └── index.ts                  # Explicit public contract
 ```
-
-The precise files and the ownership of `StudyGroup` / `StudyEvent` models will be confirmed by inspecting their dependencies during migration. The example does not require a `domain/`, `application/`, `infrastructure/`, `service/`, or `repository/` folder.
 
 These terms still have useful meanings:
 
@@ -79,17 +80,36 @@ A file can have one of these responsibilities without living in a directory name
 
 **Put a model with the capability that owns its meaning**, even when multiple features consume it. Sharing a type does not by itself justify moving it to `shared/`.
 
-For the initial study-group migration, the default assumption is that the study-group module owns its source-data contracts, including `StudyGroup` and `StudyEvent`, subject to dependency review. Calendar may construct its own calendar projections from those types, but must not turn calendar-specific presentation decisions into study-group source-data rules.
+The study-group module owns its source-data contracts, including `StudyGroup`, `StudyEvent`, and `StudyLocation`. Calendar may construct its own projections from those types, but calendar-specific presentation decisions must not become study-group source-data rules.
 
 Each capability should expose only what external consumers require. A public entry point such as `modules/study-groups/index.ts` may export types and read/retrieval operations without exporting cache mutation internals or coordinator scheduling controls. Do **not** add a barrel file merely for convenience; prefer explicit exports and deliberate APIs.
 
-For example, a future Calendar import might use a stable module interface:
+### Study-group public interface
+
+The study-group module provides a deliberate public entry point at `src/modules/study-groups/index.ts`.
+
+External consumers should import supported domain contracts and runtime operations through `@modules/study-groups`:
 
 ```ts
-import { getStudyGroupDataRuntime } from "@modules/study-groups";
+import {
+  getStudyGroupDataRuntime,
+  type StudyGroup,
+  type StudyEvent,
+  type StudyGroupRequest,
+} from "@modules/study-groups";
 ```
 
-This is an **illustrative target import**, not an alias or entry point guaranteed to exist today. The exact public exports and aliases must be introduced together with their implementation and verified by TypeScript.
+The public interface includes source-data models, retrieval request and observable entry-state contracts, and the shared runtime facade.
+
+The runtime's internal construction, cache lifecycle, request coordination, transport, and service implementations are not exported through this entry point.
+
+A public type may be defined in an internal directory such as `cache/` or `retrieval/`. Its inclusion in the public entry point makes that particular type part of the supported contract; it does not expose the surrounding implementation.
+
+Internal code within the study-group module may import its own implementation files directly. Focused implementation tests may do the same.
+
+Existing formatting utilities are not included in the core public interface. Their current external consumers retain documented transitional imports until their ownership is reconsidered during later migrations.
+
+The public entry point does not introduce new retrieval behavior. Calling `entry()` alone remains observational and does not initiate network retrieval.
 
 ## Dependency rules
 
@@ -111,6 +131,30 @@ This is a general ownership rule, **not** a ban on all justified feature-to-feat
 6. Avoid deep imports into another capability's `cache/`, `retrieval/`, or other internal directories unless a temporary migration exception is documented.
 
 The study-group module should therefore **not** import Calendar, Favourites, or planning code. Those consumers should use the public study-group contract. Runtime composition that genuinely spans multiple capabilities belongs under `app/`; a factory assembling only the internals of one module may remain within that module.
+
+### Import boundary enforcement
+
+The study-group module is the first capability with an automatically checked public import boundary.
+
+A local ESLint rule prevents production code outside `src/modules/study-groups/` from importing private study-group implementation files. External consumers should use the public `@modules/study-groups` entry point.
+
+The rule allows:
+
+- Direct implementation imports within the owning study-group module.
+- Focused implementation tests that verify internal components.
+- Explicitly documented transitional production dependencies.
+
+Current transitional exceptions:
+
+| Consumer | Dependency | Reason |
+| --- | --- | --- |
+| `src/components/courses/StudyGroupsSection.svelte` | `formatters/studyGroupFormatters` | Presentation formatting pending ownership review |
+| `src/lib/stores/studyGroupStore.svelte.ts` | `formatters/studyGroupFormatters` | Legacy presentation dependency |
+| `src/lib/stores/studyGroupStore.svelte.ts` | `infrastructure/StudyGroupService` | Legacy service dependency pending consumer migration under #174 |
+
+These exceptions are temporary and should be removed when their consumers are migrated. They do not justify adding private implementation types to the module's public API.
+
+This enforcement currently applies to the study-group reference module. Other capability boundaries should be introduced incrementally as ownership and public contracts are established.
 
 ## State and reactive integration
 
@@ -138,14 +182,18 @@ The existing frontend baseline at the end of [#172](https://github.com/kctong529
 ## Migration status and planned sequence
 
 > [!IMPORTANT]
-> **Current state:** The feature-oriented structure is a target. The frontend still uses its existing layered directories. Do not follow the example imports or delete legacy directories until the corresponding changes are merged.
+> **Incremental adoption.** The study-group data subsystem is the first migrated reusable module. The broader `app/`, `features/`, `modules/`, `shared/`, and `data/` organization remains the target architecture. Existing layered directories and imports remain valid until their respective migrations are completed.
 
-1. **[#177](https://github.com/kctong529/sisukas/issues/177):** Establish these conventions, map the study-group subsystem, complete the first behavior-preserving relocation, and record follow-up migrations.
-2. **[#173](https://github.com/kctong529/sisukas/issues/173):** Introduce centralized study-group loading policy on the settled module boundaries.
-3. **[#174](https://github.com/kctong529/sisukas/issues/174):** Migrate Calendar, Favourites, and other consumers to the shared runtime.
-4. **[#175](https://github.com/kctong529/sisukas/issues/175):** Remove legacy loading infrastructure and benchmark the consolidated path.
+1. **#177 — Capability organization and module boundaries:** Establish ownership conventions, the study-group reference module, deliberate public contracts, and import-boundary enforcement.
+2. **#173 — Centralized study-group loading policy:** Introduce shared loading policy on top of the established runtime.
+3. **#174 — Study-group consumer migration:** Migrate Calendar, Favourites, and other consumers to the shared runtime.
+4. **#175 — Legacy loading cleanup:** Remove superseded infrastructure and benchmark the consolidated implementation.
 
-Other feature migrations (for example Calendar, planning, and filters) should be independently scoped and need not block completion of #177.
+The reference module demonstrates the intended architectural principles without requiring a repository-wide reorganization.
+
+Additional feature migrations, including Calendar, planning, course browsing, and filters, will be scoped separately based on dependency and ownership reviews.
+
+The historical #172 validation baseline was 609 passing tests across 54 files. The public-interface migration retained 609 passing tests, with successful lint, Svelte/TypeScript checks, and production build. These counts represent recorded validation results rather than fixed project-wide requirements.
 
 ## Related documentation
 
