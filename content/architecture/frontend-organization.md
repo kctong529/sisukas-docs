@@ -50,7 +50,7 @@ Conversely, placing an item in `modules/` should be justified by cohesive owners
 
 Use directories named for **actual responsibilities**, not a required set of architectural layers. A small feature may need only a few files; a larger capability may reasonably separate state, retrieval, rendering, and domain policies.
 
-For example, the first proposed migration is the study-group data subsystem:
+The study-group data subsystem is the first implemented reference module:
 
 ```text
 src/
@@ -166,7 +166,7 @@ Preserve successful-empty, missing, loading, failed, and refresh semantics when 
 
 ## Tests and migration workflow
 
-Tests should remain easy to locate from the production capability. The preferred direction is for `tests/` to mirror capability ownership, for example `tests/modules/study-groups/` and `tests/features/calendar/`, while existing test locations remain valid during transition. Use one consistent rule for a migrated capability rather than scattering its tests across old and new trees.
+Study-group implementation tests are organized under `tests/modules/study-groups/`, grouped by cache, retrieval, infrastructure, stores, and integration responsibilities. The import-boundary rule is tested separately under `tests/scripts/`. Tests belonging to capabilities that have not yet migrated retain their existing locations.
 
 For each migration slice:
 
@@ -193,7 +193,7 @@ The reference module demonstrates the intended architectural principles without 
 
 Additional feature migrations, including Calendar, planning, course browsing, and filters, will be scoped separately based on dependency and ownership reviews.
 
-The historical #172 validation baseline was 609 passing tests across 54 files. The public-interface migration retained 609 passing tests, with successful lint, Svelte/TypeScript checks, and production build. These counts represent recorded validation results rather than fixed project-wide requirements.
+The study-group reference migration passed ESLint, application and test TypeScript checks, and the production build. The complete frontend suite passed 615 tests across 55 files, including six import-boundary regression tests. The earlier [#172](https://github.com/kctong529/sisukas/issues/172) baseline was 609 tests across 54 files.
 
 ## Related documentation
 
