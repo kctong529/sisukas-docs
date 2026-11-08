@@ -115,7 +115,7 @@ The results are associated with the requested course unit/offering and retained 
 
 The cache tracks more than the presence of a value: it can distinguish missing, loading, ready, and failed data, including refresh states that retain previously loaded groups if refresh fails. This is a separate lifecycle from loading the active or historical course indexes.
 
-See [SISU Wrapper API](../api/) and [Study-event and Location Contract](../study-event-contract/) for the interfaces and normalized event model.
+For full-data cache ownership, loader and coordinator boundaries, state transitions, notifications, and invalidation, see [Study-group Data Management](../../architecture/study-group-loading/). See also [SISU Wrapper API](../api/) and [Study-event and Location Contract](../study-event-contract/) for the transport interfaces and normalized event model.
 
 ## 5. Curriculum and organization metadata
 
@@ -161,7 +161,7 @@ Review **all** affected boundaries: upstream fetch/normalization, validators, re
 | Snapshot API/persistence | `backend/src/routes/courseSnapshots.ts`, `backend/src/services/CourseSnapshotsService.ts` |
 | Canonical loading and caching | `RemoteCourseLoader.ts`, `LargeFileCache.ts` |
 | Parsing and browser composition | `CourseParser.ts`, `courseIndexStore.svelte.ts`, `SnapshotHistoricalMerge.ts` |
-| Study groups | `StudyGroupService.ts` |
+| Study groups | `StudyGroupCache.ts`, `StudyGroupCacheLoader.ts`, `StudyGroupRequestCoordinator.ts`, `StudyGroupService.ts` (new application pipeline; production integration pending) |
 | Curated metadata | `CurriculumLoader.ts`, `OrganizationLoader.ts` |
 
 Frontend filenames above refer to components within `frontend/course-browser/src/`.

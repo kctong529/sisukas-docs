@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="47 419 1151 378" role="img" aria-labelledby="t d">
+  <title id="t">Study Group Retrieval Flow</title>
+  <desc id="d">Compact editable vector diagram extracted from the Sisukas study-group architecture illustrations.</desc>
+  <style>
+    svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .canvas { fill: #ffffff; }
+    .heading { fill: #15253a; font-size: 26px; font-weight: 750; letter-spacing: -.6px; }
+    .subheading { fill: #68768a; font-size: 14px; }
+    .section { fill: #78869a; font-size: 11px; font-weight: 750; letter-spacing: 1.8px; }
+    .divider { stroke: #e5eaf1; stroke-width: 1.5; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .card { fill: #fff; stroke: #cad5e3; stroke-width: 1.6; }
+    .card-loader { fill: #f8f6ff; stroke: #c3b6ef; }
+    .card-coord { fill: #f3f9fd; stroke: #a9cde6; }
+    .c-title { fill: #1b2c40; font-size: 20px; font-weight: 700; }
+    .c-q { fill: #2c4058; font-size: 14px; font-weight: 650; }
+    .c-detail { fill: #5e6f82; font-size: 13px; }
+    .pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 750; letter-spacing: .5px; }
+    .pill-loader { fill: #ece6fd; } .pill-text-loader { fill: #5a45b5; }
+    .pill-coord { fill: #dcecf7; } .pill-text-coord { fill: #2a6a99; }
+    .pill-warn { fill: #fbecd6; } .pill-text-warn { fill: #94612a; }
+    .pill-ready { fill: #dcefe6; } .pill-text-ready { fill: #29775c; }
+    .lane-loader { fill: #f8f6ff; } .lane-cache { fill: #f5f7fa; } .lane-coord { fill: #f3f9fd; }
+    .lane-title { fill: #1b2c40; font-size: 15px; font-weight: 720; }
+    .lane-sub { font-size: 12px; font-weight: 650; }
+    .sub-loader { fill: #6b55c9; } .sub-cache { fill: #68768a; } .sub-coord { fill: #2f7fb5; }
+    .box { fill: #fff; stroke: #cad5e3; stroke-width: 1.4; }
+    .box-loader { stroke: #b9aaea; } .box-coord { stroke: #9cc4e0; }
+    .box-net { fill: #21344b; stroke: #21344b; }
+    .b-title { fill: #1b2c40; font-size: 13px; font-weight: 680; }
+    .b-small { fill: #5e6f82; font-size: 12px; }
+    .b-net { fill: #ffffff; } .b-net-small { fill: #c3d1e2; font-size: 12px; }
+    .edge { fill: none; stroke: #647b96; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+    .edge-loader { stroke: #7b66d4; marker-end: url(#arrow-loader); }
+    .edge-coord { stroke: #3b8bc2; marker-end: url(#arrow-coord); }
+    .edge-dash { fill: none; stroke: #b3a6e6; stroke-width: 1.6; stroke-dasharray: 5 5; }
+    .e-text { fill: #51627a; font-size: 11.5px; font-weight: 620; }
+    .e-loader { fill: #5a45b5; } .e-coord { fill: #2a6a99; }
+    .note { fill: #68768a; font-size: 12px; font-style: italic; }
+    .callout { fill: #3d5068; font-size: 13.5px; }
+    .bracket { fill: none; stroke: #a5b2c2; stroke-width: 1.5; }
+    .b-label { fill: #5e6f82; font-size: 12.5px; font-weight: 600; }
+    @media (prefers-color-scheme: dark) {
+      .canvas { fill: #0f1724; }
+      .heading, .c-title, .lane-title, .b-title { fill: #edf3fb; }
+      .subheading, .section, .c-detail, .b-small, .note, .b-label { fill: #a3b0c1; }
+      .c-q, .callout { fill: #d3deea; }
+      .divider { stroke: #293647; }
+      .card, .box { fill: #182436; stroke: #42576d; }
+      .card-loader, .lane-loader { fill: #1d1a33; } .card-loader { stroke: #6a5aa8; }
+      .card-coord, .lane-coord { fill: #13283a; } .card-coord { stroke: #3f6f93; }
+      .lane-cache { fill: #151f2e; }
+      .box-loader { stroke: #6a5aa8; } .box-coord { stroke: #3f6f93; }
+      .box-net { fill: #dbe5f0; stroke: #dbe5f0; } .b-net { fill: #10203a; } .b-net-small { fill: #3b4f68; }
+      .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+      .pill-loader { fill: #3a3166; } .pill-text-loader { fill: #d4cbff; }
+      .pill-coord { fill: #1f4560; } .pill-text-coord { fill: #b7dcf5; }
+      .pill-warn { fill: #4a3a1f; } .pill-text-warn { fill: #f2cf9c; }
+      .pill-ready { fill: #204d3e; } .pill-text-ready { fill: #a6e9cc; }
+      .sub-loader, .e-loader { fill: #b9acf5; } .sub-coord, .e-coord { fill: #8cc5ea; } .sub-cache, .e-text { fill: #a3b0c1; }
+      .edge { stroke: #9cacc0; }
+      .bracket { stroke: #52647a; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#647b96" stroke-width="1.5"/></marker>
+    <marker id="arrow-loader" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#7b66d4" stroke-width="1.5"/></marker>
+    <marker id="arrow-coord" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#3b8bc2" stroke-width="1.5"/></marker>
+  </defs>
+  <rect class="canvas" width="1240" height="800"/>
+
+  <!-- ═══ Three roles ═══ -->
+  <!-- arrows between cards -->
+  <!-- ═══ Swimlane ═══ -->
+  <rect class="lane-loader" x="55" y="428" width="1130" height="96" rx="10"/>
+  <rect class="lane-cache" x="55" y="532" width="1130" height="96" rx="10"/>
+  <rect class="lane-coord" x="55" y="636" width="1130" height="96" rx="10"/>
+  <text class="lane-title" x="75" y="472">Loader</text><text class="lane-sub sub-loader" x="75" y="491">decides</text>
+  <text class="lane-title" x="75" y="576">Cache</text><text class="lane-sub sub-cache" x="75" y="595">stores</text>
+  <text class="lane-title" x="75" y="680">Coordinator</text><text class="lane-sub sub-coord" x="75" y="699">schedules</text>
+
+  <!-- pending indicator -->
+  <!-- arrows -->
+  <path class="edge edge-loader" d="M310 476 H326"/>
+  <path class="edge edge-loader" d="M500 476 H516"/>
+  <path class="edge edge-loader" d="M480 508 V580 H552"/>
+  <text class="e-text e-loader code" x="472" y="566" text-anchor="end">markLoading(A)</text>
+  <path class="edge edge-loader" d="M660 508 V684 H686"/>
+  <text class="e-text e-loader code" x="668" y="560">loadSettled(A)</text>
+  <path class="edge edge-coord" d="M785 684 H801"/>
+  <path class="edge edge-coord" d="M910 684 H926"/>
+  <path class="edge edge-coord" d="M1012 656 V492 H1046"/>
+  <text class="e-text e-coord code" x="1004" y="576" text-anchor="end">onOutcome(success)</text>
+  <path class="edge edge-loader" d="M1066 508 V580 H1080"/>
+  <!-- Loader boxes -->
+  <g transform="translate(190 454)"><rect class="box box-loader" width="120" height="44" rx="9"/>
+    <text class="b-title code" x="60" y="27" text-anchor="middle">ensure(A)</text></g>
+  <g transform="translate(330 444)"><rect class="box box-loader" width="170" height="64" rx="9"/>
+    <text class="b-small" x="12" y="27">Fetching A already?</text><text class="b-title" x="158" y="27" text-anchor="end">no</text>
+    <text class="b-small" x="12" y="48">Cached data for A?</text><text class="b-title" x="158" y="48" text-anchor="end">no</text></g>
+  <g transform="translate(520 444)"><rect class="box box-loader" width="158" height="64" rx="9"/>
+    <text class="b-title" x="12" y="27">Start a fetch</text>
+    <text class="b-small" x="12" y="48">remember A as pending</text></g>
+  <g transform="translate(1050 444)"><rect class="box box-loader" width="130" height="64" rx="9"/>
+    <text class="b-title" x="10" y="19">Write result</text>
+    <text class="b-small code" x="10" y="37">markReady(A)</text>
+    <text class="b-small" x="10" y="55">ensure() resolves</text></g>
+
+  <!-- Cache transitions -->
+  <g transform="translate(560 545)">
+    <rect class="pill" width="76" height="22" rx="11"/><text class="pill-text" x="38" y="15" text-anchor="middle">MISSING</text>
+    <path class="edge" d="M38 25 V43" style="stroke-width:1.6"/>
+    <rect class="pill pill-warn" y="46" width="76" height="22" rx="11"/><text class="pill-text pill-text-warn" x="38" y="61" text-anchor="middle">LOADING</text>
+  </g>
+  <g transform="translate(1087 545)">
+    <rect class="pill pill-warn" width="76" height="22" rx="11"/><text class="pill-text pill-text-warn" x="38" y="15" text-anchor="middle">LOADING</text>
+    <path class="edge" d="M38 25 V43" style="stroke-width:1.6"/>
+    <rect class="pill pill-ready" x="7" y="46" width="62" height="22" rx="11"/><text class="pill-text pill-text-ready" x="38" y="61" text-anchor="middle">READY</text>
+  </g>
+
+  <!-- Coordinator boxes -->
+  <g transform="translate(690 656)"><rect class="box box-coord" width="95" height="56" rx="9"/>
+    <text class="b-title" x="47.5" y="24" text-anchor="middle">Queue</text>
+    <text class="b-small" x="47.5" y="42" text-anchor="middle">shared FIFO</text></g>
+  <g transform="translate(805 656)"><rect class="box box-coord" width="105" height="56" rx="9"/>
+    <text class="b-title" x="52.5" y="24" text-anchor="middle">Batch</text>
+    <text class="b-small" x="52.5" y="42" text-anchor="middle">≤ 20 offerings</text></g>
+  <g transform="translate(930 656)"><rect class="box box-net" width="100" height="56" rx="9"/>
+    <text class="b-title b-net" x="50" y="24" text-anchor="middle">Transport</text>
+    <text class="b-net-small" x="50" y="42" text-anchor="middle">≤ 2 at once</text></g>
+
+  <!-- timing brackets -->
+  <path class="bracket" d="M190 748 V756 H670 V748"/>
+  <text class="b-label" x="430" y="778" text-anchor="middle">Right away, inside the ensure() call</text>
+  <path class="bracket" d="M690 748 V756 H1180 V748"/>
+  <text class="b-label" x="935" y="778" text-anchor="middle">Later: after a microtask and the network round-trip</text>
+</svg>

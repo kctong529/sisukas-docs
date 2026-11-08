@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="47 142 1151 553" role="img" aria-labelledby="t d">
+  <title id="t">Study Group Cache State Machine</title>
+  <desc id="d">Compact editable vector diagram extracted from the Sisukas study-group architecture illustrations.</desc>
+  <style>
+    svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .canvas { fill: #ffffff; }
+    .heading { fill: #15253a; font-size: 26px; font-weight: 750; letter-spacing: -.6px; }
+    .subheading { fill: #68768a; font-size: 14px; }
+    .section { fill: #78869a; font-size: 11px; font-weight: 750; letter-spacing: 1.8px; }
+    .divider { stroke: #e5eaf1; stroke-width: 1.5; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .node { fill: #fff; stroke: #cad5e3; stroke-width: 1.6; }
+    .node-ready { fill: #f2faf7; stroke: #98cbb9; }
+    .node-warn { fill: #fff9f2; stroke: #e5c69e; }
+    .node-error { fill: #fff5f4; stroke: #e3b4af; }
+    .n-title { fill: #1b2c40; font-size: 20px; font-weight: 700; }
+    .n-detail { fill: #5e6f82; font-size: 13px; }
+    .pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 750; letter-spacing: .5px; }
+    .pill-ready { fill: #dcefe6; } .pill-text-ready { fill: #29775c; }
+    .pill-error { fill: #f9e4e1; } .pill-text-error { fill: #a44842; }
+    .pill-coord { fill: #dcecf7; } .pill-text-coord { fill: #2a6a99; }
+    .edge { fill: none; stroke: #7b66d4; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow-loader); }
+    .edge-success { stroke: #3b9279; marker-end: url(#arrow-success); }
+    .edge-fail { stroke: #c27a62; marker-end: url(#arrow-fail); }
+    .e-main { fill: #33475e; font-size: 12.5px; font-weight: 650; }
+    .e-method { fill: #7d8ba0; font-size: 11px; }
+    .badge-l { fill: #6b55c9; } .badge-c { fill: #2f7fb5; }
+    .badge-text { fill: #ffffff; font-size: 10.5px; font-weight: 800; }
+    .lg-title { fill: #1b2c40; font-size: 13.5px; font-weight: 700; }
+    .lg-detail { fill: #5e6f82; font-size: 13px; }
+    .th { fill: #78869a; font-size: 11px; font-weight: 750; letter-spacing: 1.2px; }
+    .row-alt { fill: #f7f9fb; }
+    .rule { stroke: #e5eaf1; stroke-width: 1; }
+    .td-state { fill: #1b2c40; font-size: 14px; font-weight: 700; }
+    .td { font-size: 13.5px; font-weight: 560; }
+    .t-fetch { fill: #5a45b5; } .t-join { fill: #2a6a99; } .t-reuse { fill: #287b63; }
+    .td-note { fill: #7d8ba0; font-size: 12.5px; }
+    .foot { fill: #f5f7fa; stroke: #e0e7ef; stroke-width: 1.3; }
+    .foot-title { fill: #233a53; font-size: 14px; font-weight: 720; }
+    .foot-detail { fill: #607187; font-size: 13px; }
+    @media (prefers-color-scheme: dark) {
+      .canvas { fill: #0f1724; }
+      .heading, .n-title, .lg-title, .td-state { fill: #edf3fb; }
+      .subheading, .section, .n-detail, .lg-detail, .th { fill: #a3b0c1; }
+      .divider, .rule { stroke: #293647; }
+      .node { fill: #182436; stroke: #42576d; }
+      .node-ready { fill: #142f2a; stroke: #407e6b; }
+      .node-warn { fill: #302718; stroke: #936d43; }
+      .node-error { fill: #322323; stroke: #99645d; }
+      .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+      .pill-ready { fill: #204d3e; } .pill-text-ready { fill: #a6e9cc; }
+      .pill-error { fill: #58312d; } .pill-text-error { fill: #f0b5ae; }
+      .pill-coord { fill: #1f4560; } .pill-text-coord { fill: #b7dcf5; }
+      .e-main { fill: #d3deea; } .e-method, .td-note { fill: #8494a8; }
+      .row-alt { fill: #152030; }
+      .t-fetch { fill: #b9acf5; } .t-join { fill: #8cc5ea; } .t-reuse { fill: #8fdcbb; }
+      .foot { fill: #182436; stroke: #35475c; }
+      .foot-title { fill: #e4edf7; } .foot-detail { fill: #b0bfd0; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow-loader" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#7b66d4" stroke-width="1.5"/></marker>
+    <marker id="arrow-success" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#3b9279" stroke-width="1.5"/></marker>
+    <marker id="arrow-fail" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L7.5 4.5 L1 8" fill="none" stroke="#c27a62" stroke-width="1.5"/></marker>
+  </defs>
+  <rect class="canvas" width="1240" height="1080"/>
+  <!-- ── edges ── -->
+  <path d="M63 251 H93" fill="none" stroke="#647b96" stroke-width="2"/>
+  <path d="M86 246 L94 251 L86 256" fill="none" stroke="#647b96" stroke-width="1.5"/>
+
+  <path class="edge" d="M302 251 H376"/>
+  <g><circle class="badge-l" cx="262" cy="160" r="9"/><text class="badge-text" x="262" y="164" text-anchor="middle">L</text>
+     <text class="e-main code" x="276" y="164">ensure() or refresh()</text>
+     <text class="e-method code" x="276" y="179">markLoading()</text></g>
+
+  <path class="edge edge-success" d="M583 251 H657"/>
+  <g><circle class="badge-c" cx="566" cy="160" r="9"/><text class="badge-text" x="566" y="164" text-anchor="middle">C</text>
+     <text class="e-main" x="580" y="164">fetch succeeded</text>
+     <text class="e-method code" x="580" y="179">markReady()</text></g>
+
+  <path class="edge" d="M862 227 H927"/>
+  <g><circle class="badge-l" cx="852" cy="160" r="9"/><text class="badge-text" x="852" y="164" text-anchor="middle">L</text>
+     <text class="e-main code" x="866" y="164">refresh()</text>
+     <text class="e-method code" x="866" y="179">markRefreshing()</text></g>
+
+  <path class="edge edge-success" d="M927 276 H862"/>
+  <g><circle class="badge-c" cx="830" cy="343" r="9"/><text class="badge-text" x="830" y="347" text-anchor="middle">C</text>
+     <text class="e-main" x="844" y="347">fetch succeeded</text>
+     <text class="e-method code" x="844" y="362">markReady()</text></g>
+
+  <path class="edge edge-fail" d="M455 318 V448"/>
+  <g><circle class="badge-c" cx="360" cy="378" r="9"/><text class="badge-text" x="360" y="382" text-anchor="middle">C</text>
+     <text class="e-main" x="444" y="382" text-anchor="end">load failed</text>
+     <text class="e-method code" x="444" y="397" text-anchor="end">markFailed()</text></g>
+
+  <path class="edge" d="M541 448 V318"/>
+  <g><circle class="badge-l" cx="560" cy="378" r="9"/><text class="badge-text" x="560" y="382" text-anchor="middle">L</text>
+     <text class="e-main code" x="574" y="382">ensure() or refresh()</text>
+     <text class="e-method code" x="574" y="397">retry · markLoading()</text></g>
+
+  <path class="edge edge-fail" d="M990 318 V448"/>
+  <g><circle class="badge-c" cx="896" cy="403" r="9"/><text class="badge-text" x="896" y="407" text-anchor="middle">C</text>
+     <text class="e-main" x="980" y="407" text-anchor="end">load failed</text>
+     <text class="e-method code" x="980" y="422" text-anchor="end">markFailed()</text></g>
+
+  <path class="edge" d="M1110 448 V318"/>
+  <g transform="translate(-63 0)"><circle class="badge-l" cx="1129" cy="378" r="9"/><text class="badge-text" x="1129" y="382" text-anchor="middle">L</text>
+     <text class="e-main code" x="1143" y="382">refresh()</text>
+     <text class="e-method code" x="1120" y="397">markRefreshing()</text></g>
+
+  <!-- ── nodes ── -->
+  <g transform="translate(95 186)">
+    <rect class="node" width="207" height="132" rx="13"/>
+    <text class="n-title" x="18" y="34">Missing</text>
+    <rect class="pill" x="18" y="49" width="81" height="22" rx="11"/>
+    <text class="pill-text" x="58.5" y="64" text-anchor="middle">MISSING</text>
+    <text class="n-detail code" x="18" y="99">groups = null</text>
+    <text class="n-detail" x="18" y="118">No current retrieval</text>
+  </g>
+  <g transform="translate(376 186)">
+    <rect class="node node-warn" width="207" height="132" rx="13"/>
+    <text class="n-title" x="18" y="34">Loading</text>
+    <rect class="pill" x="18" y="49" width="84" height="22" rx="11"/>
+    <text class="pill-text" x="60" y="64" text-anchor="middle">LOADING</text>
+    <rect class="pill pill-coord" x="107" y="49" width="88" height="22" rx="11"/>
+    <text class="pill-text pill-text-coord" x="151" y="64" text-anchor="middle">PENDING</text>
+    <text class="n-detail code" x="18" y="99">groups = null</text>
+    <text class="n-detail" x="18" y="118">Waiting for the coordinator</text>
+  </g>
+  <g transform="translate(657 186)">
+    <rect class="node node-ready" width="205" height="132" rx="13"/>
+    <text class="n-title" x="18" y="34">Ready</text>
+    <rect class="pill pill-ready" x="18" y="49" width="67" height="22" rx="11"/>
+    <text class="pill-text pill-text-ready" x="51.5" y="64" text-anchor="middle">READY</text>
+    <text class="n-detail code" x="18" y="99">groups = [] | data</text>
+    <text class="n-detail" x="18" y="118">No current retrieval</text>
+  </g>
+  <g transform="translate(927 186)">
+    <rect class="node node-ready" width="248" height="132" rx="13"/>
+    <text class="n-title" x="18" y="34">Refreshing</text>
+    <rect class="pill pill-ready" x="18" y="49" width="67" height="22" rx="11"/>
+    <text class="pill-text pill-text-ready" x="51.5" y="64" text-anchor="middle">READY</text>
+    <rect class="pill pill-coord" x="90" y="49" width="88" height="22" rx="11"/>
+    <text class="pill-text pill-text-coord" x="134" y="64" text-anchor="middle">PENDING</text>
+    <text class="n-detail code" x="18" y="99">refreshing = true</text>
+    <text class="n-detail" x="18" y="118">Previous groups still readable</text>
+  </g>
+  <g transform="translate(376 448)">
+    <rect class="node node-error" width="207" height="126" rx="13"/>
+    <text class="n-title" x="18" y="34">Failed</text>
+    <rect class="pill pill-error" x="18" y="49" width="72" height="22" rx="11"/>
+    <text class="pill-text pill-text-error" x="54" y="64" text-anchor="middle">FAILED</text>
+    <text class="n-detail code" x="18" y="95">groups = null</text>
+    <text class="n-detail" x="18" y="113">Error recorded</text>
+  </g>
+  <g transform="translate(927 448)">
+    <rect class="node node-error" width="248" height="126" rx="13"/>
+    <text class="n-title" x="18" y="34">Refresh failed</text>
+    <rect class="pill pill-ready" x="18" y="49" width="67" height="22" rx="11"/>
+    <text class="pill-text pill-text-ready" x="51.5" y="64" text-anchor="middle">READY</text>
+    <text class="n-detail code" x="18" y="94">refreshing = false</text>
+    <text class="n-detail" x="18" y="113">Old groups + error retained</text>
+  </g>
+
+  <!-- ── legend ── -->
+  <g transform="translate(55 606)">
+    <circle class="badge-l" cx="9" cy="10" r="9"/><text class="badge-text" x="9" y="14" text-anchor="middle">L</text>
+    <text class="lg-title" x="28" y="15">Loader decision</text>
+    <text class="lg-detail" x="28" y="35">A caller ran ensure() or refresh(), and the</text>
+    <text class="lg-detail" x="28" y="53">loader handed the request to the coordinator.</text>
+  </g>
+  <g transform="translate(445 606)">
+    <circle class="badge-c" cx="9" cy="10" r="9"/><text class="badge-text" x="9" y="14" text-anchor="middle">C</text>
+    <text class="lg-title" x="28" y="15">Outcome applied by loader</text>
+    <text class="lg-detail" x="28" y="35">Coordinator reports an outcome; loader</text>
+    <text class="lg-detail" x="28" y="53">applies it or records an application error.</text>
+  </g>
+  <g transform="translate(835 606)">
+    <rect class="pill pill-coord" x="0" y="0" width="88" height="22" rx="11"/>
+    <text class="pill-text pill-text-coord" x="44" y="15" text-anchor="middle">PENDING</text>
+    <text class="lg-title" x="100" y="15">Retrieval pending</text>
+    <text class="lg-detail" x="0" y="35">Queued or active work is shared; new calls</text>
+    <text class="lg-detail" x="0" y="53">join instead of starting another request.</text>
+  </g>
+
+  <!-- ── table ── -->
+  </svg>
