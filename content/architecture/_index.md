@@ -4,12 +4,13 @@ title: "Architecture"
 description: "Implementation-focused guides for Sisukas architecture, starting with the planning system and related components."
 ---
 > [!NOTE]
-> These guides focus on the implementation of individual subsystems. Start with [System Overview](../system-overview/) for the system-wide context or [Concepts](../concepts/) for the underlying planning ideas.
+> These guides focus on the implementation of individual subsystems and frontend organization. Start with [System Overview](../system-overview/) for the system-wide context or [Concepts](../concepts/) for the underlying planning ideas.
 
 Architecture documentation explains how the components and models of Sisukas fit together, including their responsibilities, contracts, and constraints.
 
 ## In this section
 
+- **[Frontend Architecture and Module Organization](./frontend-organization/)** — Feature-oriented ownership, shared modules, import boundaries, and incremental migration.
 - **[Planning System Architecture](./planning/)** — Plans, schedule combinations, domain structures, scoring, and evolving decision-slot design.
 - **[Study-group Data Management](./study-group-loading/)** — Authoritative full-data caching, request coordination, lifecycle safety, and reactive integration boundaries.
 
