@@ -1,0 +1,30 @@
+{{- $filename := index .Attributes "filename" -}}
+{{- $href := index .Attributes "href" -}}
+
+{{- if $href -}}
+  {{- $href = partial "docs/links/portable-link"
+      (dict "Page" .PageInner "Destination" $href) -}}
+{{- end -}}
+
+<div class="book-codeblock">
+  <div class="book-codeblock-header">
+    <span class="book-codeblock-label">
+      {{- with $filename -}}
+        <a {{ with $href }}href="{{ . }}"{{ end }}>{{ . }}</a>
+      {{- else -}}
+        {{ $.Type | default "text" }}
+      {{- end -}}
+    </span>
+
+    <button
+      type="button"
+      class="book-codeblock-copy"
+      aria-label="Copy code"
+      title="Copy code"
+    >
+      Copy
+    </button>
+  </div>
+
+  {{- (transform.HighlightCodeBlock . .Options).Wrapped -}}
+</div>

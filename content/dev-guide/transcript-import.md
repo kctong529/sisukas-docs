@@ -47,7 +47,7 @@ Bulk import keeps the operation fast and consistent: either everything applies, 
 
 ### Endpoint
 
-```
+```http
 POST /api/transcript/import
 ```
 

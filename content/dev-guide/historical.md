@@ -69,7 +69,7 @@ We produce three files:
 
 Set the Course API key:
 
-```
+```bash
 export AALTO_COURSE_API_KEY="..."
 ```
 
@@ -92,7 +92,7 @@ This step:
 
 Run:
 
-```
+```bash
 cd sisu-wrapper
 python -m sisu_wrapper \
   --courses-json ../courses.json \
@@ -106,7 +106,7 @@ If you Ctrl+C during the crawl, a checkpoint is written and the program exits cl
 
 Resume:
 
-```
+```bash
 python -m sisu_wrapper \
   --courses-json ../courses.json \
   --out ../historical_realisations.jsonl \
@@ -146,7 +146,7 @@ Because the crawl is resumable and the output is append-only, resuming may cause
 
 Run:
 
-```
+```bash
 python scripts/dedupe_jsonl.py \
   ../historical_realisations.jsonl \
   ../historical_realisations_deduped.jsonl
@@ -171,7 +171,7 @@ Example schema (subset):
 
 Run your normalizer (or the flat transformer) to produce:
 
-```
+```bash
 python scripts/transform_historical_flat.py \
   ../historical_realisations_deduped.jsonl \
   ../historical_courses.json \
@@ -190,7 +190,7 @@ python scripts/transform_historical_flat.py \
 
 For a full rebuild:
 
-```
+```bash
 # 1) Crawl (can be interrupted/resumed)
 python -m sisu_wrapper --courses-json ../courses.json --out ../historical_realisations.jsonl --state ../historical_state.json
 

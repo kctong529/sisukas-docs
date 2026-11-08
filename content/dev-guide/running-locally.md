@@ -11,7 +11,7 @@ description: "Step-by-step local setup: required tools, HTTPS on localhost, serv
 
 Verify you have all required tools installed before starting:
 
-```
+```bash
 git --version
 make --version
 uv --version
@@ -37,7 +37,7 @@ If any command fails, install the missing tool:
 
 ## Clone the Repository
 
-```
+```bash
 git clone https://github.com/kctong529/sisukas.git
 cd sisukas
 ```
@@ -46,7 +46,7 @@ cd sisukas
 
 Sisukas includes a Makefile that automates environment setup:
 
-```
+```bash
 make setup
 ```
 
@@ -60,7 +60,7 @@ This command does the following:
 
 **After setup completes**, verify that the HTTPS certificates were created:
 
-```
+```bash
 ls frontend/course-browser/localhost*.pem
 ```
 
@@ -105,14 +105,14 @@ ls frontend/course-browser/localhost*.pem
 
 The frontend is a Vite development server. It uses HTTPS when the local certificate files exist; otherwise it uses HTTP. The example backend `.env` uses `https://localhost:5173` for auth callback/frontend URLs.
 
-```
+```bash
 cd frontend/course-browser
 npm run dev
 ```
 
 You'll see output like:
 
-```
+```bash
 HTTPS server running...
 > Local:     https://localhost:5173/
 ```
@@ -126,13 +126,13 @@ HTTPS server running...
 
 The backend expects a local Postgres database in development. Start it with Docker Compose from the repository root:
 
-```
+```bash
 docker-compose up
 ```
 
 You'll see output like:
 
-```
+```bash
 sisukas-db  | LOG:  database system is ready to accept connections
 ```
 
@@ -145,26 +145,26 @@ Warnings about locales are normal and can be ignored. Leave this running for the
 
 With the database running, initialize the database tables and start the backend:
 
-```
+```bash
 cd backend
 npm run db:push
 ```
 
 This creates all the necessary database tables (users, courses, plans, favourites, etc.) in your local Postgres database. You should see:
 
-```
+```bash
 [✓] Changes applied
 ```
 
 Then start the backend dev server:
 
-```
+```bash
 npm run dev
 ```
 
 Once running, you'll see:
 
-```
+```bash
 > backend dev
 Server running on http://localhost:3000
 ```
@@ -175,7 +175,7 @@ The backend logs authentication and API requests in real-time.
 
 In development, if `RESEND_API_KEY` is not set in `.env`, the backend prints a magic link to the terminal instead of emailing it:
 
-```
+```bash
 [auth] RESEND_API_KEY missing/invalid; printing magic link instead of emailing.
 [auth] Magic link for user@example.com: https://localhost:5173/auth/verify?token=eyJ...
 ```
@@ -189,14 +189,14 @@ In development, if `RESEND_API_KEY` is not set in `.env`, the backend prints a m
 
 The SISU Wrapper fetches live study group and schedule data for course instances. Without it, you can still add courses to Favourites and Plans but won't see study group information.
 
-```
+```bash
 cd sisu-wrapper
 uv run fastapi dev api/main.py --port 8001
 ```
 
 You'll see:
 
-```
+```bash
 INFO   Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
 ```
 
@@ -212,14 +212,14 @@ The Filters API persists filter configurations so users can share URLs with cust
 > [!TIP]
 > Saved filters are not associated with user accounts; they are identified only by the generated URL.
 
-```
+```bash
 cd filters-api
 uv run fastapi dev main.py
 ```
 
 You'll see:
 
-```
+```bash
 INFO   Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
 ```
 
@@ -275,32 +275,32 @@ If any feature doesn't work, check the **Quick Checklist** below.
 
 Copy this list and verify each item is running before concluding something is broken:
 
-```
+```markdown
 Frontend:
-  [ ] npm run dev in frontend/course-browser/
-  [ ] Running at the URL printed by Vite (HTTPS when certificates are present)
-  [ ] Certificates present if testing HTTPS authentication
+- [ ] npm run dev in frontend/course-browser/
+- [ ] Running at the URL printed by Vite (HTTPS when certificates are present)
+- [ ] Certificates present if testing HTTPS authentication
 
 Database:
-  [ ] docker-compose up in repository root
-  [ ] Shows "database system is ready"
+- [ ] docker-compose up in repository root
+- [ ] Shows "database system is ready"
 
 Backend:
-  [ ] npm run db:push completed successfully
-  [ ] npm run dev in backend/
-  [ ] Shows "Server running on http://localhost:3000"
+- [ ] npm run db:push completed successfully
+- [ ] npm run dev in backend/
+- [ ] Shows "Server running on http://localhost:3000"
 
 SISU Wrapper (optional):
-  [ ] uv run fastapi dev api/main.py --port 8001 in sisu-wrapper/
-  [ ] Running on http://127.0.0.1:8001
+- [ ] uv run fastapi dev api/main.py --port 8001 in sisu-wrapper/
+- [ ] Running on http://127.0.0.1:8001
 
 Filters API (optional):
-  [ ] uv run fastapi dev main.py in filters-api/
-  [ ] Running on http://127.0.0.1:8000
+- [ ] uv run fastapi dev main.py in filters-api/
+- [ ] Running on http://127.0.0.1:8000
 
 Certificates:
-  [ ] localhost.pem exists if using HTTPS
-  [ ] localhost-key.pem exists if using HTTPS
+- [ ] localhost.pem exists if using HTTPS
+- [ ] localhost-key.pem exists if using HTTPS
 ```
 
 If all items are checked and something still doesn't work, check the respective service's terminal output for error messages.

@@ -64,7 +64,7 @@ Each candidate has proposed fields such as `kind`, `name`, `official_code`, `cur
 
 From the root of the `sisukas` repository, install the verifier dependencies and run:
 
-```sh
+```bash
 python3 -m venv .venv-curricula
 source .venv-curricula/bin/activate
 python3 -m pip install -r scripts/curricula/requirements.txt
@@ -130,7 +130,7 @@ The current YAML model uses a flat list of course codes for filtering. It does *
 
 Run the frontend checks from `frontend/course-browser`:
 
-```sh
+```bash
 npm run validate:curricula -- --format-only
 npm test
 npm run check
@@ -138,7 +138,7 @@ npm run check
 
 For full course-reference checks, provide both local datasets to the CLI:
 
-```sh
+```bash
 npm run validate:curricula -- \
   --active /path/to/courses.json \
   --historical /path/to/historical.json

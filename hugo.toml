@@ -6,6 +6,14 @@ enableGitInfo = true
 [frontmatter]
   lastmod = [":git"]
 
+[markup]
+  [markup.highlight]
+    codeFences = true
+    guessSyntax = false
+    lineNos = false
+    noClasses = true
+    style = "catppuccin-latte"
+
 [markup.goldmark.renderer]
   unsafe = true
 

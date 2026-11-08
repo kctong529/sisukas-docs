@@ -127,14 +127,16 @@ Removes localhost HTTPS certificates:
 ## Common Workflows
 
 ### First-Time Setup
-```
+
+```bash
 make setup
 ```
 
 Installs all dependencies and generates HTTPS certificates (if mkcert is installed).
 
 ### Install mkcert
-```
+
+```bash
 # macOS
 brew install mkcert
 
@@ -147,7 +149,7 @@ choco install mkcert
 
 Then generate certificates:
 
-```
+```bash
 make setup-certs
 ```
 
@@ -158,7 +160,8 @@ make setup
 ```
 
 ### Regenerate Certificates
-```
+
+```bash
 make clean-certs
 make setup-certs
 ```
