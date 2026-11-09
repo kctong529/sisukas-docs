@@ -5,7 +5,7 @@ description: "Authoritative full-data caching, shared retrieval, failure handlin
 ---
 
 > [!NOTE]
-> **Implementation status — November 2026.** The authoritative `StudyGroupCache`, `StudyGroupCacheLoader`, `StudyGroupRequestCoordinator`, strict HTTP transport, Svelte readable-store adapter, and shared `StudyGroupDataRuntime` are implemented and tested under [#172](https://github.com/kctong529/sisukas/issues/172). The new runtime has a production composition entry point, but **existing production consumers still use the legacy loading path**. Centralized loading policy, consumer migration, and legacy removal remain in [#173](https://github.com/kctong529/sisukas/issues/173), [#174](https://github.com/kctong529/sisukas/issues/174), and [#175](https://github.com/kctong529/sisukas/issues/175), respectively.
+> **Implementation status — 9 November 2026.** The authoritative cache, loader, request coordinator, strict transport, read-only Svelte adapter, and shared runtime are implemented under [#172](https://github.com/kctong529/sisukas/issues/172). [#173](https://github.com/kctong529/sisukas/issues/173) has also established **application-owned authenticated initialization and default active-plan loading** through that runtime. Existing views still use the legacy `studyGroupStore` in parallel. Consumer migration and removal of the legacy retrieval path remain under [#174](https://github.com/kctong529/sisukas/issues/174) and [#175](https://github.com/kctong529/sisukas/issues/175), respectively.
 
 ## Why this architecture exists
 
@@ -24,7 +24,7 @@ The new design separates **data ownership**, **cache-aware retrieval decisions**
 | `StudyGroupRequestCoordinator` | Per-offering pending work, FIFO queue, microtask coalescing, batching, global concurrency, outcome delivery, cancellation generation | Cache availability, active-plan policy, Svelte reactivity |
 | `createStudyGroupTransport()` / `StudyGroupService` | One strict HTTP request per coordinator batch and source-preserving normalization | Cross-caller queueing or a second scheduler |
 | `createStudyGroupEntryStore()` | Read-only, per-offering Svelte `Readable<StudyGroupEntry>` snapshots and notification subscriptions | Data ownership, fetching, freshness decisions |
-| `StudyGroupDataRuntime` | Shared composition and public `entry()`/`ensure()`/`refresh()`/`clear()` operations | Active-plan selection, automatic hydration, TTL policy |
+| `StudyGroupDataRuntime` | Shared composition and public `entry()`/`ensure()`/`refresh()`/`clear()` operations | Active-plan selection, application startup policy, TTL policy |
 
 `createStudyGroupDataRuntime({ service, now?, chunkSize?, concurrency? })` constructs an isolated cache, coordinator, loader, and transport for testing or controlled use. `getStudyGroupDataRuntime()` lazily constructs a shared browser-side runtime using the configured wrapper API. Both forms are inert until retrieval is requested, and the facade does not expose mutable cache operations or coordinator internals. The Svelte adapter is a view over this same cache, not a second authoritative dataset.
 
@@ -42,19 +42,37 @@ The [shared runtime](https://github.com/kctong529/sisukas/issues/172) is the int
 | `clear()` | Delegates to the loader to clear entries and invalidate outstanding logical requests; cancelled operations reject |
 
 ```ts
-import { getStudyGroupDataRuntime } from "@infrastructure/studyGroups/StudyGroupDataRuntime";
+import { getStudyGroupDataRuntime } from "@modules/study-groups";
 
 const runtime = getStudyGroupDataRuntime();
 const request = { courseUnitId: "unit-id", courseOfferingId: "offering-id" };
 const entry = runtime.entry(request); // Observation only; no HTTP.
 
-// Retrieval is explicit until #173 introduces a centralized loading policy.
+// A consumer explicitly requests data when needed; application startup
+// separately ensures offerings in the authenticated active plan.
 await runtime.ensure([request]);
 ```
 
 `entry()` creates a lightweight observable view of a shared authoritative cache. It listens to changes for its offering and to global `clear` events; unrelated offering updates are ignored. The Svelte store subscribes to the cache while it has consumers, unsubscribes when the last one leaves, and rereads current state on resubscription. Returned snapshots are defensive copies of cached groups, but consumers should still treat store snapshots as immutable.
 
-The production singleton shares work **among callers using this runtime**. Legacy consumers do not automatically share its cache or request queue until [#174](https://github.com/kctong529/sisukas/issues/174) migrates them. There is no automatic active-plan hydration or time-based refresh policy in #172.
+The production singleton shares work **among callers using this runtime**. Legacy consumers do not automatically share its cache or request queue until [#174](https://github.com/kctong529/sisukas/issues/174) migrates them. Since #173, the application also initiates default loading for the authenticated active plan. The runtime itself remains inert until a caller invokes `ensure()` or `refresh()`; there is no time-based refresh policy.
+
+## Application-owned lifecycle and default demand (#173)
+
+`src/app/auth/AuthenticatedDataLifecycle.svelte` is mounted at the application boundary. It coordinates authenticated plan, favourites, and grades initialization through `createAuthenticatedPlanLifecycle` instead of relying on Favourites to initialize plans. A pure `authContextTransition` helper distinguishes initial settled authentication, confirmed logout, direct account switches, unchanged accounts, and temporary pending authentication.
+
+On settled account changes, the lifecycle clears account-scoped stores and **both** the authoritative runtime and the temporary legacy `studyGroupStore`. It does not clear study-group data merely because the active plan changes, so reusable offering entries remain cached. Generation-aware store operations prevent obsolete asynchronous results and errors from repopulating state after an account boundary.
+
+Default demand is deliberately narrower than prefetching every available course:
+
+1. Wait for a settled authenticated user, a hydrated plans store, and `courseIndexStore.state.activeReady` (which also allows a successfully empty active catalogue).
+2. Read the active plan and map its `instanceIds` to deduplicated `{ courseUnitId, courseOfferingId }` requests using `src/app/study-group-loading/activePlanRequests.ts` and the active course index.
+3. Omit unresolved offerings without treating them as successful empty study-group results. Reconsider the mapping when plan membership, active-plan selection, or course resolution changes.
+4. Call the shared `StudyGroupDataRuntime.ensure()` for the resolved set. The runtime handles caching, request sharing, batching, and error outcomes; the application does not introduce another queue or cache.
+
+The Svelte loading effect tracks a **stable derived key** from the account and resolved request identities. Equivalent session notifications and unrelated plan-store updates therefore do not repeat the same `ensure()` call. Authentication transitions are tracked separately from this loading effect.
+
+This automatic demand applies only to the active plan. Other views may still need explicit `ensure()` or user-initiated `refresh()` when they migrate in #174. Observing `runtime.entry(request)` alone never starts retrieval.
 
 ## Offering identity and cache entry
 
@@ -150,15 +168,15 @@ The implemented `createStudyGroupEntryStore(cache, request)` converts those noti
 
 **Implemented and tested:** complete offering-level data with successful emptiness, safe refresh retention, shared scheduling, progressive per-offering outcomes, bounded transport execution, reset-safe invalidation, synchronous cache notifications, Svelte read-only entry stores, and an isolated factory plus shared production composition entry point. Tests exercise the composed runtime through the real `StudyGroupService` with mocked HTTP, including source-event identities, offset-aware timestamps, resolved locations, progressive completion, HTTP failure isolation, and successful empty results.
 
-**Validation (8 November 2026):** 128 focused study-group tests passed across 11 files; the complete frontend suite passed **609 tests across 54 files**. ESLint and Svelte/TypeScript checks passed with no diagnostics, and the production build succeeded. Vite reported its non-blocking warning about chunks above 500 kB.
+**Validation (9 November 2026):** After #173, **57 focused tests across 8 files** and the **672-test full frontend suite across 63 files** passed. Svelte/TypeScript and test TypeScript checks, ESLint, and the production/PWA build passed. Vite reported its non-blocking warning about chunks above 500 kB. The earlier #172 runtime-only baseline was 609 tests across 54 files.
 
-**Still pending:** active-plan and authentication-driven loading policy, freshness/TTL decisions, migration of Calendar/Favourites/StudyGroupsSection/LEGO and other legacy consumers, and legacy queue/summary cleanup and performance comparison. The new runtime is available for adoption but is **not yet the source of data for existing production consumers**. Authoritative study-group persistence and physical abort of dispatched HTTP requests are not part of this in-memory runtime.
+**Still pending:** freshness/TTL decisions, migration of Calendar/Favourites/StudyGroupsSection/LEGO and other legacy consumers (#174), and legacy queue/summary cleanup and performance comparison (#175). Default active-plan loading now calls the authoritative runtime, but **existing UI consumers still read from the legacy path**. Authoritative study-group persistence and physical abort of dispatched HTTP requests are not part of this in-memory runtime.
 
 | Work item | Scope |
 | --- | --- |
 | [#167](https://github.com/kctong529/sisukas/issues/167) | Request coordinator foundation |
 | [#172](https://github.com/kctong529/sisukas/issues/172) | Authoritative cache, loader, transport and reactive/production integration |
-| [#173](https://github.com/kctong529/sisukas/issues/173) | Centralized loading policy and lifecycle triggers |
+| [#173](https://github.com/kctong529/sisukas/issues/173) | Completed: account lifecycle, readiness-gated default active-plan loading, and invalidation |
 | [#174](https://github.com/kctong529/sisukas/issues/174) | Calendar, Favourites, StudyGroupsSection and LEGO migration |
 | [#175](https://github.com/kctong529/sisukas/issues/175) | Legacy cleanup and authenticated performance comparison with #161 |
 

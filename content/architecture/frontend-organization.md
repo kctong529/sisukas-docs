@@ -5,7 +5,7 @@ description: "Capability-oriented frontend ownership, public module contracts, d
 ---
 
 > [!NOTE]
-> **Architecture direction — November 2026.** This page defines the capability-oriented frontend organization established under [#177](https://github.com/kctong529/sisukas/issues/177). The study-group data subsystem is the first reference implementation. The broader frontend migration remains incremental, and existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use until their respective capabilities are relocated.
+> **Architecture direction — November 2026.** This page defines the capability-oriented frontend organization established under [#177](https://github.com/kctong529/sisukas/issues/177). The study-group data subsystem is the first reference implementation, and [#173](https://github.com/kctong529/sisukas/issues/173) now uses `src/app/` to coordinate authentication and active-plan loading. The broader frontend migration remains incremental, and existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use until their respective capabilities are relocated.
 
 ## Goals and organizing principles
 
@@ -109,7 +109,7 @@ Internal code within the study-group module may import its own implementation fi
 
 Existing formatting utilities are not included in the core public interface. Their current external consumers retain documented transitional imports until their ownership is reconsidered during later migrations.
 
-The public entry point does not introduce new retrieval behavior. Calling `entry()` alone remains observational and does not initiate network retrieval.
+The public entry point does not introduce retrieval side effects. Calling `entry()` alone remains observational and does not initiate network retrieval. The separate application-owned lifecycle introduced in #173 calls `ensure()` for resolved offerings in the authenticated active plan.
 
 ## Dependency rules
 
@@ -164,6 +164,14 @@ Existing Svelte 5 store conventions are documented in [Frontend State Management
 
 Preserve successful-empty, missing, loading, failed, and refresh semantics when migrating the study-group subsystem. Refer to [Study-group Data Management](../study-group-loading/) for its established lifecycle and cancellation contracts.
 
+### Application composition and loading ownership
+
+`src/app/auth/AuthenticatedDataLifecycle.svelte` now coordinates settled authentication transitions and the initialization/clearing of plans, favourites, grades, and both study-group caches. Its controller (`authenticatedPlanLifecycle.ts`) delegates actual data operations to the owning stores. This avoids making individual views responsible for account setup.
+
+`src/app/study-group-loading/activePlanRequests.ts` selects deduplicated active-plan offering requests using the active course index. The application waits for authenticated session settlement, plan hydration, and `activeReady` before invoking the shared runtime's `ensure()`. A stable derived loading key prevents equivalent session updates from reinitiating the same demand.
+
+These are **application orchestration responsibilities**, not responsibilities of `modules/study-groups/`. The runtime still owns cache-aware retrieval and remains independent of the Calendar and Favourites. Consumer-level observation and on-demand retrieval remain part of #174; clearing the legacy cache remains necessary until #175.
+
 ## Tests and migration workflow
 
 Study-group implementation tests are organized under `tests/modules/study-groups/`, grouped by cache, retrieval, infrastructure, stores, and integration responsibilities. The import-boundary rule is tested separately under `tests/scripts/`. Tests belonging to capabilities that have not yet migrated retain their existing locations.
@@ -185,15 +193,15 @@ The existing frontend baseline at the end of [#172](https://github.com/kctong529
 > **Incremental adoption.** The study-group data subsystem is the first migrated reusable module. The broader `app/`, `features/`, `modules/`, `shared/`, and `data/` organization remains the target architecture. Existing layered directories and imports remain valid until their respective migrations are completed.
 
 1. **#177 — Capability organization and module boundaries:** Establish ownership conventions, the study-group reference module, deliberate public contracts, and import-boundary enforcement.
-2. **#173 — Centralized study-group loading policy:** Introduce shared loading policy on top of the established runtime.
-3. **#174 — Study-group consumer migration:** Migrate Calendar, Favourites, and other consumers to the shared runtime.
+2. **#173 — Authenticated lifecycle and default loading (complete):** Centralize account initialization and invalidation, derive active-plan demand after catalogue readiness, and invoke the shared runtime.
+3. **#174 — Study-group consumer migration (next):** Migrate Calendar, Favourites, StudyGroupsSection, LEGO, and other consumers to the shared runtime.
 4. **#175 — Legacy loading cleanup:** Remove superseded infrastructure and benchmark the consolidated implementation.
 
 The reference module demonstrates the intended architectural principles without requiring a repository-wide reorganization.
 
 Additional feature migrations, including Calendar, planning, course browsing, and filters, will be scoped separately based on dependency and ownership reviews.
 
-The study-group reference migration passed ESLint, application and test TypeScript checks, and the production build. The complete frontend suite passed 615 tests across 55 files, including six import-boundary regression tests. The earlier [#172](https://github.com/kctong529/sisukas/issues/172) baseline was 609 tests across 54 files.
+After #173, the focused lifecycle/readiness suite passed 57 tests across 8 files, and the complete frontend suite passed 672 tests across 63 files. ESLint, application and test TypeScript checks, and the production/PWA build passed. The earlier #177 reference-module milestone passed 615 tests across 55 files; the [#172](https://github.com/kctong529/sisukas/issues/172) runtime baseline was 609 tests across 54 files.
 
 ## Related documentation
 
