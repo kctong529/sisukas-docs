@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Study-group consumer usage</title>
+<desc id="d">One shared study-group runtime serves four production consumers. Calendar reads entries through a projection store and applies visibility preferences. Favourites shows StudyGroupsSection, which requests data when a course is expanded. LEGO BlocksGrid requests each course's groups to partition blocks. LEGO schedule analysis ensures full data, builds a payload and sends it to the Sisukas backend for stateless analysis. The authenticated app lifecycle requests the active plan's offerings after sign-in.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1000" height="560"/>
+<path class="e e-data" d="M220 196 C256 196 256 100 286 100"/>
+<path class="e e-data" d="M220 242 C256 242 256 220 290 220 H536"/>
+<path class="e e-data" d="M220 300 C256 300 256 340 290 340 H536"/>
+<path class="e e-data" d="M220 346 C256 346 256 460 286 460"/>
+<path class="e e-data" d="M490 100 H536"/>
+<path class="e e-data" d="M490 460 H536"/>
+<path class="e e-data" d="M780 460 H826"/>
+<path class="e e-user" d="M826 100 H784"/>
+<path class="e e-user" d="M120 444 V388"/>
+<text class="e-label l-user" x="130" y="420" text-anchor="start">active plan</text>
+<rect class="n n-runtime" x="20" y="150" width="200" height="234" rx="12"/>
+<text class="tag tag-runtime" x="36" y="174" text-anchor="start">FRONTEND RUNTIME</text>
+<text class="title-sm" x="36" y="197" text-anchor="start">Study-group runtime</text>
+<text class="line-code" x="36" y="230" text-anchor="start">entry()</text>
+<text class="note" x="36" y="249" text-anchor="start">observe</text>
+<text class="line-code" x="36" y="274" text-anchor="start">ensure()</text>
+<text class="note" x="36" y="293" text-anchor="start">load missing</text>
+<text class="line-code" x="36" y="318" text-anchor="start">refresh()</text>
+<text class="note" x="36" y="337" text-anchor="start">load again</text>
+<text class="line" x="36" y="362" text-anchor="start">one cache · one queue</text>
+<rect class="n n-neutral" x="20" y="444" width="200" height="84" rx="12"/>
+<text class="tag tag-neutral" x="36" y="468" text-anchor="start">APP LIFECYCLE</text>
+<text class="title-sm" x="36" y="491" text-anchor="start">Active-plan loading</text>
+<text class="note" x="36" y="512" text-anchor="start">after sign-in</text>
+<rect class="n n-projection" x="290" y="60" width="200" height="80" rx="12"/>
+<text class="tag tag-projection" x="306" y="84" text-anchor="start">ADAPTER</text>
+<text class="title-sm" x="306" y="107" text-anchor="start">Calendar projection</text>
+<text class="note" x="306" y="126" text-anchor="start">plan × groups → entries</text>
+<rect class="n n-projection" x="290" y="420" width="200" height="80" rx="12"/>
+<text class="tag tag-projection" x="306" y="444" text-anchor="start">ADAPTER</text>
+<text class="title-sm" x="306" y="467" text-anchor="start">Analysis payload</text>
+<text class="note" x="306" y="486" text-anchor="start">fails if data incomplete</text>
+<rect class="n n-consumer" x="540" y="60" width="240" height="110" rx="12"/>
+<text class="tag tag-consumer" x="556" y="84" text-anchor="start">CONSUMER</text>
+<text class="note" x="764" y="84" text-anchor="end">weekly grid</text>
+<text class="title-sm" x="556" y="106" text-anchor="start">Calendar</text>
+<text class="line" x="556" y="126" text-anchor="start">times · identity · exclusions</text>
+<rect class="pill pill-runtime" x="556" y="138" width="140" height="22" rx="11"/>
+<text class="pill-text pill-text-runtime" x="626.0" y="153" text-anchor="middle">OBSERVES · RETRY</text>
+<rect class="n n-consumer" x="540" y="180" width="240" height="110" rx="12"/>
+<text class="tag tag-consumer" x="556" y="204" text-anchor="start">CONSUMER</text>
+<text class="note" x="764" y="204" text-anchor="end">StudyGroupsSection</text>
+<text class="title-sm" x="556" y="226" text-anchor="start">Favourites</text>
+<text class="line" x="556" y="246" text-anchor="start">groups · schedules · rooms</text>
+<rect class="pill pill-runtime" x="556" y="258" width="140" height="22" rx="11"/>
+<text class="pill-text pill-text-runtime" x="626.0" y="273" text-anchor="middle">ENSURE ON EXPAND</text>
+<rect class="n n-consumer" x="540" y="300" width="240" height="110" rx="12"/>
+<text class="tag tag-consumer" x="556" y="324" text-anchor="start">CONSUMER</text>
+<text class="note" x="764" y="324" text-anchor="end">BlocksGrid</text>
+<text class="title-sm" x="556" y="346" text-anchor="start">LEGO blocks</text>
+<text class="line" x="556" y="366" text-anchor="start">group IDs and types</text>
+<rect class="pill pill-runtime" x="556" y="378" width="148" height="22" rx="11"/>
+<text class="pill-text pill-text-runtime" x="630.0" y="393" text-anchor="middle">ENSURE PER COURSE</text>
+<rect class="n n-consumer" x="540" y="420" width="240" height="110" rx="12"/>
+<text class="tag tag-consumer" x="556" y="444" text-anchor="start">CONSUMER</text>
+<text class="note" x="764" y="444" text-anchor="end">LEGO</text>
+<text class="title-sm" x="556" y="466" text-anchor="start">Schedule analysis</text>
+<text class="line" x="556" y="486" text-anchor="start">events per block</text>
+<rect class="pill pill-runtime" x="556" y="498" width="148" height="22" rx="11"/>
+<text class="pill-text pill-text-runtime" x="630.0" y="513" text-anchor="middle">ENSURE BEFORE RUN</text>
+<rect class="n n-user" x="830" y="60" width="160" height="80" rx="12"/>
+<text class="tag tag-user" x="846" y="84" text-anchor="start">USER STATE</text>
+<text class="title-sm" x="846" y="107" text-anchor="start">Visibility</text>
+<text class="note" x="846" y="126" text-anchor="start">per plan</text>
+<rect class="n n-service" x="830" y="420" width="160" height="80" rx="12"/>
+<text class="tag tag-service" x="846" y="444" text-anchor="start">SERVICE</text>
+<text class="title-sm" x="846" y="467" text-anchor="start">Sisukas backend</text>
+<text class="note" x="846" y="486" text-anchor="start">stateless analytics</text>
+</svg>

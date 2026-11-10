@@ -1,0 +1,193 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1140" width="1000" height="1140" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Calendar occurrence identity</title>
+<desc id="d">For each study event of an active-plan group: excluded events and events without a valid offset interval are not projected. If the event has a non-empty seriesId, the key is the JSON array [series, offering, group, seriesId, startMs]; otherwise a fallback key [fallback, offering, group, startMs, endMs, sorted locationIds, cancelled, excluded, notice or null] is used with a missing_series_identity warning. Keys are compared across the projection; a unique key becomes occurrenceKey and permits occurrence overrides; colliding keys all become null with occurrence_key_collision, leaving group visibility only. Keys are snapshot-scoped: rescheduling changes the key and an old override stays stored but unmatched; it is never moved to another occurrence.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1000" height="1140"/>
+<path class="e e-flow" d="M330 86 V116"/>
+<path class="e e-flow" d="M330 196 V230"/>
+<text class="e-label l-data" x="340" y="216" text-anchor="start">no</text>
+<path class="e e-flow" d="M440 156 H516"/>
+<text class="e-label l-data" x="478" y="148" text-anchor="middle">yes</text>
+<path class="e e-flow" d="M330 296 V330"/>
+<path class="e e-flow" d="M330 410 V444"/>
+<text class="e-label l-data" x="340" y="430" text-anchor="start">yes</text>
+<path class="e e-flow" d="M440 370 H516"/>
+<text class="e-label l-data" x="478" y="362" text-anchor="middle">no</text>
+<path class="e e-flow" d="M220 484 H170 V540"/>
+<text class="e-label l-data" x="194" y="476" text-anchor="middle">yes</text>
+<path class="e e-flow" d="M440 484 H490 V540"/>
+<text class="e-label l-data" x="466" y="476" text-anchor="middle">no</text>
+<path class="e e-flow" d="M170 772 V800 H320 V826"/>
+<path class="e e-flow" d="M490 772 V800 H340 V826"/>
+<path class="e e-flow" d="M330 888 V918"/>
+<path class="e e-flow" d="M220 958 H170 V1006"/>
+<text class="e-label l-data" x="194" y="950" text-anchor="middle">yes</text>
+<path class="e e-flow" d="M440 958 H490 V1006"/>
+<text class="e-label l-data" x="466" y="950" text-anchor="middle">no</text>
+<rect class="n n-neutral" x="180" y="20" width="300" height="66" rx="12"/>
+<text class="tag tag-neutral" x="196" y="44" text-anchor="start">SOURCE</text>
+<text class="title" x="196" y="67" text-anchor="start">Study event</text>
+<text class="note" x="464" y="67" text-anchor="end">offering · group</text>
+<polygon class="diamond" points="330,116 440,156 330,196 220,156"/>
+<text class="d-text" x="330" y="161" text-anchor="middle">excluded?</text>
+<rect class="n n-muted" x="520" y="128" width="130" height="56" rx="12"/>
+<text class="tag tag-muted" x="536" y="152" text-anchor="start">OMITTED</text>
+<text class="title-sm" x="536" y="175" text-anchor="start">Not projected</text>
+<rect class="n n-neutral" x="180" y="230" width="300" height="66" rx="12"/>
+<text class="tag tag-neutral" x="196" y="254" text-anchor="start">TIMING</text>
+<text class="title" x="196" y="277" text-anchor="start">Resolve timing</text>
+<text class="note" x="464" y="277" text-anchor="end">offset timestamps</text>
+<polygon class="diamond" points="330,330 440,370 330,410 220,370"/>
+<text class="d-text" x="330" y="375" text-anchor="middle">valid interval?</text>
+<rect class="n n-muted" x="520" y="342" width="130" height="56" rx="12"/>
+<text class="tag tag-muted" x="536" y="366" text-anchor="start">OMITTED</text>
+<text class="title-sm" x="536" y="389" text-anchor="start">Not projected</text>
+<text class="note" x="585" y="418" text-anchor="middle">timing diagnostic</text>
+<polygon class="diamond" points="330,444 440,484 330,524 220,484"/>
+<text class="d-text" x="330" y="489" text-anchor="middle">seriesId set?</text>
+<rect class="n n-projection" x="30" y="540" width="280" height="232" rx="12"/>
+<text class="tag tag-projection" x="46" y="564" text-anchor="start">SERIES KEY</text>
+<text class="title-sm" x="46" y="587" text-anchor="start">Source series + start</text>
+<text class="line-code" x="46" y="618" text-anchor="start">["series",</text>
+<text class="line-code" x="46" y="639" text-anchor="start"> offering, group,</text>
+<text class="line-code" x="46" y="660" text-anchor="start"> seriesId,</text>
+<text class="line-code" x="46" y="681" text-anchor="start"> startMs]</text>
+<text class="note" x="46" y="726" text-anchor="start">seriesId alone is not an</text>
+<text class="note" x="46" y="744" text-anchor="start">occurrence identity</text>
+<rect class="n n-projection" x="340" y="540" width="300" height="232" rx="12"/>
+<text class="tag tag-projection" x="356" y="564" text-anchor="start">FALLBACK KEY</text>
+<text class="title-sm" x="356" y="587" text-anchor="start">Source attributes</text>
+<text class="line-code" x="356" y="614" text-anchor="start">["fallback",</text>
+<text class="line-code" x="356" y="633" text-anchor="start"> offering, group,</text>
+<text class="line-code" x="356" y="652" text-anchor="start"> startMs, endMs,</text>
+<text class="line-code" x="356" y="671" text-anchor="start"> sorted locationIds,</text>
+<text class="line-code" x="356" y="690" text-anchor="start"> cancelled, excluded,</text>
+<text class="line-code" x="356" y="709" text-anchor="start"> notice ?? null]</text>
+<rect class="pill pill-user" x="356" y="736" width="192" height="22" rx="11"/>
+<text class="pill-text pill-text-user" x="452.0" y="751" text-anchor="middle">MISSING_SERIES_IDENTITY</text>
+<text class="note" x="340" y="790" text-anchor="middle">deriveCalendarOccurrenceKey()</text>
+<rect class="n n-neutral" x="180" y="826" width="300" height="62" rx="12"/>
+<text class="tag tag-neutral" x="196" y="850" text-anchor="start">AMBIGUITY</text>
+<text class="title" x="196" y="873" text-anchor="start">Compare all keys</text>
+<text class="note" x="464" y="869" text-anchor="end">whole projection</text>
+<polygon class="diamond" points="330,918 440,958 330,998 220,958"/>
+<text class="d-text" x="330" y="963" text-anchor="middle">key unique?</text>
+<text class="note" x="492" y="862" text-anchor="start">identifyCalendarOccurrences()</text>
+<rect class="n n-ok" x="40" y="1006" width="260" height="112" rx="12"/>
+<text class="tag tag-ok" x="56" y="1030" text-anchor="start">USABLE</text>
+<text class="title-sm code" x="56" y="1053" text-anchor="start">occurrenceKey</text>
+<text class="line" x="56" y="1076" text-anchor="start">occurrence override allowed</text>
+<text class="note" x="56" y="1100" text-anchor="start">unique in this projection</text>
+<rect class="n n-bad" x="360" y="1006" width="280" height="112" rx="12"/>
+<text class="tag tag-bad" x="376" y="1030" text-anchor="start">AMBIGUOUS</text>
+<text class="title-sm code" x="376" y="1053" text-anchor="start">occurrenceKey = null</text>
+<text class="line" x="376" y="1076" text-anchor="start">group visibility only</text>
+<text class="note" x="376" y="1100" text-anchor="start">each gets occurrence_key_collision</text>
+<rect class="panel" x="700" y="20" width="280" height="760" rx="14"/>
+<text class="panel-title" x="720" y="52" text-anchor="start">Snapshot-scoped</text>
+<text class="note" x="720" y="72" text-anchor="start">keys are recomputed for every</text>
+<text class="note" x="720" y="90" text-anchor="start">teaching-data snapshot</text>
+<rect class="n n-neutral" x="720" y="112" width="240" height="128" rx="12"/>
+<text class="tag tag-neutral" x="736" y="136" text-anchor="start">SNAPSHOT 1</text>
+<text class="title-sm" x="736" y="159" text-anchor="start">Key K1</text>
+<text class="line" x="736" y="182" text-anchor="start">series S, Tue 10:15</text>
+<rect class="pill pill-user" x="736" y="200" width="140" height="22" rx="11"/>
+<text class="pill-text pill-text-user" x="806.0" y="215" text-anchor="middle">OVERRIDE: HIDDEN</text>
+<path class="e e-flow" d="M840.0 240 V296"/>
+<text class="e-label l-data" x="850.0" y="272" text-anchor="start">SISU reschedules</text>
+<rect class="n n-neutral" x="720" y="300" width="240" height="128" rx="12"/>
+<text class="tag tag-neutral" x="736" y="324" text-anchor="start">SNAPSHOT 2</text>
+<text class="title-sm" x="736" y="347" text-anchor="start">Key K2</text>
+<text class="line" x="736" y="370" text-anchor="start">series S, Wed 12:15</text>
+<rect class="pill" x="736" y="388" width="133" height="22" rx="11"/>
+<text class="pill-text" x="802.5" y="403" text-anchor="middle">GROUP / DEFAULT</text>
+<rect class="n n-bad" x="720" y="460" width="240" height="120" rx="12"/>
+<text class="tag tag-bad" x="736" y="484" text-anchor="start">K1 OVERRIDE</text>
+<text class="title-sm" x="736" y="507" text-anchor="start">Stored, unmatched</text>
+<text class="line" x="736" y="530" text-anchor="start">never guessed onto K2</text>
+<text class="line" x="736" y="552" text-anchor="start">or any other occurrence</text>
+<text class="title-sm" x="720" y="620" text-anchor="start">No permanent IDs</text>
+<text class="line" x="720" y="644" text-anchor="start">Sisukas does not assign</text>
+<text class="line" x="720" y="664" text-anchor="start">database IDs to teaching</text>
+<text class="line" x="720" y="684" text-anchor="start">occurrences. SISU exposes</text>
+<text class="line" x="720" y="704" text-anchor="start">series IDs, not occurrence IDs.</text>
+</svg>

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="1000" height="600" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Teaching data flow</title>
+<desc id="d">SISU Kori supplies study groups, event series, expanded occurrences and rooms. sisu-wrapper fetches and normalizes them and resolves locations, with in-process caches. The browser's shared study-group runtime retrieves normalized groups and serves them to Calendar projection and other consumers. The Sisukas backend supplies plans, not teaching events. Calendar visibility preferences are in-memory, per plan; their persistence is planned.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1000" height="600"/>
+<rect class="region region-fe" x="420" y="30" width="560" height="400" rx="16"/>
+<text class="region-title" x="438" y="57" text-anchor="start">Sisukas frontend</text>
+<text class="region-sub" x="438" y="76" text-anchor="start">browser · in memory</text>
+<path class="e e-data" d="M180 185 H201"/>
+<path class="e e-data" d="M385 185 H436"/>
+<path class="e e-data" d="M632 152 C656 152 656 120 676 120"/>
+<path class="e e-data" d="M632 238 C656 238 656 245 676 245"/>
+<path class="e e-user" d="M425 470 H530 V274"/>
+<text class="e-label l-user" x="478" y="462" text-anchor="middle">plan offerings</text>
+<path class="e e-user" d="M425 505 H650 V272 H676"/>
+<text class="e-label l-user" x="590" y="497" text-anchor="middle">active plan</text>
+<path class="e e-user" d="M820 330 V295"/>
+<text class="e-label l-user" x="828" y="318" text-anchor="start">visibility</text>
+<path class="e e-future" d="M315 540 V572 H820 V404"/>
+<text class="e-label l-future" x="568" y="566" text-anchor="middle">planned persistence (#190, #191)</text>
+<rect class="n n-external" x="12" y="120" width="168" height="130" rx="12"/>
+<text class="tag tag-external" x="28" y="144" text-anchor="start">EXTERNAL</text>
+<text class="title" x="28" y="167" text-anchor="start">SISU Kori</text>
+<text class="line" x="28" y="191" text-anchor="start">Groups, series,</text>
+<text class="line" x="28" y="211" text-anchor="start">occurrences, rooms</text>
+<text class="note" x="28" y="236" text-anchor="start">no occurrence IDs</text>
+<rect class="n n-service" x="205" y="100" width="180" height="170" rx="12"/>
+<text class="tag tag-service" x="221" y="124" text-anchor="start">SERVICE</text>
+<text class="title" x="221" y="147" text-anchor="start">sisu-wrapper</text>
+<text class="line" x="221" y="171" text-anchor="start">Fetch from Kori</text>
+<text class="line" x="221" y="191" text-anchor="start">Normalize events</text>
+<text class="line" x="221" y="211" text-anchor="start">Resolve locations</text>
+<rect class="pill" x="221" y="236" width="126" height="22" rx="11"/>
+<text class="pill-text" x="284.0" y="251" text-anchor="middle">IN-PROCESS LRU</text>
+<rect class="n n-runtime" x="440" y="120" width="192" height="150" rx="12"/>
+<text class="tag tag-runtime" x="456" y="144" text-anchor="start">FRONTEND RUNTIME</text>
+<text class="title-sm" x="456" y="167" text-anchor="start">Study-group runtime</text>
+<text class="line" x="456" y="191" text-anchor="start">Shared cache</text>
+<text class="line" x="456" y="211" text-anchor="start">Dedupes, batches</text>
+<text class="line" x="456" y="231" text-anchor="start">Frontend models</text>
+<rect class="n n-consumer" x="680" y="80" width="280" height="80" rx="12"/>
+<text class="tag tag-consumer" x="696" y="104" text-anchor="start">CONSUMERS</text>
+<text class="title" x="696" y="127" text-anchor="start">Other consumers</text>
+<text class="note" x="696" y="147" text-anchor="start">Favourites · LEGO · see below</text>
+<rect class="n n-projection" x="680" y="200" width="280" height="95" rx="12"/>
+<text class="tag tag-projection" x="696" y="224" text-anchor="start">PROJECTION</text>
+<text class="title" x="696" y="247" text-anchor="start">Calendar projection</text>
+<text class="line" x="696" y="271" text-anchor="start">Occurrence identity · visibility</text>
+<rect class="n n-user" x="680" y="330" width="280" height="74" rx="12"/>
+<text class="tag tag-user" x="696" y="354" text-anchor="start">USER STATE</text>
+<text class="title" x="696" y="377" text-anchor="start">Visibility preferences</text>
+<text class="note" x="904" y="354" text-anchor="end">per plan · in memory</text>
+<rect class="n n-service" x="205" y="445" width="220" height="95" rx="12"/>
+<text class="tag tag-service" x="221" y="469" text-anchor="start">SERVICE</text>
+<text class="title" x="221" y="492" text-anchor="start">Sisukas backend</text>
+<text class="line" x="221" y="516" text-anchor="start">Plans (PostgreSQL)</text>
+<text class="note" x="409" y="469" text-anchor="end">no teaching events</text>
+</svg>
