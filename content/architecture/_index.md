@@ -12,6 +12,8 @@ Architecture documentation explains how the components and models of Sisukas fit
 
 - **[Frontend Architecture and Module Organization](./frontend-organization/)** — Feature-oriented ownership, shared modules, import boundaries, and incremental migration.
 - **[Planning System Architecture](./planning/)** — Plans, schedule combinations, domain structures, scoring, and evolving decision-slot design.
+- **[Calendar Visibility Preference Contract](./calendar-visibility-preferences/)** — Durable identities, inheritance, ambiguity, and readiness for #189.
+- **[Calendar Visibility Persistence Schema](./calendar-visibility-schema/)** — Proposed sparse database tables and their trade-offs for #190.
 - **[Study-group Data Management](./study-group-loading/)** — Authoritative full-data caching, request coordination, lifecycle safety, and reactive integration boundaries.
 
 ## Related documentation

@@ -55,6 +55,9 @@ This is the reference for the SISU wrapper. Consult the corresponding backend ro
 
 ### 4. User data and frontend state
 
+- **[Calendar Visibility Preference Contract](../architecture/calendar-visibility-preferences/)** and **[Schema Proposal](../architecture/calendar-visibility-schema/)**  
+  Define plan-scoped visibility, inherited states, and the proposed database model for #189/#190.
+
 - **[Transcript Import](./transcript-import/)**  
   Explains the implemented bulk import workflow and its transactional guarantees.
 

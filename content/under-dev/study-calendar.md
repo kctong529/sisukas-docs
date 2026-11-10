@@ -74,6 +74,9 @@ Attendance decisions remain scoped to occurrences or recurring preferences and n
 
 ## Related documentation
 
+- [Calendar Visibility Preference Contract](../../architecture/calendar-visibility-preferences/) — Plan/group/occurrence identity, inheritance, and safe hydration (#189).
+- [Calendar Visibility Persistence Schema](../../architecture/calendar-visibility-schema/) — Proposed persistence tables and rationale (#190).
+
 - [Assemblies](../../concepts/assemblies/) — Candidate generation and explicit calendar application.
 - [Legacy Decision Slots](../../concepts/decision-slots/) — Earlier conflict-handling proposal.
 - [Plans](../../concepts/plans/) — Course selection and the planning context.
