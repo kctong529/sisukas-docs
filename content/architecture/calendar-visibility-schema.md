@@ -117,6 +117,19 @@ Consider an atomic read transaction or a single consistent server response combi
 
 The schema does **not** independently prove that a SISU group or occurrence exists. That validation is context-dependent and belongs to the current Calendar projection. The server guarantees plan authorization and valid persisted reference shape, not live upstream identity.
 
+### Identifier length validation
+
+The proposed identifier types were checked against a representative study-group response containing 20 course offerings, 42 study groups, and 400 teaching occurrences.
+
+- The longest observed offering identifier was 83 characters, within the existing `varchar(100)` limit.
+- The longest observed study-group identifier was 29 characters.
+- All 400 occurrences produced unambiguous series-based keys, with a maximum serialized length of 165 characters (165 UTF-8 bytes).
+- No fallback keys were present in this sample.
+
+These observations are not guaranteed upper bounds for future SISU data. Consequently, `study_group_id` and `occurrence_key` use PostgreSQL `text` rather than arbitrary fixed-length constraints. The existing `varchar(100)` offering identifier convention is retained.
+
+Occurrence-key format version 1 preserves the current frontend JSON representation. Future changes to key derivation must explicitly handle compatibility with persisted preferences.
+
 ## Serialization and API shape (contract to finalize in #190)
 
 Illustrative server response for `GET /plans/:id/calendar-visibility`:
