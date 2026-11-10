@@ -43,7 +43,7 @@ The backend uses PostgreSQL (`pg` and Drizzle) and Better Auth. It does **not** 
 | `RESEND_API_KEY` | Optional for local development: missing/invalid key causes magic-link output in backend logs. |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Credentials for the separate admin-token login mechanism. |
 
-Use the database credentials supplied by the local Compose configuration. `npm run db:push` is the current development schema command; migrations are separately supported via `npm run db:migrate`.
+Use the database credentials supplied by the local Compose configuration. `npm run db:push` can change a database directly, while `npm run db:migrate` uses Drizzle migration history. **Do not run either against a shared Supabase database until its migration history has been reconciled.** See [Database Operations](../database-operations/) for the documented November 2026 baseline and read-only inspection steps.
 
 ## Filters API (`filters-api/.env`)
 
@@ -63,7 +63,7 @@ Use the database credentials supplied by the local Compose configuration. `npm r
 
 The course-update workflow uses the GitHub Actions secret `AALTO_USER_KEY`. Do not confuse this workflow secret with the wrapper's local `AALTO_COURSE_API_KEY`. See [Data Pipeline](../data-pipeline/).
 
-**Legacy RLS tests:** `backend/tests/rls.setup.ts` still uses Supabase clients and reads `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SERVICE_ROLE_KEY`. These are **test-harness credentials, not backend runtime requirements**; see [Row-Level Security](../../securities/row-level-security-testing/). The tests' ability to run against the current PostgreSQL/Better Auth development environment has not been established by this documentation audit.
+**RLS integration tests:** The legacy harness in `backend/tests/rls.setup.ts` uses Supabase Auth/Data API clients configured through `backend/.env.test`. It reads `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and privileged `SERVICE_ROLE_KEY` (legacy administrative key). These are **test-harness credentials, not backend runtime requirements**. The `DATABASE_URL` and the Supabase test clients must refer to the same intended test project; the two configurations can drift independently. Never run the mutating RLS suite against production. Supabase secret-key migration is planned; see [Database Operations](../database-operations/) and [Row-Level Security](../../securities/row-level-security-testing/).
 
 ## Local setup
 

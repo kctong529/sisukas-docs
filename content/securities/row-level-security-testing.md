@@ -71,19 +71,19 @@ The harness expects an isolated Supabase test environment. Configure the followi
 ```dotenv
 SUPABASE_URL=https://your-test-project.supabase.co
 SUPABASE_PUBLISHABLE_KEY=your_test_publishable_key
-SERVICE_ROLE_KEY=your_test_service_role_key
+SERVICE_ROLE_KEY=your_legacy_test_service_role_key
 ```
 
 From `backend/`:
 
 ```bash
 npm ci
-npm run test:rls
+npm run test:rls -- --run --no-file-parallelism
 ```
 
-The script is defined in `backend/package.json` and invokes the `tests/rls.*.test.ts` suites. The test setup reads variables from the process environment; merely creating `.env.test` does not guarantee it will be loaded. Ensure your chosen test runner configuration loads these variables.
+The script is defined in `backend/package.json` and invokes the `tests/rls.*.test.ts` suites. In the November 2026 run, dotenv loaded `.env.test`, which still contained obsolete project credentials even though the PostgreSQL `.env` URI was correct. Verify the Supabase API URL **and** key project before running. `--run` avoids watch mode and `--no-file-parallelism` limits file concurrency; neither eliminates repeated sign-ins.
 
-**Use only a disposable test environment.** The harness creates and removes authentication users and database rows. Service-role credentials are privileged and must not be exposed to browsers, logs, or source control.
+**Use only a disposable test environment.** The harness creates and removes authentication users and database rows. It was accidentally executed on production during the November 2026 investigation; do not repeat this. Legacy service-role credentials are privileged and must not be exposed to browsers, logs, or source control. Replace them with the newer Supabase secret-key mechanism in a separate tested change.
 
 ### What is tested?
 
@@ -116,7 +116,9 @@ The negative assertion only demonstrates RLS protection if the query actually ru
 
 | Symptom | What to check |
 | --- | --- |
-| Test environment fails to initialize | Supabase URL, keys, expected schema, and how environment variables are loaded |
+| Test environment fails to initialize / schema-cache error | Check stale `.env.test` Supabase URL and keys before changing PostgREST; compare Supabase project identity with `DATABASE_URL` |
+| `429 over_request_rate_limit` during setup | Too many Supabase Auth sign-in requests; the test project had 30 sign-ins/5 min vs production 60 in November 2026; reuse sessions and avoid repeated setup calls |
+| Teardown fails after setup error | Guard undefined or partially initialized fixture context; preserve the primary error |
 | Other users' rows are visible | Whether RLS is enabled, policy predicates are correct, and the query uses a restricted role |
 | Owners cannot read their own rows | Identity context, row ownership fields, and policy coverage for the operation |
 | Tests pass but the application may be unprotected | Whether the production database actually uses the same policies, roles, and identity propagation |
@@ -124,6 +126,8 @@ The negative assertion only demonstrates RLS protection if the query actually ru
 The current harness is a useful historical set of isolation tests, not proof of current production policy coverage. Any migration or redesign should validate the database's actual privilege boundaries as well as the route-level authorization tests.
 
 ## Related documentation
+
+- [Database Operations](../../dev-guide/database-operations/) — RLS and migration inspection queries, observed environments, and troubleshooting.
 
 - [Security](../) — Current authentication and authorization boundaries.
 - [Route Authorization](../route-protection/) — Application-level access control.
