@@ -1,5 +1,5 @@
 ---
-weight: 8
+weight: 9
 title: "Curriculum Metadata"
 description: "How Aalto curriculum entries are catalogued, verified against official sources, and prepared for Sisukas."
 ---

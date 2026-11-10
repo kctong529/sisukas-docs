@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 7
 title: "Data Pipeline"
 description: "How Sisukas ingests, reconciles, and publishes active and historical course catalogues."
 ---
