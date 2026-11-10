@@ -212,4 +212,4 @@ Frontend behavior:
 ## Related documentation
 
 - [System Overview](../../system-overview/) — User-data persistence boundaries.
-- [Running Sisukas Locally](../running-locally/) — Local backend setup.
+- [Local Development](../running-locally/) — Local backend setup.

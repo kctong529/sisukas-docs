@@ -64,4 +64,4 @@ detailed reasoning using plans, LEGO blocks, assembly candidates, and the calend
 ## Related documentation
 
 - [Plans](../plans/) — Semester-level planning.
-- [The Big Picture](../overview/) — How the timeline relates to the planning lifecycle.
+- [Planning Concepts](../overview/) — How the timeline relates to the planning lifecycle.

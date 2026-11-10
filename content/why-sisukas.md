@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Why Sisukas: The Problem"
+title: "Why Sisukas"
 description: "Why Sisukas exists: SISU is built for registration, but students need a workspace for exploration, comparison, and trade-offs."
 ---
 > [!NOTE]
@@ -154,10 +154,10 @@ Current features include:
 - Public APIs for integration
 
 Core planning features are available, while the proposed assembly workflow and
-study calendar are evolving. See [The Big Picture](../concepts/overview/) for the roadmap.
+study calendar are evolving. See [Planning Concepts](../concepts/overview/) for the roadmap.
 
 ## Related documentation
 
 - [Getting Started](../getting-started/) — Try the application.
-- [The Big Picture](../concepts/overview/) — Planning philosophy.
+- [Planning Concepts](../concepts/overview/) — Planning philosophy.
 - [System Overview](../system-overview/) — Technical responsibilities.

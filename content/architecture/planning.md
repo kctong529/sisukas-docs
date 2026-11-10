@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Planning System Architecture"
+title: "Planning Architecture"
 description: "Existing planning implementation and proposed assembly-to-calendar boundaries."
 ---
 

@@ -156,5 +156,5 @@ For each new curriculum period, refresh the candidate list, preserve previously 
 
 ## Related documentation
 
-- [Course Data Architecture](../data-architecture/) — Metadata versus canonical dataset boundaries.
+- [Course Data](../../architecture/course-data/) — Metadata versus canonical dataset boundaries.
 - [Data Pipeline](../data-pipeline/) — Scheduled catalogue production.

@@ -5,11 +5,11 @@ description: "How Sisukas is structured end-to-end: its frontend, backend APIs, 
 ---
 
 > [!NOTE]
-> If you are new to the codebase, start here for the responsibilities and interactions of the main components. The [Course Data Architecture](../dev-guide/data-architecture/) explains the data flows and publication boundaries in greater detail.
+> If you are new to the codebase, start here for the responsibilities and interactions of the main components. The [Course Data](../architecture/course-data/) explains the data flows and publication boundaries in greater detail.
 
 This page describes Sisukas as a running system: what each component owns, which data crosses component boundaries, and how those choices affect course discovery and planning. For the underlying planning models and algorithms, see [Planning Architecture](../architecture/planning/).
 
-## What Sisukas Is (Technically)
+## At a glance
 
 Sisukas is a client-heavy course-planning application for Aalto students. It supports exploratory browsing and schedule comparison before registration in SISU, rather than replacing SISU as the system where students register for courses.
 
@@ -17,7 +17,7 @@ The frontend does much of the interactive work: it loads and indexes published c
 
 The system is designed to remain responsive when large catalogue files have been cached, but it is not fully offline: live teaching data, authenticated persistence, and uncached content still depend on network services.
 
-## Core Components
+## Main components
 
 The main components are independently deployed or operated and have distinct responsibilities.
 
@@ -76,7 +76,7 @@ Aalto's Course API supplies course-realisations data for scheduled ingestion. SI
 
 The components share information but **do not share one universal data source of truth**.
 
-## Data Classes (Critical Distinction)
+## Data categories
 
 | Data class | Examples | How it is obtained | Lifecycle and authority |
 | --- | --- | --- | --- |
@@ -91,61 +91,28 @@ The components share information but **do not share one universal data source of
 > [!NOTE]
 > “Canonical” here refers to the **published Sisukas course catalogue**, not to the claim that a cached or normalized record is always the most up-to-date information available from Aalto. The wrapper and runtime snapshots serve different purposes and should not silently overwrite that catalogue.
 
-## How the System Is Used (End-to-End)
+## Common flows
 
-Different user actions cross different boundaries. A course search should not require the same services as an authenticated plan update or a live schedule lookup.
-
-### 1. Course Discovery (Primarily Client-Side)
-
-The frontend downloads the published active and, when needed, historical catalogue from GCS. The loader uses IndexedDB to reuse previously downloaded data and checks hashes for updates. Course parsers validate entries, and frontend stores build the indexes used for browsing and filtering.
-
-Curated curriculum metadata influences programme- and module-based views. Routine catalogue filtering does not require a backend query for every search interaction. A first-time load still depends on obtaining the published files over the network; a previously cached copy may be older than the latest publication.
-
-### 2. Planning and Persistence (User-Scoped and Shareable State)
-
-For authenticated planning data, the frontend submits requests to the main backend. Session middleware identifies the user, route handlers check authorization, and PostgreSQL persists the user-scoped records. The frontend updates its presentation from the resulting application state.
-
-Shareable filter configurations are different: they are saved through the filters API and recovered using a URL identifier. They are not the same kind of resource as an authenticated plan and should not inherit the plan's ownership assumptions.
-
-Transcript import and grade storage are also backend responsibilities, illustrating why the main backend should not be described merely as a scheduling calculator.
-
-### 3. Live Scheduling and Evaluation
-
-When the user inspects teaching details or needs study-group choices, the frontend requests information through `sisu-wrapper`. The frontend's normalized study-group/event models are then used to prepare scheduling interactions. The backend's analytics endpoints can evaluate supplied selections for conflicts and rankings without being responsible for refreshing SISU teaching information on every calculation.
-
-Avoid a blanket invariant that teaching information is fetched **exactly once** per course instance: caching and refresh behavior should be established from the relevant store and service implementation. What matters architecturally is the separation between **obtaining teaching data** and **deriving schedule results from it**.
-
-### 4. Recovery of Missing Courses
-
-When a course is absent from the published datasets, the backend can resolve the code through `sisu-wrapper` and store eligible returned records in PostgreSQL with an expiry period. The frontend can merge supported snapshots into its historical index on a best-effort basis.
-
-A successful runtime recovery **does not** automatically add the course to `historical.json` on GCS. Canonical publication and historical maintenance use separate procedures, and the proposed delayed promotion workflow should not be mistaken for a deployed daily job.
-
-## Runtime vs. Batch Systems
-
-| Category | Components | When it runs |
+| User action | Main path | Owned state |
 | --- | --- | --- |
-| **Scheduled / batch** | GitHub Actions course ingestion and publication | Daily or configured/manual triggers, independently of user sessions |
-| **Runtime (browser)** | Course browsing, filtering, planning UI, IndexedDB caching | During user interaction and frontend loading |
-| **Runtime (server)** | Main backend, filters API, `sisu-wrapper` | On API requests; services may persist records even if request handlers are short-lived |
-| **External** | Aalto Course API, SISU Kori | Accessed by the scheduled pipeline or the runtime wrapper according to purpose |
+| Browse courses | Browser → published GCS catalogue | Validated active and historical datasets; browser cache may be stale |
+| Save a plan | Browser → authenticated backend → PostgreSQL | User's plan and course offerings |
+| Inspect teaching | Browser → SISU wrapper → SISU Kori | Upstream events; shared frontend memory cache |
+| Evaluate scheduling | Browser/backend computation over available inputs | Derived results, not a new SISU authority |
+| Recover missing courses | Backend → wrapper → PostgreSQL snapshots | Expiring, noncanonical runtime snapshots |
+| Share filters | Browser → Filters API | Shareable filter definitions, not private plan records |
 
-The distinction is both temporal and functional. A published catalogue can remain available even if live SISU teaching endpoints temporarily fail; conversely, updating teaching details does not require rebuilding the entire course catalogue.
+The scheduled ingestion workflow operates independently of these interactions. Neither a runtime snapshot nor a live teaching response automatically rewrites the published catalogue. The authoritative explanation of these lifecycles is [Course Data](../architecture/course-data/).
 
-## Authority vs. Derivation
+## Authority boundaries
 
-There is no single authority for every piece of information in a plan.
+- **SISU and Aalto APIs** provide external course and teaching facts.
+- **Published catalogues** are the validated Sisukas discovery datasets, not promises of live SISU freshness.
+- **The backend** owns authenticated application state and noncanonical recovery snapshots.
+- **The frontend** derives calendar and planning views from available data; its shared study-group runtime is currently in-memory.
+- **Calendar visibility persistence** is a documented proposal under [Calendar Schema](../architecture/calendar-visibility-schema/), not a deployed feature.
 
-| Category | Examples | How to interpret it |
-| --- | --- | --- |
-| **Upstream source** | Aalto course realisations, SISU teaching events | Provided by external systems and normalized by Sisukas |
-| **Published canonical data** | Active/historical GCS catalogues | Validated and published Sisukas view of course records |
-| **User-authored state** | Saved plans, selected groups, grades | User-scoped state persisted by the application |
-| **Supplementary recovery data** | Runtime course snapshots | Noncanonical records that can help restore missing course references |
-| **Derived computation** | Conflicts, analytics, existing schedule-pair rankings | Outputs calculated from available plan and teaching inputs; the broader assembler is proposed |
-| **Proposed calendar decisions** | Active courses, group preferences, attendance overrides | Planned user-owned state, not an implemented persistence contract |
-
-Derived results should expose scheduling trade-offs rather than silently decide them for a user. For details on what has been implemented and what remains a design proposal, consult the corresponding Concepts and Planning Architecture pages.
+For ownership rules, failure cases, and algorithms, follow the Architecture links rather than treating this introductory overview as the source of implementation details.
 
 ## What Sisukas Explicitly Does Not Do
 
@@ -155,6 +122,6 @@ These limits are deliberate boundaries, not merely missing UI features: Sisukas 
 
 ## Related documentation
 
-- [Course Data Architecture](../dev-guide/data-architecture/) — Detailed catalogue, snapshot, and browser data flows.
-- [Planning System Architecture](../architecture/planning/) — Planning model and computation.
-- [Running Sisukas Locally](../dev-guide/running-locally/) — Start the development services.
+- [Course Data](../architecture/course-data/) — Detailed catalogue, snapshot, and browser data flows.
+- [Planning Architecture](../architecture/planning/) — Planning model and computation.
+- [Local Development](../dev-guide/running-locally/) — Start the development services.

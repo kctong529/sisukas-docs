@@ -1,12 +1,12 @@
 ---
 weight: 2
-title: "How We Filter"
+title: "Course Filtering"
 description: "Filtering design in Sisukas: must rules, rule groups, and predictable boolean logic for fast course discovery."
 ---
 
 > [!NOTE]
 > This page explains the filtering philosophy. For the big picture on planning,
-> see [The Big Picture](../overview/). To start using filters, see [Getting Started](../../getting-started/).
+> see [Planning Concepts](../overview/). To start using filters, see [Getting Started](../../getting-started/).
 
 ## The Fundamental Problem
 
@@ -214,5 +214,5 @@ This simple, predictable logic handles complex requirements.
 
 ## Related documentation
 
-- [The Big Picture](../overview/) — Discovery and planning concepts.
+- [Planning Concepts](../overview/) — Discovery and planning concepts.
 - [Getting Started](../../getting-started/) — Use filtering in Sisukas.

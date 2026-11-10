@@ -1,12 +1,14 @@
 ---
+aliases:
+  - "/dev-guide/study-event-contract/"
 weight: 4
-title: "Study-event and Location Contract"
+title: "Teaching Events"
 description: "SISU event identities, expanded occurrences, location enrichment, and verified limitations."
 ---
 > [!NOTE]
 > This contract distinguishes **observed upstream behavior** from the wrapper’s normalization decisions. Examples are representative, not a complete SISU specification.
 
-# Study-event and location contract
+# Teaching Events
 
 This document records **observed** Aalto SISU Kori behavior from 27 October 2026,
 and the **wrapper's chosen mapping**. The representative JSON bodies are in
@@ -61,9 +63,11 @@ excluded occurrence: calendar consumers must choose how to display it.
 - Localized names use the first nonempty value in `en`, `fi`, `sv` order,
   falling back to another nonempty translation. Observed room names used `fi`.
 - Failed, absent, or malformed location lookups leave unresolved IDs in
-  `location_ids` and omit missing objects from `locations`. They must not
-  remove teaching occurrences. Lookups are deduplicated during a resolution
-  operation; no persistent location cache is promised.
+  `location_ids` and omit missing objects from `locations`. They must not remove teaching occurrences.
+- Lookups are deduplicated within an enrichment operation. Successful, validated
+  locations are also reused across calls by a bounded, per-service, in-process
+  LRU (#169). Failed lookups remain retryable. This is not durable storage or a
+  cache shared between wrapper processes.
 
 ## Python and REST interfaces
 
@@ -84,7 +88,7 @@ For a real offering, compare resolved/unresolved responses after removing
 only every `locations` property. This was manually verified for Introduction
 to Space (`aalto-CU-1151000764-20260801`,
 `aalto-cur-P-c235941a-0fd6-11f1-8c99-0050569455c9`); four distinct rooms
-were resolved. See [API Reference](../api/) and `sisu-wrapper/examples/requests.http` for repeatable requests.
+were resolved. See [API Reference](../../dev-guide/api/) and `sisu-wrapper/examples/requests.http` for repeatable requests.
 
 ## Timezone and scheduling limitations
 
@@ -105,5 +109,5 @@ cancelled-session replacements or reconcile event identities after rescheduling.
 
 ## Related documentation
 
-- [SISU Wrapper API](../api/) — Public wrapper endpoints.
-- [Course Data Architecture](../data-architecture/) — Where runtime study details fit.
+- [SISU Wrapper API](../../dev-guide/api/) — Public wrapper endpoints.
+- [Course Data](../course-data/) — Where runtime study details fit.

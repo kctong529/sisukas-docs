@@ -1,41 +1,41 @@
 ---
 weight: 1
-title: "Sisukas Documentation"
+title: "Sisukas Docs"
 layout: docs
 bookFlatSection: true
-description: "Learn how to use, understand, and contribute to Sisukas."
+description: "Guides to using, understanding, developing, and maintaining Sisukas."
 ---
 
-> [!NOTE]
-> New to Sisukas? Start with [Getting Started](../getting-started/). If you're interested in the implementation, begin with the [System Overview](../system-overview/).
-
-# Sisukas Documentation
+# Sisukas Docs
 
 [![CI Pipeline](https://github.com/kctong529/sisukas/actions/workflows/ci.yml/badge.svg)](https://github.com/kctong529/sisukas/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/sisu_wrapper?label=sisu-wrapper)](https://pypi.org/project/sisu-wrapper/)
 [![Live App](https://img.shields.io/badge/app-sisukas.eu-green)](https://sisukas.eu/)
 
-Sisukas helps Aalto University students discover courses, explore schedules, and plan their studies. It complements the official SISU system rather than replacing registration or other university services.
+Sisukas helps Aalto University students discover courses, compare schedules, and plan their studies. It complements SISU; it does not register students for courses.
 
-## Find your way
+## Choose a starting point
 
-- **[Getting Started](../getting-started/)** — Start using Sisukas.
-- **[Concepts](../concepts/)** — Understand plans, LEGO blocks, assemblies, and calendars.
-- **[System Overview](../system-overview/)** — See how the application and services fit together.
-- **[Architecture](../architecture/)** — Explore the planning models and design decisions.
-- **[Developer Guide](../dev-guide/)** — Set up the project and understand its data pipelines and APIs.
-- **[Security](../securities/)** — Learn about authentication, authorization, and database security.
+| Section | Question it answers | Start here |
+| --- | --- | --- |
+| [Getting Started](./getting-started/) | How do I use the application? | Essential user workflows |
+| [Concepts](./concepts/) | What do Sisukas's planning terms mean? | Plans, assemblies, and scheduling concepts |
+| [System Overview](./system-overview/) | What are the main components and responsibilities? | One system-level map |
+| [Architecture](./architecture/) | How does the system work, and why is it designed this way? | Contracts, invariants, data flows, and models |
+| [Developer Guide](./dev-guide/) | How do I work on and operate the codebase? | Local setup, APIs, tests, and procedures |
+| [Security](./securities/) | How is access controlled? | Authentication, authorization, and RLS scope |
+| [Under Development](./under-dev/) | Which proposals are not yet fully implemented? | Clearly labeled future work |
 
-For features still being designed, see [Under Development](../under-dev/).
+**Editorial rule:** Each topic has one authoritative home. The System Overview links to detailed Architecture; the Developer Guide links to explanations rather than repeating them. Proposed behavior must not be presented as deployed behavior.
 
 ## Project status
 
-Course discovery, saved filters, bookmarks, and core planning functionality are implemented. The assembly-to-calendar workflow is proposed, and the study calendar is under development. The documentation distinguishes implemented behavior from planned work on the relevant pages.
+Course discovery, saved filters, bookmarking, and core planning are implemented. Study-group retrieval uses a shared in-memory runtime; full browser persistence of study groups is proposed. The Calendar has implemented visibility interactions, but authenticated persistence and attendance controls remain separate work. Consult each feature page for its precise status.
 
 ## Contributing
 
-Sisukas welcomes bug reports, discussions, and contributions. For technical context and local setup, see the [Developer Guide](../dev-guide/).
+Start with [Local Development](./dev-guide/running-locally/) and [Architecture](./architecture/). Bug reports and contributions are welcome in the [Sisukas repository](https://github.com/kctong529/sisukas).
 
 ## License
 
-MIT. See the [LICENSE](https://github.com/kctong529/sisukas/blob/main/LICENSE) file.
+MIT; see the [LICENSE](https://github.com/kctong529/sisukas/blob/main/LICENSE).

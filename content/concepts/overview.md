@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "The Big Picture"
+title: "Planning Concepts"
 description: "Sisukas planning philosophy and roadmap: conflicts are normal, information is accessible, and trade-offs are explicit."
 ---
 

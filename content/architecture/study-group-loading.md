@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "Study-group Data Management"
+title: "Study-group Loading"
 description: "Authoritative full-data caching, shared retrieval, failure handling, and reactive integration boundaries."
 ---
 
@@ -144,7 +144,7 @@ unsubscribe();
 
 The notifications contain **keys, not mutable `StudyGroup[]` payloads**. Observers read the latest snapshot only when needed. Exceptions thrown by one observer do not prevent other observers from being notified or roll back a cache mutation. Notifications remain registered across `clear()` until explicitly unsubscribed.
 
-The implemented `createStudyGroupEntryStore(cache, request)` converts those notifications to a per-offering Svelte `Readable<StudyGroupEntry>`. The shared runtime's `entry(request)` exposes that adapter without returning the mutable cache. This uses the standard Svelte readable-store interface; the existing [Frontend State Management](../../dev-guide/stores/) conventions describe broader UI-store patterns and do not require this adapter to expose `.state`, `.read`, or `.actions`. Neither the cache observer nor the Svelte adapter performs HTTP retrieval.
+The implemented `createStudyGroupEntryStore(cache, request)` converts those notifications to a per-offering Svelte `Readable<StudyGroupEntry>`. The shared runtime's `entry(request)` exposes that adapter without returning the mutable cache. This uses the standard Svelte readable-store interface; the existing [State Conventions](../../dev-guide/stores/) conventions describe broader UI-store patterns and do not require this adapter to expose `.state`, `.read`, or `.actions`. Neither the cache observer nor the Svelte adapter performs HTTP retrieval.
 
 ## Current scope, guarantees, and validation
 
@@ -183,8 +183,8 @@ The benchmark was adjusted to tolerate transient `plan="none"` during authentica
 
 ## Related documentation
 
-- [Course Data Architecture](../../dev-guide/data-architecture/) — Published catalogues, runtime resolution, and the separate on-demand teaching-data path.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — Source event identity, timestamps, and locations.
-- [Frontend State Management](../../dev-guide/stores/) — Svelte 5 store conventions and consumer APIs.
+- [Course Data](../course-data/) — Published catalogues, runtime resolution, and the separate on-demand teaching-data path.
+- [Teaching Events](../teaching-events/) — Source event identity, timestamps, and locations.
+- [State Conventions](../../dev-guide/stores/) — Svelte 5 store conventions and consumer APIs.
 - [Study Calendar](../../under-dev/study-calendar/) — Active-plan completeness and calendar behavior.
 - [SISU Wrapper API](../../dev-guide/api/) — Study-group endpoint contracts and normalization boundary.

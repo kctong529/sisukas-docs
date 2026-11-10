@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "Route Authentication and Authorization"
+title: "Route Authorization"
 description: "How Better Auth sessions, route authorization, and separate admin tokens protect the current Express backend."
 ---
 > [!NOTE]

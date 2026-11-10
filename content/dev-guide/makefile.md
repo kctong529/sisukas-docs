@@ -5,7 +5,7 @@ description: "Make targets for setting up and maintaining the Sisukas dev enviro
 ---
 
 > [!NOTE]
-> Used in [Running Sisukas Locally](../running-locally/).
+> Used in [Local Development](../running-locally/).
 > See there for typical workflows.
 
 # Makefile Reference
@@ -248,5 +248,5 @@ Most targets are safe to rerun:
 
 ## Related documentation
 
-- [Running Sisukas Locally](../running-locally/) — Complete setup instructions.
+- [Local Development](../running-locally/) — Complete setup instructions.
 - [Environment Variables](../env/) — Configuration reference.

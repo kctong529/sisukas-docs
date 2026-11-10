@@ -1,86 +1,35 @@
 ---
 weight: 6
 title: "Developer Guide"
-description: "Contributor-focused guide to running, debugging, and extending Sisukas: setup, services, data flow, and operations."
+description: "Practical instructions for building, testing, running, and maintaining Sisukas."
 ---
 
 > [!NOTE]
-> This section assumes familiarity with the core concepts (plans, LEGO blocks, assemblies, and calendars) and the overall system structure. If you are new to the project, start with the [System Overview](../system-overview/) and [Concepts](../concepts/) sections before diving in here.
+> The Developer Guide answers **what to do in the repository and how to do it**. Commands, environment requirements, API usage, maintenance, and failure recovery belong here. Architectural reasoning and stable data contracts live in [Architecture](../architecture/), not in duplicate explanations on these pages.
 
-The Developer Guide is for contributors who want to understand how Sisukas is built, deployed, and operated in practice. It focuses on implementation details, system boundaries, and operational concerns rather than product philosophy or user-facing behavior.
+## Setup and tooling
 
-## In this section
+- [Local Development](./running-locally/) — Start the services, configure local HTTPS, and troubleshoot startup.
+- [Environment Variables](./env/) — Configure each service safely.
+- [Makefile Reference](./makefile/) — Understand setup and maintenance targets.
+- [State Conventions](./stores/) — Prescriptive Svelte store patterns for contributors; not a description of every existing runtime adapter.
 
-The documents under the Developer Guide are intentionally scoped and loosely ordered. You do not need to read everything linearly, but most contributors will benefit from the following progression.
+## Data operations
 
-### 1. Running the system locally
+- [Data Pipeline](./data-pipeline/) — Run, validate, reconcile, and publish course datasets.
+- [Historical Records](./historical/) — Collect and maintain historical datasets.
+- [Curriculum Metadata](./curriculum-metadata/) — Maintain curated curriculum source files and validation.
+- [Transcript Import](./transcript-import/) — Operate and verify the import workflow.
 
-If you want to run, debug, or modify Sisukas, start here:
+## Service reference
 
-- **[Running Sisukas Locally](./running-locally/)**  
-  A complete, authoritative guide to the local development setup.  
-  Covers HTTPS on localhost, required services, startup order, and common failure modes.
+- [SISU Wrapper API](./api/) — Wrapper endpoints and Python library usage.
 
-This page is the source of truth for local setup. The repository README and other pages intentionally defer to it.
+## Read the design
 
-### 2. Understanding course data
+- [Course Data](../architecture/course-data/) — Data ownership and canonical/runtime boundaries.
+- [Teaching Events](../architecture/teaching-events/) — Event identity and location contracts.
+- [Study-group Loading](../architecture/study-group-loading/) — In-memory retrieval architecture.
+- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Reviewed Calendar preference design, not yet deployed persistence.
 
-Once the system is running, the next question is where course data originates, how it crosses system boundaries, and how it reaches the frontend:
-
-- **[Course Data Architecture](./data-architecture/)**  
-  Explains canonical catalogues, runtime snapshots, study-group loading, curriculum metadata, and browser-side composition. **Start here to understand the design and ownership boundaries.**
-
-- **[Data Pipeline](./data-pipeline/)**  
-  Documents the scheduled GitHub Actions workflow that fetches, validates, reconciles, and publishes canonical course catalogues. Includes operational safeguards, local commands, and recovery procedures.
-
-- **[Historical Course Records](./historical/)**  
-  Covers historical discovery, checkpointed collection, normalization, and maintenance, including how crawling differs from routine catalogue archiving.
-
-- **[Curriculum Metadata](./curriculum-metadata/)**  
-  Explains curated curriculum modules and organization metadata: official-source verification, references, review decisions, and validation.
-
-**Suggested reading:** Start with Course Data Architecture, then follow Data Pipeline, Historical Course Records, or Curriculum Metadata based on the system you intend to change.
-
-### 3. Service boundaries and APIs
-
-Sisukas is composed of several independent services with clear responsibilities:
-
-- **[SISU Wrapper API](./api/)**
-  Documents the SISU Wrapper REST API and its Python library, including how study group and schedule data is accessed.
-
-This is the reference for the SISU wrapper. Consult the corresponding backend routes when changing other API endpoints.
-
-- **[Study-event and Location Contract](./study-event-contract/)**  
-  Describes event series identities, expanded occurrences, room/building resolution, and scheduling limitations.
-
-### 4. User data and frontend state
-
-- **[Calendar Visibility Preference Contract](../architecture/calendar-visibility-preferences/)** and **[Schema Proposal](../architecture/calendar-visibility-schema/)**  
-  Define plan-scoped visibility, inherited states, and the proposed database model for #189/#190.
-
-- **[Transcript Import](./transcript-import/)**  
-  Explains the implemented bulk import workflow and its transactional guarantees.
-
-- **[Frontend State Management](./stores/)**  
-  Defines Svelte 5 runes-based conventions for new and modernized stores, while acknowledging existing legacy state.
-
-### 5. Configuration and environments
-
-For changes that involve setup, credentials, or deployment differences:
-
-- **[Environment Variables Reference](./env/)**  
-  Lists all supported `.env` variables by component, explains which ones are required, and clarifies what is safe to change in local development.
-
-### 6. Tooling and automation
-
-Finally, for contributors working on setup, CI, or onboarding flows:
-
-- **[Makefile Reference](./makefile/)**  
-  Describes the automation used to bootstrap the development environment, manage dependencies, and generate local HTTPS certificates.
-
-This page explains *what `make setup` actually does* and when it is appropriate to rerun or partially rerun it.
-
-## Related documentation
-
-- [System Overview](../system-overview/) — Start with the components and their responsibilities.
-- [Concepts](../concepts/) — Planning terminology and design goals.
+For component orientation use [System Overview](../system-overview/); for unfinished features use [Under Development](../under-dev/).

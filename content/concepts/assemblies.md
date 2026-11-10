@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Assemblies and Scheduling Candidates"
+title: "Scheduling Candidates"
 description: "How LEGO blocks produce ranked assembly candidates, and how candidates relate to the study calendar."
 ---
 
@@ -35,6 +35,6 @@ The initial goal is generation, comparison, and explicit application to one work
 ## Related documentation
 
 - [Plans](../plans/) — Planning workspace and blocks.
-- [Study Calendar Design](../../under-dev/study-calendar/) — Working timetable and attendance intent.
-- [Planning System Architecture](../../architecture/planning/) — Existing implementation versus proposed boundaries.
+- [Study Calendar](../../under-dev/study-calendar/) — Working timetable and attendance intent.
+- [Planning Architecture](../../architecture/planning/) — Existing implementation versus proposed boundaries.
 - [Legacy Schedule Pairs](../schedule-pairs/) — Earlier scheduling terminology and algorithm assumptions.

@@ -1,25 +1,22 @@
 ---
 weight: 9
 title: "Under Development"
-description: "Notes and documentation for features that are still evolving or not yet finalized."
+description: "Features and workflows that are proposed, incomplete, or evolving."
 ---
+
 > [!NOTE]
-> This section covers **incomplete or proposed** work. Some components already exist; each page distinguishes implemented behavior from future design.
+> This section answers **what is not yet fully delivered**. A page may describe an implemented foundation alongside a proposal, but it must label the boundary. Stable, implemented contracts belong in [Architecture](../architecture/) and operational procedures in the [Developer Guide](../dev-guide/).
 
-These documents record work that is still changing. They are useful for understanding current experiments and future directions, but should not be treated as a uniform set of production contracts.
+## Active designs
 
-## In this section
+- [Study Calendar](./study-calendar/) — Implemented weekly visibility behavior and planned persistence/attendance.
+- [Curriculum Expansion](./curriculum-expansion/) — 2026–2028 curriculum coverage and validation work.
+- [Course Backfill](./snapshot-backfill/) — Implemented runtime recovery versus *proposed* canonical promotion.
+- [External Courses](./cross-institutional-courses/) — Cross-institutional discovery proposal and verified upstream exploration.
+- [Course Feedback](./course-feedback/) — Proposed user feedback features.
 
-- **[Study Calendar Design](./study-calendar/)** — planned active-Plan calendar, visibility controls, and future attendance decisions.
-- **[2026–2028 Curriculum Expansion](./curriculum-expansion/)** — first broad cross-school coverage of majors and minors, with verified sources and compatibility safeguards.
-- **[Runtime Course Recovery and Backfill](./snapshot-backfill/)** — implemented runtime snapshots and proposed canonical promotion.
-- **[Cross-institutional Course Discovery](./cross-institutional-courses/)** — verified cooperation-network APIs and proposed integration, not a deployed catalogue.
-- **[Course Feedback Proposal](./course-feedback/)** — exploratory design for course-instance feedback.
+## Related contracts
 
-## Related documentation
-
-- [Historical Course Records](../dev-guide/historical/) — Implemented historical dataset maintenance.
-- [Transcript Import](../dev-guide/transcript-import/) — Implemented bulk import workflow.
-- [Frontend State Management](../dev-guide/stores/) — Store conventions for new development.
-- [Course Data Architecture](../dev-guide/data-architecture/) — Canonical datasets and runtime recovery.
-- [System Overview](../system-overview/) — Current component boundaries.
+- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Design decisions for #189/#190.
+- [Course Data](../architecture/course-data/) — Published versus runtime data lifecycles.
+- [Data Pipeline](../dev-guide/data-pipeline/) — Existing scheduled publication procedure.

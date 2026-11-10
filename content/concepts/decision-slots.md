@@ -89,5 +89,5 @@ Reflection and workload tools could eventually build on Decision Slot data to he
 
 ## Related documentation
 
-- [The Big Picture](../overview/) — The overall planning lifecycle.
-- [Planning System Architecture](../../architecture/planning/) — Current implementation and planned extensions.
+- [Planning Concepts](../overview/) — The overall planning lifecycle.
+- [Planning Architecture](../../architecture/planning/) — Current implementation and planned extensions.

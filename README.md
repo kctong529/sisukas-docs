@@ -31,13 +31,19 @@ Generated output is placed in `public/`. GitHub Pages deployment is defined in `
 
 ## Documentation layout
 
-- `content/dev-guide/running-locally.md` — application development setup.
-- `content/dev-guide/data-pipeline.md` — automated course dataset ingestion and publication.
-- `content/dev-guide/curriculum-metadata.md` — manually curated curriculum catalogue, official sources, review decisions, and validation.
-- `content/dev-guide/` — other contributor and operational guides.
+The [documentation homepage](https://docs.sisukas.eu/) directs readers by question:
 
-**Repository separation:** production curriculum YAML, the reviewed catalogue (`data/curricula/catalogue-reviewed.csv`), and verification scripts (`scripts/curricula/`) live in the main [Sisukas repository](https://github.com/kctong529/sisukas). This documentation repository explains their usage; it does not maintain another catalogue copy.
+- `content/system-overview.md` — brief service map and responsibility overview, not a second architecture reference.
+- `content/concepts/` — domain vocabulary and user-facing planning ideas.
+- `content/architecture/` — authoritative designs, invariants, ownership boundaries, and data contracts.
+- `content/dev-guide/` — development commands, reference procedures, APIs, setup, operations, and contributor conventions.
+- `content/securities/` — authentication, authorization, and RLS boundary explanations.
+- `content/under-dev/` — proposals and incomplete feature designs, with implementation status clearly marked.
+
+**Writing rules:** Choose one authoritative home per technical claim and link to it elsewhere. Page titles use at most **three words** (four only when essential). Distinguish proposals from production behavior. Preserve public URLs with Hugo aliases when moving content, and update all internal links to the canonical path.
+
+**Repository separation:** production curriculum YAML, the reviewed catalogue (`data/curricula/catalogue-reviewed.csv`), and verification scripts (`scripts/curricula/`) live in the main [Sisukas repository](https://github.com/kctong529/sisukas). This repository documents how they are used; it does not maintain a second catalogue copy.
 
 ## Contributing
 
-Add a Markdown file under the appropriate `content/` section with front matter matching neighbouring pages. Preview with `hugo server --theme hugo-book -D`, and verify the production build command before committing. Links between documentation pages should use the site's existing relative-link conventions.
+Add a Markdown file under the appropriate `content/` section with front matter matching neighbouring pages. Preview with `hugo server --theme hugo-book -D`, and verify the production build command before committing. Links between documentation pages should use the site's existing relative-link conventions. Before submitting changes, run `python3 scripts/check_docs.py` to verify internal Markdown links, static assets, page titles, and redirect aliases.

@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Running Sisukas Locally"
+title: "Local Development"
 description: "Step-by-step local setup: required tools, HTTPS on localhost, service startup order, and common troubleshooting."
 ---
 

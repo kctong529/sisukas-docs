@@ -1,6 +1,6 @@
 ---
 weight: 5
-title: "Course Feedback Proposal"
+title: "Course Feedback"
 description: "How Sisukas collects concrete, experience-based course feedback."
 ---
 > [!NOTE]
@@ -294,4 +294,4 @@ Tags are:
 ## Related documentation
 
 - [Under Development](../) — Other designs and evolving implementations.
-- [The Big Picture](../../concepts/overview/) — Product and planning concepts.
+- [Planning Concepts](../../concepts/overview/) — Product and planning concepts.

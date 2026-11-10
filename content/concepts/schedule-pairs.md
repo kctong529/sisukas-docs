@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Composing Schedule Pairs"
+title: "Schedule Pairs"
 description: "How schedule pairs are generated and ranked: selecting one study group per block to form concrete timetable options."
 ---
 
@@ -110,5 +110,5 @@ ranked options so you can decide which trade-offs you're willing to accept.
 ## Related documentation
 
 - [Decision Slots](../decision-slots/) — Proposed handling of remaining conflicts.
-- [The Big Picture](../overview/) — The planning lifecycle.
+- [Planning Concepts](../overview/) — The planning lifecycle.
 - [Getting Started](../../getting-started/) — Explore the application.

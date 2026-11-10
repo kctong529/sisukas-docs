@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Environment Variables Reference"
+title: "Environment Variables"
 description: "Environment configuration for the frontend, backend, filters API and SISU wrapper."
 ---
 > [!NOTE]
@@ -74,9 +74,9 @@ make setup
 
 `make setup` copies `.env.example` to `.env` for each service. Do not assume sample passwords, secrets, or URLs are production-safe. Keep `.env` files out of version control and rotate exposed secrets promptly.
 
-See [Running Sisukas Locally](../running-locally/) and [Makefile Reference](../makefile/).
+See [Local Development](../running-locally/) and [Makefile Reference](../makefile/).
 
 ## Related documentation
 
-- [Running Sisukas Locally](../running-locally/) — Create development environments.
+- [Local Development](../running-locally/) — Create development environments.
 - [Makefile Reference](../makefile/) — Setup and lifecycle targets.

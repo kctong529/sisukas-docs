@@ -36,6 +36,6 @@ A useful security review asks whether a route authenticates the request, checks 
 
 ## Related documentation
 
-- [Route Authentication and Authorization](./route-protection/) — User sessions, admin tokens, and ownership checks.
+- [Route Authorization](./route-protection/) — User sessions, admin tokens, and ownership checks.
 - [Row-Level Security](./row-level-security-testing/) — PostgreSQL policies and existing tests.
 - [System Overview](../system-overview/) — System responsibilities.

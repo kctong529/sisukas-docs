@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "Interview Prep"
+title: "Interview Notes"
 bookHidden: true
 ---
 > [!NOTE]

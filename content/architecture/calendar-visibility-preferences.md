@@ -26,7 +26,7 @@ This contract does not confer SISU registration, attendance intention, schedulin
 2. **Group association:** `(course_offering_id, study_group_id)` within the plan. The offering identifier is the course-instance/realisation identifier already stored in `Plan.instanceIds`. The group ID alone must not be assumed globally unique. Group visibility is attached to this association, not a group name, type, or display order.
 3. **Occurrence association:** `(course_offering_id, study_group_id, occurrence_key)` within the plan. `occurrence_key` is the **existing Calendar domain's derived key** for a particular expanded occurrence, not `StudyEvent.id`, which may be a compatibility/index-based value. The existing encoder is `deriveCalendarOccurrenceKey()` in `CalendarOccurrenceIdentity.ts`; the persisted v1 value must be its **unmodified JSON string**, not `StudyEvent.id`.
 
-The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapper` has observed series IDs and expanded `events[]`, but no guaranteed stable occurrence identifier. A derived occurrence key may change if SISU changes the original start time or association. See [Study-event and Location Contract](../../dev-guide/study-event-contract/) and #89/#137.
+The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapper` has observed series IDs and expanded `events[]`, but no guaranteed stable occurrence identifier. A derived occurrence key may change if SISU changes the original start time or association. See [Teaching Events](../teaching-events/) and #89/#137.
 
 > [!WARNING]
 > **Identity is conditional, not eternal.** A key uniquely identifying an occurrence in a current projection is sufficient to apply a saved override **only while that key maps unambiguously**. It does not guarantee continuity across rescheduling or upstream data revisions. Do not match a stored override to the nearest event by date, group, room, or title.
@@ -35,7 +35,7 @@ The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapp
 
 - Preserve SISU-issued offering and study-group IDs as opaque, case-sensitive strings. Do not lowercase, trim, translate, parse as UUIDs, or infer meaning from their formatting at read/write time.
 - Use a single canonical occurrence-key generator from the Calendar domain, with a documented key-format version for persisted records. Key creation and collision diagnostics remain frontend responsibilities; the backend treats the key as opaque.
-- Reject empty strings and impose reasonable maximum lengths at the API boundary. The v1 key is a JSON array: `["series", offeringId, groupId, seriesId, startMs]` or `["fallback", offeringId, groupId, startMs, endMs, sortedLocationIds, cancelled, excluded, notice]`. Use a separate `occurrence_key_version` column (initially `1`), leaving the encoded key unchanged. Validate maximum UTF-8 byte lengths against representative real keys before #190; never truncate.
+- Reject empty strings and impose reasonable maximum lengths at the API boundary. The v1 key is a JSON array: `["series", offeringId, groupId, seriesId, startMs]` or `["fallback", offeringId, groupId, startMs, endMs, sortedLocationIds, cancelled, excluded, notice]`. Use a separate `occurrence_key_version` column (initially `1`), leaving the encoded key unchanged. Representative series keys have been measured (400 occurrences; maximum 165 UTF-8 bytes). Fallback keys and database index-entry limits still need validation in #190; never truncate.
 - The plan ID and external references together determine persistence scope. The existing `plan_instances(plan_id, instance_id)` primary key uses a UUID plan ID and `varchar(100)` offering ID. No human-readable group/event names, timestamps, or entire `StudyEvent` payloads are required to enforce this contract.
 
 ## Sparse persisted state
@@ -170,7 +170,7 @@ These are **required test cases**, not a claim that the repository's current uni
 
 ## References
 
-- [Study Calendar Design](../../under-dev/study-calendar/) — product behavior and feature scope.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — observed upstream identity limits.
+- [Study Calendar](../../under-dev/study-calendar/) — product behavior and feature scope.
+- [Teaching Events](../teaching-events/) — observed upstream identity limits.
 - [Calendar Schema](../calendar-visibility-schema/) — relational representation and trade-offs.
 - [#89](https://github.com/kctong529/sisukas/issues/89), [#90](https://github.com/kctong529/sisukas/issues/90), [#92](https://github.com/kctong529/sisukas/issues/92), [#93](https://github.com/kctong529/sisukas/issues/93), [#189](https://github.com/kctong529/sisukas/issues/189), [#190](https://github.com/kctong529/sisukas/issues/190), [#191](https://github.com/kctong529/sisukas/issues/191), [#192](https://github.com/kctong529/sisukas/issues/192).

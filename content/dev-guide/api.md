@@ -55,7 +55,7 @@ A course-unit realisation's `studyGroupSets[].studySubGroups[]` includes source 
 
 ### Study-event semantics
 
-Read the **[Study-event and Location Contract](../study-event-contract/)** for verified SISU fields, normalization, timezone assumptions, occurrence identity limitations, and provisional exception behavior. The wrapper's reproducible HTTP probes are in `sisu-wrapper/examples/requests.http` in the [sisukas source repository](https://github.com/kctong529/sisukas).
+Read the **[Teaching Events](../../architecture/teaching-events/)** for verified SISU fields, normalization, timezone assumptions, occurrence identity limitations, and provisional exception behavior. The wrapper's reproducible HTTP probes are in `sisu-wrapper/examples/requests.http` in the [sisukas source repository](https://github.com/kctong529/sisukas).
 
 ## SISU Wrapper Python library
 
@@ -74,6 +74,6 @@ with SisuClient() as client:
 
 ## Related documentation
 
-- [Study-event and Location Contract](../study-event-contract/) — Normalized SISU event and location semantics.
-- [Running Sisukas Locally](../running-locally/) — Local wrapper setup.
-- [Course Data Architecture](../data-architecture/) — How the wrapper is used.
+- [Teaching Events](../../architecture/teaching-events/) — Normalized SISU event and location semantics.
+- [Local Development](../running-locally/) — Local wrapper setup.
+- [Course Data](../../architecture/course-data/) — How the wrapper is used.

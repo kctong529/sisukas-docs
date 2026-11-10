@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Plans: Grouping Your Blocks"
+title: "Study Plans"
 description: "What a Plan is and how blocks turn course options into explicit choices for semester-level planning."
 ---
 
@@ -93,5 +93,5 @@ This shifts planning from *manual trial-and-error* to *exploring a ranked set of
 ## Related documentation
 
 - [Schedule Pairs](../schedule-pairs/) — Combine and rank planning choices.
-- [The Big Picture](../overview/) — The wider planning lifecycle.
+- [Planning Concepts](../overview/) — The wider planning lifecycle.
 - [Getting Started](../../getting-started/) — Try Sisukas.

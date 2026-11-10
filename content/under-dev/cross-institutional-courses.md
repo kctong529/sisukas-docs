@@ -1,6 +1,6 @@
 ---
 weight: 5
-title: "Cross-institutional Course Discovery"
+title: "External Courses"
 description: "Verified SISU Kori discovery behavior, course-unit boundaries, and the proposed Sisukas integration."
 ---
 
@@ -65,7 +65,7 @@ Published realisations were retrieved for three representative courses:
 | Turku DTEK8102 | 26 October – 21 December 2026 | 0 |
 | Tampere COMP.SEC.300 | 11 January – 21 May 2027 | 0 |
 
-Event IDs are nested under `studyGroupSets[].studySubGroups[].studyEventIds`. The JYU and Tampere realisations indicate `usesExternalStructure: true`. Their empty event lists do **not** establish that teaching has no timetable. The [Study-event and Location Contract](../../dev-guide/study-event-contract/) describes current wrapper behavior for events that are actually available.
+Event IDs are nested under `studyGroupSets[].studySubGroups[].studyEventIds`. The JYU and Tampere realisations indicate `usesExternalStructure: true`. Their empty event lists do **not** establish that teaching has no timetable. The [Teaching Events](../../architecture/teaching-events/) describes current wrapper behavior for events that are actually available.
 
 Available activity and enrolment periods can be shown as metadata, but the proposed integration must not promise complete lecture schedules, conflict-free calendar slots, or automatic enrolment.
 
@@ -86,6 +86,6 @@ Registration availability, individual eligibility, and acceptance into a degree 
 ## Tracking and related documentation
 
 - [Issue #126](https://github.com/kctong529/sisukas/issues/126) — completed technical feasibility investigation and recorded API observations.
-- [Course Data Architecture](../../dev-guide/data-architecture/) — existing canonical, runtime, and snapshot responsibilities.
+- [Course Data](../../architecture/course-data/) — existing canonical, runtime, and snapshot responsibilities.
 - [Data Pipeline](../../dev-guide/data-pipeline/) — implemented Aalto offering publication and operational safeguards.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — implemented event normalization and known limitations.
+- [Teaching Events](../../architecture/teaching-events/) — implemented event normalization and known limitations.

@@ -37,7 +37,7 @@ Local development is fully supported, but requires a few services to run togethe
 > The documented full-stack local authentication configuration expects an HTTPS frontend URL.
 > Vite itself can run over HTTP if certificates are absent; use `mkcert` and align the frontend URL settings when testing authentication.
 
-See **[Running Sisukas Locally](../dev-guide/running-locally/)** for details.
+See **[Local Development](../dev-guide/running-locally/)** for details.
 
 That page covers:
 - required tools
@@ -89,4 +89,4 @@ It is fully responsive and usable on mobile devices.
 
 - [Why Sisukas?](../why-sisukas/) — Product motivation.
 - [Concepts](../concepts/) — Planning ideas and terminology.
-- [Running Sisukas Locally](../dev-guide/running-locally/) — Developer setup.
+- [Local Development](../dev-guide/running-locally/) — Developer setup.

@@ -5,7 +5,7 @@ description: "How Sisukas ingests, reconciles, and publishes active and historic
 ---
 
 > [!NOTE]
-> This page is the operational reference for **scheduled canonical publication**: workflow execution, validation, safeguards, local commands, and recovery. For runtime snapshots, study groups, curriculum metadata, and browser-side composition, see [Course Data Architecture](../data-architecture/).
+> This page is the operational reference for **scheduled canonical publication**: workflow execution, validation, safeguards, local commands, and recovery. For runtime snapshots, study groups, curriculum metadata, and browser-side composition, see [Course Data](../../architecture/course-data/).
 
 ## Overview
 
@@ -16,7 +16,7 @@ Sisukas uses two upstream interfaces for different kinds of course data:
 | [Aalto Course API (SISU)](https://3scale.apps.ocp4.aalto.fi/docs/swagger/open_courses_sisu) | Course offering metadata for browsing and filtering | Authenticated, scheduled ingestion into Google Cloud Storage (GCS) |
 | [SISU Kori API](https://sisu.helsinki.fi/kori/docs/index.html) | Course details, study groups, teaching events, and locations | On-demand requests through `sisu-wrapper` |
 
-This page covers the scheduled Course API ingestion and publication workflow, not the entire end-to-end data architecture. For how the canonical catalogues connect to historical discovery, runtime SISU requests, backend snapshots, curriculum metadata, and IndexedDB caching, see [Course Data Architecture](../data-architecture/). The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
+This page covers the scheduled Course API ingestion and publication workflow, not the entire end-to-end data architecture. For how the canonical catalogues connect to historical discovery, runtime SISU requests, backend snapshots, curriculum metadata, and IndexedDB caching, see [Course Data](../../architecture/course-data/). The upstream term *course unit realisation* (or *offering*) corresponds to a course *instance* in Sisukas.
 
 ## API access and authentication
 
@@ -82,7 +82,7 @@ Do not bypass these checks to recover from a failed upstream request.
 | `historical.hash.json` | Uncached historical-catalogue change indicator |
 | `logs/course_changes_*.json` | Change reports |
 
-`main` publishes to `gs://sisukas-core`; `dev` publishes to `gs://sisukas-core-test`. The frontend selects its GCS base URL through `VITE_GCS_BUCKET`. Published datasets are independent of ordinary page loads; browser hash revalidation and IndexedDB composition are explained in [Course Data Architecture](../data-architecture/).
+`main` publishes to `gs://sisukas-core`; `dev` publishes to `gs://sisukas-core-test`. The frontend selects its GCS base URL through `VITE_GCS_BUCKET`. Published datasets are independent of ordinary page loads; browser hash revalidation and IndexedDB composition are explained in [Course Data](../../architecture/course-data/).
 
 ## Local development
 
@@ -141,9 +141,9 @@ When changing the ingested schema, update the relevant fetch/transform scripts, 
 
 ## Related documentation
 
-- [Course Data Architecture](../data-architecture/) — End-to-end data flow and ownership.
-- [Historical Course Records](../historical/) — Manual historical data collection.
-- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — investigated network discovery and the proposed separate course-unit catalogue.
+- [Course Data](../../architecture/course-data/) — End-to-end data flow and ownership.
+- [Historical Records](../historical/) — Manual historical data collection.
+- [External Courses](../../under-dev/cross-institutional-courses/) — investigated network discovery and the proposed separate course-unit catalogue.
 
 ## References
 

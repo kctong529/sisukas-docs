@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Runtime Course Recovery and Backfill"
+title: "Course Backfill"
 description: "Implemented runtime course recovery and the separately proposed canonical historical backfill workflow."
 ---
 
@@ -11,7 +11,7 @@ description: "Implemented runtime course recovery and the separately proposed ca
 
 Some course codes referenced in old curricula, imported transcripts, or saved plans are absent from the published active and historical catalogues. Sisukas can attempt to resolve these missing references on demand rather than treating their absence as a permanent error.
 
-This recovery path supplements, but does not replace, the canonical dataset maintained by the [Data Pipeline](../../dev-guide/data-pipeline/). For the full system diagram, see [Course Data Architecture](../../dev-guide/data-architecture/).
+This recovery path supplements, but does not replace, the canonical dataset maintained by the [Data Pipeline](../../dev-guide/data-pipeline/). For the full system diagram, see [Course Data](../../architecture/course-data/).
 
 ## Implemented: runtime resolution and persistence
 
@@ -69,5 +69,5 @@ The design should define checkpointing, retention, replay behavior, provenance, 
 
 ## Related documentation
 
-- [Course Data Architecture](../../dev-guide/data-architecture/) — Canonical versus runtime data.
-- [Historical Course Records](../../dev-guide/historical/) — Manual history collection and baseline construction.
+- [Course Data](../../architecture/course-data/) — Canonical versus runtime data.
+- [Historical Records](../../dev-guide/historical/) — Manual history collection and baseline construction.

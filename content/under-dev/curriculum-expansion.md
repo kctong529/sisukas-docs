@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "2026–2028 Curriculum Expansion"
+title: "Curriculum Expansion"
 description: "The first broad expansion of Sisukas curriculum filtering across Aalto's bachelor's majors, minors, and master's majors."
 ---
 
@@ -69,6 +69,6 @@ That is deliberately more demanding than “the YAML files contain more entries.
 ## Related documentation
 
 - [Curriculum Metadata](../../dev-guide/curriculum-metadata/) — Official sources, review decisions, catalogue tooling, and integration instructions.
-- [Course Data Architecture](../../dev-guide/data-architecture/) — How curated curricula relate to published course datasets.
+- [Course Data](../../architecture/course-data/) — How curated curricula relate to published course datasets.
 - [Filtering](../../concepts/filtering/) — How curriculum selections contribute to course discovery.
-- [Study Calendar Design](../study-calendar/) — Another active product-design initiative.
+- [Study Calendar](../study-calendar/) — Another active product-design initiative.

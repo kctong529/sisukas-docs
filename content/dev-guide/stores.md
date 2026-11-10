@@ -1,6 +1,6 @@
 ---
 weight: 8
-title: "Frontend State Management"
+title: "State Conventions"
 description: "A consistent, performance-conscious architecture for state management using Svelte 5 runes, with clear separation between state, queries, and mutations."
 aliases:
   - /under-dev/stores/
@@ -341,4 +341,4 @@ Actions should:
 ## Related documentation
 
 - [System Overview](../../system-overview/) — Frontend responsibilities.
-- [Running Sisukas Locally](../running-locally/) — Frontend development environment.
+- [Local Development](../running-locally/) — Frontend development environment.

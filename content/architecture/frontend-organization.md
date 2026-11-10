@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Frontend Architecture and Module Organization"
+title: "Frontend Organization"
 description: "Capability-oriented frontend ownership, public module contracts, dependency boundaries, and incremental migration conventions."
 ---
 
@@ -152,9 +152,9 @@ This enforcement currently applies to the study-group reference module. Other ca
 
 A Svelte store or adapter is a presentation-facing state interface, not necessarily the source of truth. In the study-group subsystem, the full-data cache owns authoritative records; its Svelte adapter observes changes and exposes read-only snapshots. Calling `entry()` alone does not trigger retrieval.
 
-Existing Svelte 5 store conventions are documented in [Frontend State Management](../../dev-guide/stores/). The `{ state, read, actions }` convention applies where an appropriate rune-store interface is being implemented; it should **not** be imposed mechanically on read-only adapters or framework-independent caches.
+Existing Svelte 5 store conventions are documented in [State Conventions](../../dev-guide/stores/). The `{ state, read, actions }` convention applies where an appropriate rune-store interface is being implemented; it should **not** be imposed mechanically on read-only adapters or framework-independent caches.
 
-Preserve successful-empty, missing, loading, failed, and refresh semantics when migrating the study-group subsystem. Refer to [Study-group Data Management](../study-group-loading/) for its established lifecycle and cancellation contracts.
+Preserve successful-empty, missing, loading, failed, and refresh semantics when migrating the study-group subsystem. Refer to [Study-group Loading](../study-group-loading/) for its established lifecycle and cancellation contracts.
 
 ## Tests and migration workflow
 
@@ -190,7 +190,7 @@ The study-group reference migration passed ESLint, application and test TypeScri
 ## Related documentation
 
 - [System Overview](../../system-overview/) — Main application responsibilities.
-- [Study-group Data Management](../study-group-loading/) — Cache, request coordination, runtime, and cancellation semantics.
-- [Frontend State Management](../../dev-guide/stores/) — Store conventions and transitional reactive state.
-- [Course Data Architecture](../../dev-guide/data-architecture/) — Course data provenance and runtime retrieval.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — Source identities, occurrences, and location metadata.
+- [Study-group Loading](../study-group-loading/) — Cache, request coordination, runtime, and cancellation semantics.
+- [State Conventions](../../dev-guide/stores/) — Store conventions and transitional reactive state.
+- [Course Data](../course-data/) — Course data provenance and runtime retrieval.
+- [Teaching Events](../teaching-events/) — Source identities, occurrences, and location metadata.

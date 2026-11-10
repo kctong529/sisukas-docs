@@ -6,7 +6,7 @@ description: "How database row-level security works, what it protects, and how S
 > [!NOTE]
 > This page first explains PostgreSQL Row-Level Security (RLS), then describes the repository’s Supabase-based RLS tests. Those tests do not, by themselves, prove the present Better Auth runtime enforces RLS.
 
-# Row-Level Security (RLS)
+# Row-Level Security
 
 ## What is RLS?
 
@@ -126,7 +126,7 @@ The current harness is a useful historical set of isolation tests, not proof of 
 ## Related documentation
 
 - [Security](../) — Current authentication and authorization boundaries.
-- [Route Authentication and Authorization](../route-protection/) — Application-level access control.
+- [Route Authorization](../route-protection/) — Application-level access control.
 
 ## Further reading
 

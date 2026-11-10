@@ -32,7 +32,8 @@ existing Plan (id, owner relationship, ...)
     │     FK plan_id → existing Plan.id, cascade on plan delete
     │
     └── calendar_occurrence_overrides
-          PK (plan_id, course_offering_id, study_group_id, occurrence_key)
+          PK (plan_id, course_offering_id, study_group_id,
+              occurrence_key_version, occurrence_key)
           FK plan_id → existing Plan.id, cascade on plan delete
           visibility ∈ {hidden, visible}
 ```
@@ -41,7 +42,7 @@ A composite FK to `plan_instances(plan_id, instance_id)` **is technically possib
 
 ### Proposed PostgreSQL DDL
 
-The types of `plans.id` and `plan_instances.instance_id` are verified against `backend/src/db/schema.ts`. The schema below is **not** an applied migration. Identifier byte limits are proposed safeguards and must be checked against representative SISU data in #190.
+The types of `plans.id` and `plan_instances.instance_id` are verified against `backend/src/db/schema.ts`. The schema below is **not** an applied migration. Representative series-key lengths have been measured; fallback-key and index-entry behavior still require validation in #190.
 
 ```sql
 -- REVIEWED DESIGN SKETCH — implement through Drizzle in #190.
@@ -51,7 +52,7 @@ CREATE TABLE calendar_hidden_groups (
     study_group_id text NOT NULL,
     updated_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (plan_id, course_offering_id, study_group_id),
-    CHECK (octet_length(study_group_id) BETWEEN 1 AND 512)
+    CHECK (length(study_group_id) > 0)
 );
 
 CREATE TABLE calendar_occurrence_overrides (
@@ -66,15 +67,15 @@ CREATE TABLE calendar_occurrence_overrides (
         plan_id, course_offering_id, study_group_id,
         occurrence_key_version, occurrence_key
     ),
-    CHECK (octet_length(study_group_id) BETWEEN 1 AND 512),
-    CHECK (octet_length(occurrence_key) BETWEEN 1 AND 1024),
+    CHECK (length(study_group_id) > 0),
+    CHECK (length(occurrence_key) > 0),
     CHECK (occurrence_key_version = 1)
 );
 ```
 
-The derived key embeds the offering and group IDs itself. The API should decode its **version-1 JSON tuple** to verify the embedded scope agrees with the explicit columns; it must never rewrite or regenerate a key. Unsupported formats or overlong keys must be rejected, never truncated or reassociated heuristically. Only Calendar-created, collision-free keys may be submitted as new overrides.
+The derived key embeds the offering and group IDs itself. The API should decode its **version-1 JSON tuple** to verify the embedded scope agrees with the explicit columns; it must never rewrite or regenerate a key. Unsupported formats must be rejected. Input and index-size limits must be explicitly designed and tested in #190; valid keys must never be silently truncated or reassociated heuristically. Only Calendar-created, collision-free keys may be submitted as new overrides.
 
-The proposed length checks protect a multi-column B-tree primary key from oversized index entries. Before adopting them, inspect actual maximum `octet_length` values, including fallback keys with notices and multiple locations. If valid source keys exceed the bound, revise the indexing strategy (for example, store the full text separately and index a verified digest with collision-safe comparison). Do not silently omit valid user preferences.
+The sample measurements below justify using variable-length `text`, but do **not** establish safe upper bounds. The composite B-tree primary key also has a PostgreSQL index-entry size limit, so unbounded input is **not** guaranteed to be indexable. Before #190 generates migrations, test representative fallback keys and deliberately long inputs against the chosen index design. If this constraint is material, adopt a digest-assisted uniqueness design with full-key collision verification; never silently truncate valid keys. API request-size protection is separate from the physical column type.
 
 **Lifecycle choice:** no FK to `plan_instances`, so removing an offering does not delete choices; the application must filter by current membership when projecting. Deleting the plan cascades to both preference tables. A duplicated plan starts with no preferences unless the duplication workflow explicitly clones them in a transaction.
 
@@ -149,7 +150,7 @@ The endpoint path is illustrative. The authenticated backend should establish su
 
 Per-record PUT/DELETE endpoints or one PATCH endpoint are both viable; prefer whichever fits the backend's established routing and transactional patterns. For concurrent edits, decide whether the server needs a revision token/ETag or whether last-write-wins per key is sufficient for beta. **`updated_at` alone does not guarantee that an old in-flight write cannot overwrite a newer write.** The frontend must also track pending writes and ignore obsolete reads; this race needs explicit tests in #191/#192.
 
-## Lifecycle decisions to resolve in #190
+## Lifecycle policies
 
 | Scenario | Recommended treatment | Why |
 | --- | --- | --- |
@@ -170,7 +171,8 @@ Before generating a Drizzle migration:
 
 - [x] Confirmed: `plans.id` is UUID; `plans.user_id` is text; `plan_instances` has a `(plan_id, instance_id)` primary key and `varchar(100)` instance ID. Implement matching Drizzle definitions.
 - [x] Confirmed: `deriveCalendarOccurrenceKey()` encodes JSON tuples with `series` or `fallback`; collisions produce `occurrenceKey: null`, which cannot be overridden.
-- [ ] Verify proposed UTF-8 byte limits against real group IDs and occurrence keys, and retain explicit `occurrence_key_version = 1` without changing the current key.
+- [x] Measure representative group IDs and actual generated series keys (20 offerings, 42 groups, 400 occurrences; longest key 165 bytes). No fallback keys appeared in this sample.
+- [ ] Validate fallback and oversized keys against the actual composite-index strategy in #190; preserve the key unchanged and keep `occurrence_key_version = 1`.
 - [x] Document chosen policy: offering removal leaves dormant rows; duplication starts empty; plan deletion cascades.
 - [ ] Decide API write conflict semantics and how frontend pending writes are acknowledged.
 - [ ] Add migration tests for uniqueness, enum/check constraints, plan FK cascade, and cross-account isolation.
@@ -179,6 +181,6 @@ Before generating a Drizzle migration:
 ## References
 
 - [Calendar Visibility](../calendar-visibility-preferences/) — identity, precedence, and reconciled application.
-- [Study Calendar Design](../../under-dev/study-calendar/) — product scope.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — upstream guarantees and limitations.
+- [Study Calendar](../../under-dev/study-calendar/) — product scope.
+- [Teaching Events](../teaching-events/) — upstream guarantees and limitations.
 - [#189](https://github.com/kctong529/sisukas/issues/189) — contract workstream; [#190](https://github.com/kctong529/sisukas/issues/190) — backend implementation; [#191](https://github.com/kctong529/sisukas/issues/191) — frontend hydration; [#192](https://github.com/kctong529/sisukas/issues/192) — end-to-end validation.

@@ -1,11 +1,13 @@
 ---
+aliases:
+  - "/dev-guide/data-architecture/"
 weight: 2
-title: "Course Data Architecture"
+title: "Course Data"
 description: "System boundaries and data lifecycles for canonical catalogues, runtime resolution, teaching details, and browser-side composition."
 ---
 
 > [!NOTE]
-> This page explains **where course data originates, which system owns it, and how the browser combines it**. For workflow triggers, exact processing commands, publication safeguards, and recovery, see [Data Pipeline](../data-pipeline/).
+> This page explains **where course data originates, which system owns it, and how the browser combines it**. For workflow triggers, exact processing commands, publication safeguards, and recovery, see [Data Pipeline](../../dev-guide/data-pipeline/).
 
 ## Why several data flows exist
 
@@ -40,13 +42,13 @@ The pipeline updates history when removals or reactivations require it, checks t
 | `historical.json` | Canonical accumulated historical course records |
 | Hashes and change metadata | Change detection, integrity/revalidation, and publication reporting |
 
-**Source of truth:** the published GCS catalogues—not raw upstream responses, IndexedDB contents, or runtime PostgreSQL snapshots. The operational rules, including exact workflow jobs, archive thresholds, hash publishing, authentication, and recovery procedures, are documented in [Data Pipeline](../data-pipeline/).
+**Source of truth:** the published GCS catalogues—not raw upstream responses, IndexedDB contents, or runtime PostgreSQL snapshots. The operational rules, including exact workflow jobs, archive thresholds, hash publishing, authentication, and recovery procedures, are documented in [Data Pipeline](../../dev-guide/data-pipeline/).
 
 ### Historical discovery is different from routine archiving
 
 The routine reconciliation path preserves instances leaving the active catalogue. Historical crawling can discover older instances that were **never present in the previous active baseline**. It uses SISU Kori relationships to discover course-unit realisation identifiers and the Aalto Course API to retrieve corresponding payloads.
 
-Crawl output is checkpointed, deduplicated, and normalized before it is considered for catalogue maintenance; it is not canonical merely because it was fetched. See [Historical Course Records](../historical/) for the collection procedure and its safeguards.
+Crawl output is checkpointed, deduplicated, and normalized before it is considered for catalogue maintenance; it is not canonical merely because it was fetched. See [Historical Records](../../dev-guide/historical/) for the collection procedure and its safeguards.
 
 ## 2. Runtime course resolution and snapshot storage
 
@@ -64,7 +66,7 @@ The current resolution route uses a **180-day expiry policy**. These stored reco
 > [!IMPORTANT]
 > Storing or displaying a resolved snapshot does **not** update `historical.json`, publish anything to GCS, or establish a validated canonical record.
 
-The separate [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) documentation includes a proposed delayed canonical backfill process. Do not confuse that proposal with deployed snapshot recovery.
+The separate [Course Backfill](../../under-dev/snapshot-backfill/) documentation includes a proposed delayed canonical backfill process. Do not confuse that proposal with deployed snapshot recovery.
 
 ## 3. Browser-side catalogue composition
 
@@ -115,9 +117,9 @@ The results are associated with the requested course unit/offering and retained 
 
 The cache tracks more than the presence of a value: it can distinguish missing, loading, ready, and failed data, including refresh states that retain previously loaded groups if refresh fails. This is a separate lifecycle from loading the active or historical course indexes.
 
-Since #173, `src/app/auth/AuthenticatedDataLifecycle.svelte` initiates **default full-data loading for the authenticated active plan** through the authoritative `StudyGroupDataRuntime`. It waits for settled authentication, hydrated plans, and a ready active course index; `activePlanRequests.ts` maps plan membership to offering requests without fetching unrelated courses. Account changes invalidate both the authoritative and legacy caches. Existing Calendar, Favourites, StudyGroupsSection, and LEGO consumers have not yet all migrated, so their legacy retrieval path still coexists until #174 and #175. This does not alter the canonical catalogue, runtime snapshots, or study-event source contracts.
+Since #173, `src/app/auth/AuthenticatedDataLifecycle.svelte` initiates **default full-data loading for the authenticated active plan** through the authoritative `StudyGroupDataRuntime`. It waits for settled authentication, hydrated plans, and a ready active course index; `activePlanRequests.ts` maps plan membership to offering requests without fetching unrelated courses. Account changes invalidate the authoritative runtime cache and its in-flight request lifecycle. Calendar, Favourites, StudyGroupsSection, and LEGO consumers now share the authoritative runtime following #174. The legacy retrieval paths were removed in #175. This does not alter the canonical catalogue, runtime snapshots, or study-event source contracts.
 
-For full-data cache ownership, loader and coordinator boundaries, state transitions, notifications, and invalidation, see [Study-group Data Management](../../architecture/study-group-loading/). See also [SISU Wrapper API](../api/) and [Study-event and Location Contract](../study-event-contract/) for the transport interfaces and normalized event model.
+For full-data cache ownership, loader and coordinator boundaries, state transitions, notifications, and invalidation, see [Study-group Loading](../study-group-loading/). See also [SISU Wrapper API](../../dev-guide/api/) and [Teaching Events](../teaching-events/) for the transport interfaces and normalized event model.
 
 ## 5. Curriculum and organization metadata
 
@@ -127,7 +129,7 @@ Curriculum membership, programme modules, requirements, and organization metadat
 
 Metadata is **combined at the point of use**, not inserted into the historical snapshot merge. A valid curriculum reference may identify a historical-only course or a course missing from the current published dataset, and should not be silently removed for that reason.
 
-See [Curriculum Metadata](../curriculum-metadata/) for sources, verification, and maintenance rules.
+See [Curriculum Metadata](../../dev-guide/curriculum-metadata/) for sources, verification, and maintenance rules.
 
 ## Data ownership and failure boundaries
 
@@ -158,22 +160,22 @@ Review **all** affected boundaries: upstream fetch/normalization, validators, re
 
 | Concern | Relevant entry points |
 | --- | --- |
-| Scheduled publishing | `.github/workflows/check_course_updates.yml` (operational detail in [Data Pipeline](../data-pipeline/)) |
+| Scheduled publishing | `.github/workflows/check_course_updates.yml` (operational detail in [Data Pipeline](../../dev-guide/data-pipeline/)) |
 | Runtime adapter | `sisu-wrapper/api/routers/courses.py` |
 | Snapshot API/persistence | `backend/src/routes/courseSnapshots.ts`, `backend/src/services/CourseSnapshotsService.ts` |
 | Canonical loading and caching | `RemoteCourseLoader.ts`, `LargeFileCache.ts` |
 | Parsing and browser composition | `CourseParser.ts`, `courseIndexStore.svelte.ts`, `SnapshotHistoricalMerge.ts` |
-| Study groups | `AuthenticatedDataLifecycle.svelte`, `activePlanRequests.ts`, `modules/study-groups/StudyGroupDataRuntime.ts`, `StudyGroupCache.ts`, `StudyGroupCacheLoader.ts`, `StudyGroupRequestCoordinator.ts`, `StudyGroupService.ts` (application default loading implemented; UI consumer migration pending) |
+| Study groups | `AuthenticatedDataLifecycle.svelte`, `activePlanRequests.ts`, `modules/study-groups/StudyGroupDataRuntime.ts`, `StudyGroupCache.ts`, `StudyGroupCacheLoader.ts`, `StudyGroupRequestCoordinator.ts`, `StudyGroupService.ts` (authenticated default loading and consumer migration complete) |
 | Curated metadata | `CurriculumLoader.ts`, `OrganizationLoader.ts` |
 
 Frontend filenames above refer to components within `frontend/course-browser/src/`.
 
 ## Related documentation
 
-- [Data Pipeline](../data-pipeline/) — Exact scheduled workflow, safeguards, publication, and recovery.
-- [Historical Course Records](../historical/) — Historical discovery and maintenance.
-- [SISU Wrapper API](../api/) — Runtime adapter interfaces.
-- [Study-event and Location Contract](../study-event-contract/) — Teaching events and locations.
-- [Curriculum Metadata](../curriculum-metadata/) — Curated metadata maintenance.
-- [Runtime Course Recovery and Backfill](../../under-dev/snapshot-backfill/) — Implemented snapshots and proposed promotion.
-- [Cross-institutional Course Discovery](../../under-dev/cross-institutional-courses/) — Verified Kori discovery and proposed external course-unit boundary.
+- [Data Pipeline](../../dev-guide/data-pipeline/) — Exact scheduled workflow, safeguards, publication, and recovery.
+- [Historical Records](../../dev-guide/historical/) — Historical discovery and maintenance.
+- [SISU Wrapper API](../../dev-guide/api/) — Runtime adapter interfaces.
+- [Teaching Events](../teaching-events/) — Teaching events and locations.
+- [Curriculum Metadata](../../dev-guide/curriculum-metadata/) — Curated metadata maintenance.
+- [Course Backfill](../../under-dev/snapshot-backfill/) — Implemented snapshots and proposed promotion.
+- [External Courses](../../under-dev/cross-institutional-courses/) — Verified Kori discovery and proposed external course-unit boundary.

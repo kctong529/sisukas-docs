@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Study Calendar Design"
+title: "Study Calendar"
 description: "Design of an active-plan calendar that makes teaching events, overlaps, and intended attendance understandable."
 ---
 
@@ -80,5 +80,5 @@ Attendance decisions remain scoped to occurrences or recurring preferences and n
 - [Assemblies](../../concepts/assemblies/) — Candidate generation and explicit calendar application.
 - [Legacy Decision Slots](../../concepts/decision-slots/) — Earlier conflict-handling proposal.
 - [Plans](../../concepts/plans/) — Course selection and the planning context.
-- [Study-event and Location Contract](../../dev-guide/study-event-contract/) — Source event metadata and temporal semantics.
-- [Course Data Architecture](../../dev-guide/data-architecture/) — Published catalogue and on-demand SISU data boundaries.
+- [Teaching Events](../../architecture/teaching-events/) — Source event metadata and temporal semantics.
+- [Course Data](../../architecture/course-data/) — Published catalogue and on-demand SISU data boundaries.
