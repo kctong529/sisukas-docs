@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 6
 title: "Schedule Pairs"
 description: "How schedule pairs are generated and ranked: selecting one study group per block to form concrete timetable options."
 ---

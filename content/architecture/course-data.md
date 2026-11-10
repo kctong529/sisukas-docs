@@ -1,7 +1,7 @@
 ---
 aliases:
   - "/dev-guide/data-architecture/"
-weight: 2
+weight: 1
 title: "Course Data"
 description: "System boundaries and data lifecycles for canonical catalogues, runtime resolution, teaching details, and browser-side composition."
 ---

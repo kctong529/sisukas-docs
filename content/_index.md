@@ -26,8 +26,6 @@ Sisukas helps Aalto University students discover courses, compare schedules, and
 | [Security](./securities/) | How is access controlled? | Authentication, authorization, and RLS scope |
 | [Under Development](./under-dev/) | Which proposals are not yet fully implemented? | Clearly labeled future work |
 
-**Editorial rule:** Each topic has one authoritative home. The System Overview links to detailed Architecture; the Developer Guide links to explanations rather than repeating them. Proposed behavior must not be presented as deployed behavior.
-
 ## Project status
 
 Course discovery, saved filters, bookmarking, and core planning are implemented. Study-group retrieval uses a shared in-memory runtime; full browser persistence of study groups is proposed. The Calendar has implemented visibility interactions, but authenticated persistence and attendance controls remain separate work. Consult each feature page for its precise status.

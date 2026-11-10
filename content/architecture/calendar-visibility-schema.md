@@ -1,5 +1,5 @@
 ---
-weight: 5
+weight: 7
 title: "Calendar Schema"
 description: "Proposed sparse PostgreSQL tables, constraints, lifecycle rules, and design alternatives for #189/#190."
 ---

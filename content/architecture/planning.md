@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "Planning Architecture"
 description: "Existing planning implementation and proposed assembly-to-calendar boundaries."
 ---

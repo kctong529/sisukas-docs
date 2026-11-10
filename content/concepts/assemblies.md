@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 5
 title: "Scheduling Candidates"
 description: "How LEGO blocks produce ranked assembly candidates, and how candidates relate to the study calendar."
 ---

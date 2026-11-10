@@ -1,5 +1,5 @@
 ---
-weight: 5
+weight: 4
 title: "External Courses"
 description: "Verified SISU Kori discovery behavior, course-unit boundaries, and the proposed Sisukas integration."
 ---

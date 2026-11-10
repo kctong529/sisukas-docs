@@ -1,5 +1,5 @@
 ---
-weight: 3
+weight: 5
 title: "SISU Wrapper API"
 description: "SISU Wrapper REST API routes, study groups, and optional location resolution."
 ---

@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 4
 title: "Year Timeline"
 description: "Year-level view of workload: completed, ongoing, and planned studies shown across teaching periods with no manual upkeep."
 ---

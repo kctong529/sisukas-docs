@@ -1,5 +1,5 @@
 ---
-weight: 6
+weight: 7
 title: "Developer Guide"
 description: "Practical instructions for building, testing, running, and maintaining Sisukas."
 ---

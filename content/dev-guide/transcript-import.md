@@ -1,5 +1,5 @@
 ---
-weight: 7
+weight: 9
 title: "Transcript Import"
 description: "How Sisukas imports transcript-derived favourites, plan instances, and grades in one transactional operation."
 aliases:

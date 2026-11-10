@@ -1,7 +1,7 @@
 ---
 aliases:
   - "/dev-guide/study-event-contract/"
-weight: 4
+weight: 2
 title: "Teaching Events"
 description: "SISU event identities, expanded occurrences, location enrichment, and verified limitations."
 ---

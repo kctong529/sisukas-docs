@@ -1,5 +1,5 @@
 ---
-weight: 2
+weight: 3
 title: "Study-group Loading"
 description: "Authoritative full-data caching, shared retrieval, failure handling, and reactive integration boundaries."
 ---

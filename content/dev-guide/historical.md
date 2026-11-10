@@ -1,5 +1,5 @@
 ---
-weight: 3
+weight: 7
 title: "Historical Records"
 description: "How Sisukas builds and maintains a historical course dataset to support the year timeline and tracking past courses."
 aliases:

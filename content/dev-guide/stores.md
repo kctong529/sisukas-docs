@@ -1,5 +1,5 @@
 ---
-weight: 8
+weight: 4
 title: "State Conventions"
 description: "A consistent, performance-conscious architecture for state management using Svelte 5 runes, with clear separation between state, queries, and mutations."
 aliases:

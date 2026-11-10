@@ -1,5 +1,5 @@
 ---
-weight: 5
+weight: 7
 title: "Decision Slots"
 description: "How Sisukas models unavoidable overlaps as decision slots, so users explicitly choose what to attend and what to skip."
 ---

@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 6
 title: "Calendar Visibility"
 description: "Plan-scoped visibility identity, inheritance, and reconciliation contract for Calendar persistence (#189)."
 ---

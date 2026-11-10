@@ -1,5 +1,5 @@
 ---
-weight: 7
+weight: 6
 title: "Architecture"
 description: "System design, responsibilities, invariants, data contracts, and trade-offs."
 ---

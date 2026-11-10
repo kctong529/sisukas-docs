@@ -1,5 +1,5 @@
 ---
-weight: 3
+weight: 5
 title: "Frontend Organization"
 description: "Capability-oriented frontend ownership, public module contracts, dependency boundaries, and incremental migration conventions."
 ---

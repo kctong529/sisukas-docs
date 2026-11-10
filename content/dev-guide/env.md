@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 2
 title: "Environment Variables"
 description: "Environment configuration for the frontend, backend, filters API and SISU wrapper."
 ---
