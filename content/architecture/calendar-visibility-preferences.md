@@ -1,11 +1,11 @@
 ---
 weight: 4
-title: "Calendar Visibility Preference Contract"
+title: "Calendar Visibility"
 description: "Plan-scoped visibility identity, inheritance, and reconciliation contract for Calendar persistence (#189)."
 ---
 
 > [!NOTE]
-> **Status: proposed design for #189; not an implemented persistence API.** This page records the decisions to validate before #190 (database/API) and #191 (frontend hydration). The current in-memory behavior was delivered in #92. Attendance and default-group selection are separate work (#101).
+> **Status: source-verified contract for #189; persistence is not yet implemented.** This page records the decisions to validate before #190 (database/API) and #191 (frontend hydration). The current in-memory behavior was delivered in #92. Attendance and default-group selection are separate work (#101).
 
 ## Purpose and ownership
 
@@ -22,9 +22,9 @@ This contract does not confer SISU registration, attendance intention, schedulin
 
 ## Identity: three distinct layers
 
-1. **Plan identity:** An authenticated Sisukas plan, identified by the application's existing plan primary key. A preference is scoped to a plan rather than to the current active-plan flag. Backend authorization resolves plan ownership from its existing relationship, not from a user ID supplied by the browser.
+1. **Plan identity:** A UUID `plans.id`, owned through `plans.user_id` (Better Auth text ID). A preference is scoped to a plan rather than to the current active-plan flag. Backend authorization resolves plan ownership from its existing relationship, not from a user ID supplied by the browser.
 2. **Group association:** `(course_offering_id, study_group_id)` within the plan. The offering identifier is the course-instance/realisation identifier already stored in `Plan.instanceIds`. The group ID alone must not be assumed globally unique. Group visibility is attached to this association, not a group name, type, or display order.
-3. **Occurrence association:** `(course_offering_id, study_group_id, occurrence_key)` within the plan. `occurrence_key` is the **existing Calendar domain's derived key** for a particular expanded occurrence, not `StudyEvent.id`, which may be a compatibility/index-based value. The exact derivation must be reused from #137/#92 source code; do not invent a second encoder in the API or database.
+3. **Occurrence association:** `(course_offering_id, study_group_id, occurrence_key)` within the plan. `occurrence_key` is the **existing Calendar domain's derived key** for a particular expanded occurrence, not `StudyEvent.id`, which may be a compatibility/index-based value. The existing encoder is `deriveCalendarOccurrenceKey()` in `CalendarOccurrenceIdentity.ts`; the persisted v1 value must be its **unmodified JSON string**, not `StudyEvent.id`.
 
 The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapper` has observed series IDs and expanded `events[]`, but no guaranteed stable occurrence identifier. A derived occurrence key may change if SISU changes the original start time or association. See [Study-event and Location Contract](../../dev-guide/study-event-contract/) and #89/#137.
 
@@ -35,8 +35,8 @@ The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapp
 
 - Preserve SISU-issued offering and study-group IDs as opaque, case-sensitive strings. Do not lowercase, trim, translate, parse as UUIDs, or infer meaning from their formatting at read/write time.
 - Use a single canonical occurrence-key generator from the Calendar domain, with a documented key-format version for persisted records. Key creation and collision diagnostics remain frontend responsibilities; the backend treats the key as opaque.
-- Reject empty strings and impose reasonable maximum lengths at the API boundary. Exact bounds and whether a key version is stored separately must be confirmed against the current TypeScript implementation before #190 migrations are finalized.
-- The plan ID and external references together determine persistence scope. No human-readable group/event names, timestamps, or entire `StudyEvent` payloads are required to enforce this contract.
+- Reject empty strings and impose reasonable maximum lengths at the API boundary. The v1 key is a JSON array: `["series", offeringId, groupId, seriesId, startMs]` or `["fallback", offeringId, groupId, startMs, endMs, sortedLocationIds, cancelled, excluded, notice]`. Use a separate `occurrence_key_version` column (initially `1`), leaving the encoded key unchanged. Validate maximum UTF-8 byte lengths against representative real keys before #190; never truncate.
+- The plan ID and external references together determine persistence scope. The existing `plan_instances(plan_id, instance_id)` primary key uses a UUID plan ID and `varchar(100)` offering ID. No human-readable group/event names, timestamps, or entire `StudyEvent` payloads are required to enforce this contract.
 
 ## Sparse persisted state
 
@@ -97,7 +97,7 @@ The group and occurrence associations remain distinct even when two events have 
 | Source event marked cancelled | Preserve source cancellation state; apply visibility only if Calendar still presents that occurrence and its identity is unambiguous | Visibility does not change cancellation semantics |
 | Source event excluded/omitted by projection | Never resurrect it through an explicit-visible override | Source eligibility precedes presentation preferences |
 | Teaching data missing/stale/failed | Do not declare stored references invalid based only on absent data | Completeness is independent of preference matching |
-| Offering removed from plan | Preference remains plan-associated until explicit policy/cleanup; must not affect other offerings | Avoid implicit destructive actions during transient edits |
+| Offering removed from plan | Keep rows attached to the plan, but do not apply them while the offering is absent; new writes require current membership | Avoid destructive cleanup during temporary plan edits; preserve preferences if an offering is re-added |
 
 > [!IMPORTANT]
 > **Unresolved reference ≠ delete.** The frontend may report stale/unmatched overrides, but should not automatically rewrite a key to a nearby occurrence, nor erase data just because a network response omitted an offering. Cleanup and plan-duplication semantics belong to #190/#192.
@@ -161,7 +161,9 @@ These are **required test cases**, not a claim that the repository's current uni
 
 ## Decisions for #190 and #191
 
-- Adopt sparse plan-scoped rows for group hides and occurrence explicit overrides (see [Schema Proposal](../calendar-visibility-schema/)).
+- Adopt sparse plan-scoped rows for group hides and occurrence explicit overrides (see [Calendar Schema](../calendar-visibility-schema/)).
+- Keep the frontend v1 JSON occurrence encoder unchanged; store its version separately and verify embedded offering/group context when accepting writes.
+- Retain unmatched preferences when plan membership temporarily changes. Enforce membership for new writes in #190, and plan authorization for every operation.
 - Keep `occurrence_key` opaque, generated by the existing Calendar domain helper; verify its exact format/version in the application source before migration.
 - Prefer plan-owned foreign keys and server-derived authorization over trusting client-supplied user ownership.
 - Keep attendance, default teaching group, recurring exceptions, and browser teaching-event snapshots outside this workstream.
@@ -170,5 +172,5 @@ These are **required test cases**, not a claim that the repository's current uni
 
 - [Study Calendar Design](../../under-dev/study-calendar/) — product behavior and feature scope.
 - [Study-event and Location Contract](../../dev-guide/study-event-contract/) — observed upstream identity limits.
-- [Schema Proposal](../calendar-visibility-schema/) — relational representation and trade-offs.
+- [Calendar Schema](../calendar-visibility-schema/) — relational representation and trade-offs.
 - [#89](https://github.com/kctong529/sisukas/issues/89), [#90](https://github.com/kctong529/sisukas/issues/90), [#92](https://github.com/kctong529/sisukas/issues/92), [#93](https://github.com/kctong529/sisukas/issues/93), [#189](https://github.com/kctong529/sisukas/issues/189), [#190](https://github.com/kctong529/sisukas/issues/190), [#191](https://github.com/kctong529/sisukas/issues/191), [#192](https://github.com/kctong529/sisukas/issues/192).
