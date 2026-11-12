@@ -5,7 +5,7 @@ description: "Plan-scoped visibility identity, inheritance, and reconciliation c
 ---
 
 > [!NOTE]
-> **Status: source-verified contract for #189; persistence is not yet implemented.** This page records the decisions to validate before #190 (database/API) and #191 (frontend hydration). The current in-memory behavior was delivered in #92. Attendance and default-group selection are separate work (#101).
+> **Status: contract implemented by the backend in #190; Supabase Test only.** The backend schema, service, and HTTP API now implement these persistence rules, with tests against Supabase Test. Frontend hydration (#191), end-to-end validation (#192), and production migration remain pending. The in-memory visibility UI was delivered in #92; attendance and default-group selection remain separate (#101).
 
 ## Purpose and ownership
 
@@ -35,7 +35,7 @@ The upstream event-series ID is **not** an individual occurrence ID. `sisu-wrapp
 
 - Preserve SISU-issued offering and study-group IDs as opaque, case-sensitive strings. Do not lowercase, trim, translate, parse as UUIDs, or infer meaning from their formatting at read/write time.
 - Use a single canonical occurrence-key generator from the Calendar domain, with a documented key-format version for persisted records. Key creation and collision diagnostics remain frontend responsibilities; the backend treats the key as opaque.
-- Reject empty strings and impose reasonable maximum lengths at the API boundary. The v1 key is a JSON array: `["series", offeringId, groupId, seriesId, startMs]` or `["fallback", offeringId, groupId, startMs, endMs, sortedLocationIds, cancelled, excluded, notice]`. Use a separate `occurrence_key_version` column (initially `1`), leaving the encoded key unchanged. Representative series keys have been measured (400 occurrences; maximum 165 UTF-8 bytes). Fallback keys and database index-entry limits still need validation in #190; never truncate.
+- Reject empty strings and impose reasonable maximum lengths at the API boundary. The v1 key is a JSON array: `["series", offeringId, groupId, seriesId, startMs]` or `["fallback", offeringId, groupId, startMs, endMs, sortedLocationIds, cancelled, excluded, notice]`. Use a separate `occurrence_key_version` column (initially `1`), leaving the encoded key unchanged. Representative series keys have been measured (400 occurrences; maximum 165 UTF-8 bytes). Fallback-key and index-size behavior were tested in #190. The backend retains the exact key and indexes a SHA-256 digest with exact-key collision checks; never truncate.
 - The plan ID and external references together determine persistence scope. The existing `plan_instances(plan_id, instance_id)` primary key uses a UUID plan ID and `varchar(100)` offering ID. No human-readable group/event names, timestamps, or entire `StudyEvent` payloads are required to enforce this contract.
 
 ## Sparse persisted state

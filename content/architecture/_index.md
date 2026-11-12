@@ -21,7 +21,7 @@ description: "System design, responsibilities, invariants, data contracts, and t
 ## Calendar persistence
 
 - [Calendar Visibility](./calendar-visibility-preferences/) — Visibility identity, inheritance, and ambiguity contracts.
-- [Calendar Schema](./calendar-visibility-schema/) — Reviewed *proposal* for plan-scoped database persistence; no migration is implied.
+- [Calendar Schema](./calendar-visibility-schema/) — Implemented plan-scoped backend schema and constraints; deployed to Supabase Test only.
 
 ## Working on the code
 

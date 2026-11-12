@@ -18,7 +18,7 @@ Sisukas uses PostgreSQL hosted on Supabase for application data. The Express bac
 | Runtime database | `backend/src/db/schema.ts`, backend database connection | Tables, constraints, and backend persistence |
 | Drizzle tooling | `backend/drizzle.config.cjs`, `backend/package.json` | Schema generation, migration, or direct schema push |
 | Generated migration history | `backend/drizzle/meta/`, generated `drizzle/*.sql` | Local migration snapshots/journal and migration statements |
-| Custom SQL | `backend/drizzle/sql/0001_*.sql` through `0004_*.sql` | RLS enablement, policies/grants, active-plan invariant |
+| Custom SQL | `backend/drizzle/sql/0001_*.sql` through `0005_*.sql` | RLS enablement, policies/grants, active-plan invariant, standalone Calendar preference migration |
 | RLS integration tests | `backend/tests/rls.*.test.ts`, `rls.setup.ts` | Supabase Auth sessions and Data API requests exercising policies |
 | Database migration journal | `drizzle.__drizzle_migrations` | Drizzle's database-side record of applied migrations, when present |
 
@@ -109,7 +109,7 @@ Use `\q` to exit. The older `psql` 14 client may connect to PostgreSQL 17 but ca
 
 ## Inspect schema and RLS
 
-All queries in this section are read-only. The November 2026 baseline comprised ten application tables (`account`, `course_grades`, `course_snapshots`, `favourites`, `feedback`, `plan_instances`, `plans`, `session`, `user`, `verification`).
+All queries in this section are read-only. Before migration `0005`, the November 2026 baseline comprised ten application tables (`account`, `course_grades`, `course_snapshots`, `favourites`, `feedback`, `plan_instances`, `plans`, `session`, `user`, `verification`).
 
 ### Tables and policies
 
@@ -130,7 +130,7 @@ WHERE schemaname = 'public'
 GROUP BY tablename ORDER BY tablename;
 ```
 
-Expected **after the test repair**: nine tables with RLS enabled; `course_snapshots` without RLS; 33 policies in total. The RLS scripts protect `"user"`, `account`, `session`, `verification`, `favourites`, `feedback`, `plans`, `plan_instances`, and `course_grades`. `verification` has one deny-all policy for `authenticated`; the other eight tables have four CRUD policies each. This matches the reviewed production *policy definitions*; grants require separate inspection.
+Expected **after the initial test repair, before Calendar migration `0005`**: nine tables with RLS enabled; `course_snapshots` without RLS; 33 policies in total. **After `0005` on Supabase Test**, two Calendar tables add two RLS-enabled tables and eight policies (11 RLS tables, 41 policies in the `public` schema assuming no other changes). Supabase Production remains on the prior Calendar-free baseline. The RLS scripts protect `"user"`, `account`, `session`, `verification`, `favourites`, `feedback`, `plans`, `plan_instances`, and `course_grades`. `verification` has one deny-all policy for `authenticated`; the other eight tables have four CRUD policies each. This matches the reviewed production *policy definitions*; grants require separate inspection.
 
 ```sql
 SELECT table_name, grantee,
@@ -210,7 +210,7 @@ ORDER BY created_at, id;
 | --- | --- |
 | Local `drizzle/meta/_journal.json` | `0000_daffy_salo` (timestamp `1769645984749`), `0001_illegal_the_fallen` (`1771736529154`) |
 | Local snapshots | `0000_snapshot.json` has nine application tables; `0001_snapshot.json` adds `course_snapshots` |
-| Version-controlled custom SQL | `drizzle/sql/0001_rls_enable.sql` through `0004_enforce_exactly_one_active_plan.sql` |
+| Version-controlled custom SQL | `drizzle/sql/0001_rls_enable.sql` through `0005_calendar_visibility_preferences.sql` |
 | Generated historical `.sql` files | Missing from the inspected checkout; local snapshots and journal were also untracked |
 | Production journal | One row, with `created_at = 1769645984749`, matching local `0000` |
 | Test journal | `__drizzle_migrations` absent at the time of inspection |
@@ -223,6 +223,36 @@ Custom SQL currently owns RLS grants/policies (`0001`–`0003`) and the deferred
 ### New database changes
 
 Until reconciliation is complete, any new table work (including Calendar preferences) must use reviewed, version-controlled SQL, verify the target project, test on test before production, and maintain an explicit application record of what ran in each environment. Coordinate future history reconciliation so the same DDL is not replayed. Do not call an ad-hoc SQL application a successful `db:migrate` run.
+
+## Calendar preference migration (`0005`)
+
+`backend/drizzle/sql/0005_calendar_visibility_preferences.sql` creates `calendar_hidden_groups` and `calendar_occurrence_overrides`, their constraints, grants, and eight RLS policies. `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql` provides read-only structural inspection. The former has been applied to **Supabase Test only**; **Supabase Production has not received `0005`**.
+
+The application uses a SHA-256 physical occurrence-key index while retaining and checking the original serialized key. No historical generated Drizzle migration should be replayed to install this standalone SQL. #197 owns migration-history recovery.
+
+After confirming you are connected to **Supabase Test** with the correct project reference and reviewing the file, run the following in `psql` from `backend/` **only when the migration is not yet installed**:
+
+```sql
+\set ON_ERROR_STOP on
+\i drizzle/sql/0005_calendar_visibility_preferences.sql
+\i drizzle/sql/verify_0005_calendar_visibility_preferences.sql
+```
+
+The migration is not written as a re-runnable `IF NOT EXISTS` script: an already-present table should trigger investigation rather than a second application. The verification script is safe to repeat. Inspect `pg_constraint`, `pg_indexes`, `pg_policies`, and `pg_tables` if the structure differs; do not attempt to repair it by blindly rerunning the migration. Record the project reference, timestamp, SQL checksum, and result in the deployment/issue log.
+
+### Test suites
+
+From `backend/`, Vitest loads `.env.test`. Verify `DATABASE_URL` targets Supabase Test and `CALENDAR_TEST_PROJECT_REF` matches the dashboard. Only the opt-in flags are needed on the command line:
+
+```sh
+CALENDAR_DB_TEST=yes npx vitest run tests/integration/calendarPreferences.db.test.ts --no-file-parallelism
+CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http.test.ts --no-file-parallelism
+```
+
+The database test directly exercises the Drizzle service. The HTTP test creates Better Auth fixtures, starts an in-process Express server, and exercises cookie-based authorization through the Calendar routes. **Both create and remove test records and must never point to production.** See `backend/tests/integration/README.md` in the application repository for preflight and cleanup details.
+
+> [!WARNING]
+> Production migration is deferred until frontend hydration and end-to-end Calendar acceptance (#191/#192) pass, with a coordinated backend/frontend deployment. A production backend must not call these routes against a database lacking the new tables.
 
 ## RLS integration tests
 
@@ -263,4 +293,5 @@ In November 2026, the test suite contained 7 files and 45 tests. The production 
 - [Local Development](../running-locally/) — Start the services.
 - [Row-Level Security](../../securities/row-level-security-testing/) — Security model and test design.
 - [Route Protection](../../securities/route-protection/) — Better Auth authorization boundaries.
-- [Calendar Schema](../../architecture/calendar-visibility-schema/) — Planned preference tables; persistence is not yet deployed.
+- [Calendar Schema](../../architecture/calendar-visibility-schema/) — Implemented backend preference tables, currently deployed to Supabase Test only.
+- [Calendar Preference API](../calendar-preference-api/) — Endpoint contract and integration-test workflow.

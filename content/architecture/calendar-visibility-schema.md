@@ -1,11 +1,11 @@
 ---
 weight: 7
 title: "Calendar Schema"
-description: "Proposed sparse PostgreSQL tables, constraints, lifecycle rules, and design alternatives for #189/#190."
+description: "Implemented sparse Calendar visibility schema, identity constraints, and deployment boundary."
 ---
 
-> [!WARNING]
-> **Source-verified design, not a migration.** The current backend defines `plans.id` as UUID and `plan_instances` with composite primary key `(plan_id, instance_id)` where `instance_id` is `varchar(100)`. The DDL below reflects those types, but is still a reviewed proposal; #190 must implement and test it through Drizzle migrations.
+> [!NOTE]
+> **Implemented backend contract; Supabase Test only.** The Drizzle definitions are in `backend/src/db/schema.ts` and the reviewed, standalone SQL migration is `backend/drizzle/sql/0005_calendar_visibility_preferences.sql`. It has been applied and structurally verified in **Supabase Test**, **not Supabase Production**. Backend API and service integration tests pass; frontend hydration and end-to-end behavior are pending #191/#192. Do not run the historical Drizzle migrator against a shared database while #197 remains unresolved.
 
 ## Design objectives
 
@@ -17,67 +17,39 @@ Store user-specific **Calendar visibility** without copying SISU teaching groups
 | --- | --- | --- | --- |
 | One JSONB preferences document per plan | Single read/write, flexible schema | Concurrent edits require whole-document merge or optimistic version; difficult per-override constraints and deletes | Not selected for initial contract |
 | One generic `target_kind` + `target_id` table | Fewer tables | Polymorphic constraints; nullable identifiers; harder uniqueness and correctness checks | Not selected |
-| **Hidden groups + explicit occurrence overrides** | Natural keys, strong uniqueness, sparse writes, independent updates, explicit `visible` value | Two tables, likely one read transaction/query pair | **Preferred** |
+| **Hidden groups + explicit occurrence overrides** | Natural keys, strong uniqueness, sparse writes, independent updates, explicit `visible` value | Two tables, likely one read transaction/query pair | **Implemented** |
 | Full canonical event table with FK preferences | Referential integrity to events | Requires synchronizing SISU canonical data the backend does not currently own | Explicitly rejected |
 
 The table split is about **different semantics**, not future attendance preferences. Do not add `attendance` or a general-purpose user-event entity for #189.
 
-## Logical relational schema
+## Implemented relational schema
 
 ```text
-existing Plan (id, owner relationship, ...)
+plans (id UUID, user_id text)
     │
     ├── calendar_hidden_groups
     │     PK (plan_id, course_offering_id, study_group_id)
-    │     FK plan_id → existing Plan.id, cascade on plan delete
+    │     FK plan_id → plans.id ON DELETE CASCADE
+    │     row present = hidden
     │
     └── calendar_occurrence_overrides
           PK (plan_id, course_offering_id, study_group_id,
-              occurrence_key_version, occurrence_key)
-          FK plan_id → existing Plan.id, cascade on plan delete
+              occurrence_key_version, occurrence_key_hash)
+          FK plan_id → plans.id ON DELETE CASCADE
+          occurrence_key = exact serialized JSON identity (unindexed)
+          occurrence_key_hash = lowercase SHA-256 hex of UTF-8 key
           visibility ∈ {hidden, visible}
 ```
 
-A composite FK to `plan_instances(plan_id, instance_id)` **is technically possible**, but deliberately **not selected**: removing an offering from a plan should not silently destroy its saved visibility choices. The `plans` FK is retained. New writes must verify current plan membership in the service layer; stored rows referring to absent offerings remain dormant until re-added. There is no backend-owned study-group or occurrence table to reference.
+The hash is a **physical index representation**, not a replacement for the logical identity `(plan, offering, group, version, original key)`. PostgreSQL validates hash consistency using `encode(sha256(convert_to(occurrence_key, 'UTF8')), 'hex')`; the service refuses conflicting digests rather than modifying another serialized key.
 
-### Proposed PostgreSQL DDL
+The choice follows a PostgreSQL 17 probe: a 2,489-byte low-compressibility fallback key fitted the original full-key B-tree index, while 3,589- and 5,089-byte keys failed with SQLSTATE `54000` (index entry exceeds 2,704 bytes). Hash-backed indexes avoid that limit for the occurrence key. No input is silently truncated.
 
-The types of `plans.id` and `plan_instances.instance_id` are verified against `backend/src/db/schema.ts`. The schema below is **not** an applied migration. Representative series-key lengths have been measured; fallback-key and index-entry behavior still require validation in #190.
+Both tables store `course_offering_id varchar(100)`, `study_group_id text` (1–1,024 UTF-8 bytes), and `updated_at timestamptz NOT NULL DEFAULT now()`. Occurrence overrides also store `occurrence_key_version smallint` (currently 1), `occurrence_key text` (1–65,536 UTF-8 bytes), `occurrence_key_hash varchar(64)`, and constrained `visibility text`. Database `CHECK` constraints enforce lengths, supported version, allowed visibility, digest syntax, and digest equality.
 
-```sql
--- REVIEWED DESIGN SKETCH — implement through Drizzle in #190.
-CREATE TABLE calendar_hidden_groups (
-    plan_id uuid NOT NULL REFERENCES plans(id) ON DELETE CASCADE,
-    course_offering_id varchar(100) NOT NULL,
-    study_group_id text NOT NULL,
-    updated_at timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (plan_id, course_offering_id, study_group_id),
-    CHECK (length(study_group_id) > 0)
-);
+No foreign key references `plan_instances`, which allows saved preferences to remain **dormant** when an offering leaves the plan. The service requires offering membership for *new writes*, but allows resets for absent offerings. Deleting a plan cascades to both tables. The backend does not store canonical SISU occurrences.
 
-CREATE TABLE calendar_occurrence_overrides (
-    plan_id uuid NOT NULL REFERENCES plans(id) ON DELETE CASCADE,
-    course_offering_id varchar(100) NOT NULL,
-    study_group_id text NOT NULL,
-    occurrence_key_version smallint NOT NULL DEFAULT 1,
-    occurrence_key text NOT NULL,
-    visibility text NOT NULL CHECK (visibility IN ('hidden', 'visible')),
-    updated_at timestamptz NOT NULL DEFAULT now(),
-    PRIMARY KEY (
-        plan_id, course_offering_id, study_group_id,
-        occurrence_key_version, occurrence_key
-    ),
-    CHECK (length(study_group_id) > 0),
-    CHECK (length(occurrence_key) > 0),
-    CHECK (occurrence_key_version = 1)
-);
-```
-
-The derived key embeds the offering and group IDs itself. The API should decode its **version-1 JSON tuple** to verify the embedded scope agrees with the explicit columns; it must never rewrite or regenerate a key. Unsupported formats must be rejected. Input and index-size limits must be explicitly designed and tested in #190; valid keys must never be silently truncated or reassociated heuristically. Only Calendar-created, collision-free keys may be submitted as new overrides.
-
-The sample measurements below justify using variable-length `text`, but do **not** establish safe upper bounds. The composite B-tree primary key also has a PostgreSQL index-entry size limit, so unbounded input is **not** guaranteed to be indexable. Before #190 generates migrations, test representative fallback keys and deliberately long inputs against the chosen index design. If this constraint is material, adopt a digest-assisted uniqueness design with full-key collision verification; never silently truncate valid keys. API request-size protection is separate from the physical column type.
-
-**Lifecycle choice:** no FK to `plan_instances`, so removing an offering does not delete choices; the application must filter by current membership when projecting. Deleting the plan cascades to both preference tables. A duplicated plan starts with no preferences unless the duplication workflow explicitly clones them in a transaction.
+For authoritative DDL, read the tracked migration rather than copying a schema sketch from this page. See [Database Operations](../../dev-guide/database-operations/) for deployment verification and [Calendar Preference API](../../dev-guide/calendar-preference-api/) for HTTP semantics.
 
 ### Column and constraint rationale
 
@@ -86,11 +58,12 @@ The sample measurements below justify using variable-length `text`, but do **not
 | `plan_id` (FK) | Plan-specific choices; enforce deletion and authorization through the existing plan model |
 | `course_offering_id` | Distinguishes the same group ID if reused across offerings; matches active-plan `instanceIds` |
 | `study_group_id` | Distinguishes groups, including those with the same display name or type |
-| `occurrence_key` | Exact output of `deriveCalendarOccurrenceKey()`, unchanged and snapshot-scoped |
+| `occurrence_key` | Exact output of `deriveCalendarOccurrenceKey()`, unchanged, stored outside the primary key |
+| `occurrence_key_hash` | SHA-256 of the exact UTF-8 serialized key, stored as a lowercase 64-character hexadecimal digest and verified by a database `CHECK` |
 | `occurrence_key_version` | Explicit format revision; v1 matches the current JSON array encoder (do not prefix the key) |
 | `visibility` occurrence enum/check | Allows explicit `visible` to override a hidden group; absence represents inherit |
 | No group `visibility` column | The only nondefault group preference is hidden; presence of row already means hidden |
-| Composite primary keys | Prevent duplicate per-target preference rows; enable idempotent upsert/delete |
+| Composite primary keys | Prevent duplicate groups and digest-scoped occurrence rows; full occurrence keys are checked on update/delete |
 | `updated_at` | Diagnoses modifications and supports future reconciliation; not a complete conflict-resolution protocol |
 | No duplicate `user_id` | Ownership is derived from `plans.user_id` (text); do not create a second owner field that can disagree |
 | No `plan_instances` FK | Preserve preferences across temporary offering removal; validate membership for new writes and keep absent references unapplied |
@@ -100,12 +73,12 @@ The sample measurements below justify using variable-length `text`, but do **not
 
 - Hide group → `INSERT ... ON CONFLICT ... DO UPDATE SET updated_at = now()` (or `DO NOTHING` if timestamp freshness is not important).
 - Restore group → `DELETE` by the exact plan/offering/group tuple; deleting a nonexistent row is successful/idempotent.
-- Set occurrence override → `INSERT ... ON CONFLICT (...) DO UPDATE SET visibility = EXCLUDED.visibility, updated_at = now()`.
-- Reset occurrence → `DELETE` by exact compound key; deleting a missing row is successful/idempotent.
+- Set occurrence override → hash-backed upsert; update only when the stored original `occurrence_key` matches the supplied key; otherwise report a collision.
+- Reset occurrence → look up the digest-scoped row, reject a different original key, and delete using the exact serialized key; deleting a missing row is successful/idempotent.
 - Read preferences → query both tables filtered by a **server-authorized** plan ID. An empty pair of successful result sets means **confirmed-empty**, not loading.
 - Never delete an occurrence override automatically just because the current upstream projection cannot resolve it.
 
-Consider an atomic read transaction or a single consistent server response combining both record sets if concurrent writes could otherwise produce a torn view. A basic beta implementation can define read semantics explicitly and ensure frontend readiness only after **both** collections arrive.
+The current service uses independent Drizzle statements rather than an explicit transaction. A GET combines both collections into one response, but does not claim a single MVCC snapshot across the two reads. Concurrent mutations follow database execution order; #191 must handle pending writes and out-of-order responses. Ownership cannot transfer, and plan deletion is protected by foreign-key cascade. Membership checks can race with offering removal, yielding a supported dormant preference.
 
 ## Ownership, isolation, and security
 
@@ -118,37 +91,30 @@ Consider an atomic read transaction or a single consistent server response combi
 
 The schema does **not** independently prove that a SISU group or occurrence exists. That validation is context-dependent and belongs to the current Calendar projection. The server guarantees plan authorization and valid persisted reference shape, not live upstream identity.
 
-### Identifier length validation
+### Input lengths and stored keys
 
-The proposed identifier types were checked against a representative study-group response containing 20 course offerings, 42 study groups, and 400 teaching occurrences.
+The v1 key retains the exact frontend JSON serialization (`series` or `fallback`). The backend validates its structure and embedded offering/group scope; it does not look up SISU events or repair rescheduled keys.
 
-- The longest observed offering identifier was 83 characters, within the existing `varchar(100)` limit.
-- The longest observed study-group identifier was 29 characters.
-- All 400 occurrences produced unambiguous series-based keys, with a maximum serialized length of 165 characters (165 UTF-8 bytes).
-- No fallback keys were present in this sample.
+- Offering IDs: 1–100 characters (`varchar(100)`).
+- Group IDs: 1–1,024 UTF-8 bytes.
+- Occurrence key: 1–65,536 UTF-8 bytes; exact serialization retained.
+- Occurrence key version: `1`.
 
-These observations are not guaranteed upper bounds for future SISU data. Consequently, `study_group_id` and `occurrence_key` use PostgreSQL `text` rather than arbitrary fixed-length constraints. The existing `varchar(100)` offering identifier convention is retained.
+These are enforced in application validation and database constraints. The PostgreSQL probe showed that direct full-text B-tree indexing was unsafe for long fallback keys, motivating the verified SHA-256 physical index. See #190 progress history for measurements and the `backend/scripts/calendar-key-index-probe.sql` diagnostic.
 
-Occurrence-key format version 1 preserves the current frontend JSON representation. Future changes to key derivation must explicitly handle compatibility with persisted preferences.
+## Implemented HTTP contract
 
-## Serialization and API shape (contract to finalize in #190)
+Endpoints are mounted at `/api/plans/:planId/calendar` and require Better Auth sessions:
 
-Illustrative server response for `GET /plans/:id/calendar-visibility`:
+| Method | Path | Behavior |
+| --- | --- | --- |
+| `GET` | `/api/plans/:planId/calendar` | `200` with `hiddenGroups` and `occurrenceOverrides` arrays (both may be empty) |
+| `PUT` | `/api/plans/:planId/calendar/groups` | Boolean `hidden`; `true` stores a row, `false` deletes it; `204` |
+| `PUT` | `/api/plans/:planId/calendar/occurrences` | `visibility: "hidden"` or `"visible"` upserts; `null` resets; `204` |
 
-```json
-{
-  "groups": [
-    {"courseOfferingId": "offering-A", "studyGroupId": "H1"}
-  ],
-  "occurrences": [
-    {"courseOfferingId": "offering-A", "studyGroupId": "H1", "occurrenceKeyVersion": 1, "occurrenceKey": "<opaque-key>", "visibility": "visible"}
-  ]
-}
-```
+The frontend supplies `courseOfferingId`, `studyGroupId`, and for occurrence updates `occurrenceKeyVersion: 1` plus `occurrenceKey`. No client-provided `userId` is used. Error statuses: `400` malformed key/request, `401` missing session, `404` missing or foreign plan, `409` offering absent for a new write or identity collision, `500` unexpected storage failure.
 
-The endpoint path is illustrative. The authenticated backend should establish successful *empty* retrieval through a 2xx response containing two empty arrays. Errors should not be converted into empty arrays. The frontend maintains readiness (`unknown`, `loading`, `ready`, `error`, potentially `ready-from-cache`) separately.
-
-Per-record PUT/DELETE endpoints or one PATCH endpoint are both viable; prefer whichever fits the backend's established routing and transactional patterns. For concurrent edits, decide whether the server needs a revision token/ETag or whether last-write-wins per key is sufficient for beta. **`updated_at` alone does not guarantee that an old in-flight write cannot overwrite a newer write.** The frontend must also track pending writes and ignore obsolete reads; this race needs explicit tests in #191/#192.
+See [Calendar Preference API](../../dev-guide/calendar-preference-api/) for exact JSON examples and [#191](https://github.com/kctong529/sisukas/issues/191) for pending frontend hydration and mutation reconciliation.
 
 ## Lifecycle policies
 
@@ -165,18 +131,15 @@ Per-record PUT/DELETE endpoints or one PATCH endpoint are both viable; prefer wh
 > [!NOTE]
 > **Deliberate scope limit:** A local preference snapshot for instant startup is a later frontend concern under #191, and full teaching-event browser persistence is #182. Neither requires changing these sparse backend tables.
 
-## Schema validation checklist
+## Validation status
 
-Before generating a Drizzle migration:
-
-- [x] Confirmed: `plans.id` is UUID; `plans.user_id` is text; `plan_instances` has a `(plan_id, instance_id)` primary key and `varchar(100)` instance ID. Implement matching Drizzle definitions.
-- [x] Confirmed: `deriveCalendarOccurrenceKey()` encodes JSON tuples with `series` or `fallback`; collisions produce `occurrenceKey: null`, which cannot be overridden.
-- [x] Measure representative group IDs and actual generated series keys (20 offerings, 42 groups, 400 occurrences; longest key 165 bytes). No fallback keys appeared in this sample.
-- [ ] Validate fallback and oversized keys against the actual composite-index strategy in #190; preserve the key unchanged and keep `occurrence_key_version = 1`.
-- [x] Document chosen policy: offering removal leaves dormant rows; duplication starts empty; plan deletion cascades.
-- [ ] Decide API write conflict semantics and how frontend pending writes are acknowledged.
-- [ ] Add migration tests for uniqueness, enum/check constraints, plan FK cascade, and cross-account isolation.
-- [ ] Check that migration does not create or assume an authoritative SISU events table.
+- [x] Confirmed Drizzle types and composite primary keys; `plan_id` cascades on delete.
+- [x] Probed PostgreSQL full-text composite-index limits; adopted hash-backed occurrence identity with exact-key checks.
+- [x] Implemented version-1 occurrence validation and byte bounds.
+- [x] Applied and structurally verified migration `0005` in **Supabase Test only**, including two tables, eight RLS policies, and digest consistency.
+- [x] Passed backend unit/route tests (53), PostgreSQL integration tests (6), and authenticated HTTP integration tests (4), including collision-path tests within the 53.
+- [ ] Complete frontend hydration, reconciliation, and end-to-end acceptance (#191/#192).
+- [ ] Apply migration to **Supabase Production** only at the coordinated release checkpoint, after acceptance verification.
 
 ## References
 

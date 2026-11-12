@@ -25,12 +25,13 @@ description: "Practical instructions for building, testing, running, and maintai
 ## Service reference
 
 - [SISU Wrapper API](./api/) — Wrapper endpoints and Python library usage.
+- [Calendar Preference API](./calendar-preference-api/) — Authenticated Calendar visibility persistence endpoints and integration tests.
 
 ## Read the design
 
 - [Course Data](../architecture/course-data/) — Data ownership and canonical/runtime boundaries.
 - [Teaching Events](../architecture/teaching-events/) — Event identity and location contracts.
 - [Study-group Loading](../architecture/study-group-loading/) — In-memory retrieval architecture.
-- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Reviewed Calendar preference design, not yet deployed persistence.
+- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Calendar visibility contract and implemented backend schema (Supabase Test only).
 
 For component orientation use [System Overview](../system-overview/); for unfinished features use [Under Development](../under-dev/).
