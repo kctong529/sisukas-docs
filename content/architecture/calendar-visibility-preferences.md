@@ -124,24 +124,6 @@ A **confirmed-empty** preference collection is not the same as an **unknown** co
 
 Optimistic edits should update the current projection immediately, mark the changed preference unconfirmed until acknowledged, and prevent older in-flight reads or writes from overwriting a newer local choice. The server is authoritative for acknowledged persistence; the local runtime must expose failed/unconfirmed writes. The exact revision, API, and retry protocol are designed in #190/#191, not assumed here.
 
-## Logical serialized example (not a finalized API)
-
-```json
-{
-  "planId": "<existing-plan-id>",
-  "status": "ready",
-  "groups": [
-    {"courseOfferingId": "offering-A", "studyGroupId": "H1", "hidden": true}
-  ],
-  "occurrences": [
-    {"courseOfferingId": "offering-A", "studyGroupId": "H1", "occurrenceKey": "<opaque-calendar-key>", "visibility": "visible"},
-    {"courseOfferingId": "offering-A", "studyGroupId": "H2", "occurrenceKey": "<another-key>", "visibility": "hidden"}
-  ]
-}
-```
-
-`status` is shown for clarity as **frontend hydration state**; it need not be a field inside a successful backend response. A successful response with empty `groups` and `occurrences` arrays constitutes confirmed-empty. The example placeholders must **not** be used as an occurrence-key format specification.
-
 ## Contract test matrix for #189 / #192
 
 1. No persisted rows → confirmed-empty → eligible events shown by default.
