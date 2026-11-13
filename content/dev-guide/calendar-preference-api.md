@@ -5,7 +5,7 @@ description: "Authenticated plan-scoped Calendar preference endpoints, semantics
 ---
 
 > [!NOTE]
-> **Backend implemented; Supabase Test only.** The routes are present in `backend/src/routes/calendarPreferences.ts` and tested against Supabase Test. Migration `0005` has **not** been applied to Supabase Production. Frontend hydration and end-to-end acceptance remain #191/#192.
+> **Backend and frontend implemented; Supabase Test only.** The routes are in `backend/src/routes/calendarPreferences.ts`; frontend hydration and mutation handling under #191 are locally verified against the Test environment. Migration `0005` has **not** been applied to Supabase Production. Further API, identity, and Playwright regression validation remains in #192; production deployment requires a coordinated release.
 
 ## Purpose and scope
 
@@ -92,7 +92,20 @@ Content-Type: application/json
 | `409` | Offering not in plan for a new write, or digest collision |
 | `500` | Unexpected persistence failure; never interpreted as confirmed-empty |
 
-The service uses direct Drizzle statements. Conflicting writes and resets follow database execution order, not necessarily user action order. A concurrent offering removal may result in a supported dormant preference; plan deletion is protected by the foreign-key cascade. For #191, keep distinct `unknown`, loading, ready/confirmed-empty, and error states, and guard optimistic mutations against out-of-order responses.
+The service uses direct Drizzle statements. Conflicting writes and resets follow database execution order, not necessarily user action order. A concurrent offering removal may result in a supported dormant preference; plan deletion is protected by the foreign-key cascade. The #191 frontend distinguishes `unknown`, `loading`, `ready` (including confirmed-empty), and `failed`, and guards optimistic mutations against out-of-order completions.
+
+## Frontend request and consistency lifecycle
+
+The frontend service `frontend/course-browser/src/infrastructure/services/CalendarPreferencesService.ts` sends authenticated requests with browser credentials. The reactive store `frontend/course-browser/src/lib/stores/calendarVisibilitySessionStore.svelte.ts` is initialized through the authenticated active-plan lifecycle; `frontend/course-browser/src/components/calendar/CalendarView.svelte` renders only when the matching account and plan have a confirmed `ready` preference state.
+
+1. After authentication and active-plan resolution, load `GET /api/plans/:planId/calendar`. An empty successful result is authoritative; missing, pending, or failed responses are **not** treated as default-visible.
+2. For group Hide/Restore, optimistically update display state and `PUT /api/plans/:planId/calendar/groups`. For per-occurrence Hidden/Visible/Inherited, use `PUT /api/plans/:planId/calendar/occurrences` with the exact versioned identity; `null` restores inheritance. A successful mutation is acknowledged by `204 No Content`.
+3. Serialize mutations per preference identity so a rapid Hide → Restore on one identity is saved in user-intent order. Independent identities may save concurrently. For an aggregated Calendar card, preserve and update each distinct source identity rather than using only its display representative.
+4. Keep failed mutations visible but **unsaved** in the current session and expose Retry through the global notification container. Successful PUTs are silent. A failed initial GET instead blocks event rendering and provides Retry in the Calendar.
+5. Ignore stale account responses, and do not refresh a plan's authoritative preference snapshot while its optimistic mutations are pending or failed. No browser `localStorage` preference snapshot or offline mutation queue is implemented.
+
+> [!IMPORTANT]
+> Per-identity serialization only orders writes from this frontend session. The API has **no server revision or ETag precondition** for simultaneous writes from other devices/clients. Conflicting cross-client updates resolve by database execution order; a GET retrieves the state currently stored on the server.
 
 ## Verification and deployment
 
@@ -105,7 +118,20 @@ CALENDAR_DB_TEST=yes npx vitest run tests/integration/calendarPreferences.db.tes
 CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http.test.ts --no-file-parallelism
 ```
 
-The database suite validates persistence and lifecycle rules, the HTTP suite exercises actual Better Auth sessions and ownership authorization, and the focused service tests simulate digest collisions. They do **not** establish browser synchronization, Magic Link delivery, or production readiness.
+The database suite validates persistence and lifecycle rules, the HTTP suite exercises actual Better Auth sessions and ownership authorization, and the focused service tests simulate digest collisions.
+
+For the #191 frontend from `frontend/course-browser/`:
+
+```sh
+npx vitest run tests/lib/stores/calendarVisibilityHydration.test.ts tests/lib/stores/calendarVisibilityMutations.test.ts tests/lib/stores/calendarVisibilityHardening.test.ts
+npm run type-check
+npm run check
+npm run lint
+npm run test
+npm run build
+```
+
+On November 13, 2026, local verification recorded **17/17 focused tests**, **737/737 tests across 73 files**, and successful TypeScript, Svelte, lint, and build checks. Browser checks against the Test-backed development environment covered failed/delayed GETs, reload persistence, plan/account changes, rapid mutations, and blocked PUT with notification-based Retry. These results **do not** establish production readiness or substitute for #192's additional formal API, identity, and Playwright coverage. See [Calendar Visibility Testing](../calendar-visibility-testing/).
 
 > [!WARNING]
-> The Supabase Test migration is verified. **Do not apply `0005` to production or enable production Calendar persistence until #191 and #192 have passed and the backend/frontend release is coordinated.** See [Database Operations](../database-operations/) for the reviewed migration and verification commands.
+> The Supabase Test migration is verified. **Do not apply `0005` to production or enable production Calendar persistence until #192 has passed and the backend/frontend release is coordinated.** See [Database Operations](../database-operations/) for the reviewed migration and verification commands.

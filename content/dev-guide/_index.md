@@ -26,6 +26,7 @@ description: "Practical instructions for building, testing, running, and maintai
 
 - [SISU Wrapper API](./api/) — Wrapper endpoints and Python library usage.
 - [Calendar Preference API](./calendar-preference-api/) — Authenticated Calendar visibility persistence endpoints and integration tests.
+- [Calendar Visibility Testing](./calendar-visibility-testing/) — Frontend/backend regression commands, browser acceptance checks, and #192 coverage boundary.
 
 ## Read the design
 

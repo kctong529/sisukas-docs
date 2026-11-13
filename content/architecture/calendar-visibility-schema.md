@@ -5,7 +5,7 @@ description: "Implemented sparse Calendar visibility schema, identity constraint
 ---
 
 > [!NOTE]
-> **Implemented backend contract; Supabase Test only.** The Drizzle definitions are in `backend/src/db/schema.ts` and the reviewed, standalone SQL migration is `backend/drizzle/sql/0005_calendar_visibility_preferences.sql`. It has been applied and structurally verified in **Supabase Test**, **not Supabase Production**. Backend API and service integration tests pass; frontend hydration and end-to-end behavior are pending #191/#192. Do not run the historical Drizzle migrator against a shared database while #197 remains unresolved.
+> **Implemented backend contract; Supabase Test only.** The Drizzle definitions are in `backend/src/db/schema.ts` and the reviewed, standalone SQL migration is `backend/drizzle/sql/0005_calendar_visibility_preferences.sql`. It has been applied and structurally verified in **Supabase Test**, **not Supabase Production**. Backend API and service integration tests pass; frontend hydration and optimistic persistence have passed local acceptance under #191. Additional API, identity, and browser regression work remains in #192. Do not run the historical Drizzle migrator against a shared database while #197 remains unresolved.
 
 ## Design objectives
 
@@ -114,7 +114,7 @@ Endpoints are mounted at `/api/plans/:planId/calendar` and require Better Auth s
 
 The frontend supplies `courseOfferingId`, `studyGroupId`, and for occurrence updates `occurrenceKeyVersion: 1` plus `occurrenceKey`. No client-provided `userId` is used. Error statuses: `400` malformed key/request, `401` missing session, `404` missing or foreign plan, `409` offering absent for a new write or identity collision, `500` unexpected storage failure.
 
-See [Calendar Preference API](../../dev-guide/calendar-preference-api/) for exact JSON examples and [#191](https://github.com/kctong529/sisukas/issues/191) for pending frontend hydration and mutation reconciliation.
+See [Calendar Preference API](../../dev-guide/calendar-preference-api/) for exact JSON examples and [#191](https://github.com/kctong529/sisukas/issues/191) for the implemented frontend hydration and optimistic mutation lifecycle.
 
 ## Lifecycle policies
 
@@ -129,7 +129,7 @@ See [Calendar Preference API](../../dev-guide/calendar-preference-api/) for exac
 | Browser snapshot not present | Fetch server preferences before event projection; unknown ≠ confirmed-empty | Avoid a transient flash of hidden events |
 
 > [!NOTE]
-> **Deliberate scope limit:** A local preference snapshot for instant startup is a later frontend concern under #191, and full teaching-event browser persistence is #182. Neither requires changing these sparse backend tables.
+> **Deliberate scope limit:** The #191 frontend intentionally uses server-first hydration without a `localStorage` preference snapshot; offline or instant-start preference caching is **not a completion requirement** for #191. Full teaching-event browser persistence is separately tracked by #182. Neither requires changing these sparse backend tables.
 
 ## Validation status
 
@@ -138,7 +138,8 @@ See [Calendar Preference API](../../dev-guide/calendar-preference-api/) for exac
 - [x] Implemented version-1 occurrence validation and byte bounds.
 - [x] Applied and structurally verified migration `0005` in **Supabase Test only**, including two tables, eight RLS policies, and digest consistency.
 - [x] Passed backend unit/route tests (53), PostgreSQL integration tests (6), and authenticated HTTP integration tests (4), including collision-path tests within the 53.
-- [ ] Complete frontend hydration, reconciliation, and end-to-end acceptance (#191/#192).
+- [x] Implement and locally verify frontend hydration, optimistic mutations, retry, and account isolation (#191; 737/737 frontend tests and manual browser acceptance).
+- [ ] Complete additional API, identity-failure, and Playwright regression validation (#192).
 - [ ] Apply migration to **Supabase Production** only at the coordinated release checkpoint, after acceptance verification.
 
 ## References

@@ -226,7 +226,7 @@ Until reconciliation is complete, any new table work (including Calendar prefere
 
 ## Calendar preference migration (`0005`)
 
-`backend/drizzle/sql/0005_calendar_visibility_preferences.sql` creates `calendar_hidden_groups` and `calendar_occurrence_overrides`, their constraints, grants, and eight RLS policies. `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql` provides read-only structural inspection. The former has been applied to **Supabase Test only**; **Supabase Production has not received `0005`**.
+`backend/drizzle/sql/0005_calendar_visibility_preferences.sql` creates `calendar_hidden_groups` and `calendar_occurrence_overrides`, their constraints, grants, and eight RLS policies. `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql` provides read-only structural inspection. The former has been applied to **Supabase Test only**; **Supabase Production has not received `0005`**. Frontend hydration and persistence have completed local browser acceptance (#191; 737/737 frontend tests). Additional API, identity, and Playwright validation (#192) and the coordinated production release are still pending.
 
 The application uses a SHA-256 physical occurrence-key index while retaining and checking the original serialized key. No historical generated Drizzle migration should be replayed to install this standalone SQL. #197 owns migration-history recovery.
 
@@ -252,7 +252,21 @@ CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http
 The database test directly exercises the Drizzle service. The HTTP test creates Better Auth fixtures, starts an in-process Express server, and exercises cookie-based authorization through the Calendar routes. **Both create and remove test records and must never point to production.** See `backend/tests/integration/README.md` in the application repository for preflight and cleanup details.
 
 > [!WARNING]
-> Production migration is deferred until frontend hydration and end-to-end Calendar acceptance (#191/#192) pass, with a coordinated backend/frontend deployment. A production backend must not call these routes against a database lacking the new tables.
+> Frontend acceptance for #191 has passed, but **do not apply `0005` to Production** until #192's remaining validation and a coordinated backend/frontend release are approved. Production backend routes must not be called against a database lacking the new tables.
+
+### Production preflight and read-only verification
+
+At the release checkpoint (not during routine development):
+
+1. Finish #192's API security, ambiguous/rescheduled identity, and browser regression checks in the **Test** environment. Review the final frontend/backend commit SHAs and confirm no unacknowledged test failures.
+2. Verify the intended Production project reference, sanitized connection endpoint, and role **independently** of Test. Back up/export the schema using the read-only [environment comparison procedure](#compare-environments), and confirm `0005` has not already been applied. Review SQL checksum and the existing Drizzle migration-history warning (#197).
+3. Review the exact standalone `0005` SQL, grants, constraints, digest-index behavior, and RLS policies. Arrange a maintenance/rollback plan and a coordinated deployment order so production routes cannot query missing tables. Record ownership and release approval before executing any DDL.
+4. If approved, apply the **reviewed** standalone SQL using the designated migration procedure and record the project reference, timestamp, checksum, and result. Do not run historical `db:migrate`, `db:push`, or manually edit the Drizzle journal to force synchronization.
+5. After migration, run only **read-only** structural checks against Production (using `verify_0005_calendar_visibility_preferences.sql`, `pg_tables`, `pg_policies`, `pg_indexes`, and `pg_constraint`). Compare results with the reviewed Test structure; keep the opt-in database, HTTP, and RLS fixture tests pointed at **Test only**.
+6. Coordinate the backend/frontend deployment, then perform a limited authenticated smoke check with an explicitly approved noncritical test plan. This writes preferences, so it is **not** a read-only check; confirm authorization and cleanup before doing it. Keep the frontend version bump/release tag until this release work is ready.
+
+> [!WARNING]
+> A schema verification query does not prove application authorization. Better Auth ownership checks must be verified through Test integration tests before deployment, and mutating test harnesses must never target Production.
 
 ## RLS integration tests
 

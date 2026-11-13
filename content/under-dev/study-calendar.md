@@ -5,7 +5,7 @@ description: "Design of an active-plan calendar that makes teaching events, over
 ---
 
 > [!NOTE]
-> **Status: under development.** The calendar beta is tracked in [issue #81](https://github.com/kctong529/sisukas/issues/81). The design below distinguishes the initial beta from later attendance features; it should not be read as a list of already available capabilities.
+> **Status: beta under development.** The Calendar weekly view and display-visibility controls (#92), including authenticated server-backed persistence (#191), are implemented and locally verified. Additional validation (#192) and production deployment are pending. The broader [#81 beta](https://github.com/kctong529/sisukas/issues/81) and attendance-oriented features remain separate; the list below mixes completed and planned milestones.
 
 ## Why a calendar?
 
@@ -38,6 +38,12 @@ Issue [#89](https://github.com/kctong529/sisukas/issues/89) established the need
 > [!WARNING]
 > A time-compatible alternative teaching group is not necessarily an academically equivalent or registration-eligible substitute. The interface must not imply that a student's calendar selection changes official SISU registration.
 
+## Current Calendar behavior
+
+For an authenticated active Plan, Calendar loads saved display preferences from the backend **before rendering event cards**. A successful empty response means default visibility; loading or failed preference requests do not briefly reveal saved-hidden events. Users may hide or restore teaching groups, or explicitly hide/show/reset an individual occurrence, and saved changes are restored after reload. Updates apply optimistically. Failed PUTs keep the local edit visible and offer Retry through a notification without shifting the Calendar layout; successful writes are silent.
+
+These controls affect **presentation only**: neither SISU registration nor intended attendance, recurring group choice, or weekly alternatives is changed. Persistence is verified in the Test-backed development environment, not yet released to Production.
+
 ## Calendar beta: a useful weekly view
 
 The first milestone ([#81](https://github.com/kctong529/sisukas/issues/81)) focuses on a practical calendar with minimal setup:
@@ -45,7 +51,7 @@ The first milestone ([#81](https://github.com/kctong529/sisukas/issues/81)) focu
 1. **Project active-Plan events.** Build a deterministic representation of fixed-time occurrences, source references, and diagnostics for missing or changed upstream data ([#90](https://github.com/kctong529/sisukas/issues/90)).
 2. **Display a responsive week.** Show event times, course and group information, location when available, and accessible details. Dense overlaps should remain legible rather than collapsing into narrow columns ([#91](https://github.com/kctong529/sisukas/issues/91)).
 3. **Control visibility.** Show or hide groups and specific occurrences without changing source data or claiming an attendance decision ([#92](https://github.com/kctong529/sisukas/issues/92)).
-4. **Persist preferences.** Save user/Plan-scoped visibility preferences; handle failed requests, stale references, sign-out, and account switching explicitly ([#93](https://github.com/kctong529/sisukas/issues/93)).
+4. **Persist preferences (implemented locally in #191).** Save user/Plan-scoped visibility preferences; handle failed requests, stale references, sign-out, and account switching explicitly. Further regression validation and production rollout remain pending ([#93](https://github.com/kctong529/sisukas/issues/93), [#192](https://github.com/kctong529/sisukas/issues/192)).
 5. **Present flexible exam windows.** Distinguish a fixed exam from an availability period, which must not occupy every hour as if it were a booked sitting ([#100](https://github.com/kctong529/sisukas/issues/100)).
 6. **Test the actual journeys.** Cover navigation, overlapping events, empty states, identity changes, and errors with deterministic Playwright fixtures ([#94](https://github.com/kctong529/sisukas/issues/94)).
 
@@ -75,8 +81,9 @@ Attendance decisions remain scoped to occurrences or recurring preferences and n
 ## Related documentation
 
 - [Calendar Visibility Preference Contract](../../architecture/calendar-visibility-preferences/) — Plan/group/occurrence identity, inheritance, and safe hydration (#189).
-- [Calendar Visibility Persistence Schema](../../architecture/calendar-visibility-schema/) — Proposed persistence tables and rationale (#190).
-
+- [Calendar Visibility Persistence Schema](../../architecture/calendar-visibility-schema/) — Implemented preference schema (Supabase Test only) and rationale (#190).
+- [Calendar Preference API](../../dev-guide/calendar-preference-api/) — Authenticated GET/PUT contract and frontend mutation lifecycle.
+- [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) — Local acceptance checklist and remaining regression work.
 - [Assemblies](../../concepts/assemblies/) — Candidate generation and explicit calendar application.
 - [Legacy Decision Slots](../../concepts/decision-slots/) — Earlier conflict-handling proposal.
 - [Plans](../../concepts/plans/) — Course selection and the planning context.

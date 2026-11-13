@@ -5,7 +5,7 @@ description: "Plan-scoped visibility identity, inheritance, and reconciliation c
 ---
 
 > [!NOTE]
-> **Status: contract implemented by the backend in #190; Supabase Test only.** The backend schema, service, and HTTP API now implement these persistence rules, with tests against Supabase Test. Frontend hydration (#191), end-to-end validation (#192), and production migration remain pending. The in-memory visibility UI was delivered in #92; attendance and default-group selection remain separate (#101).
+> **Status: frontend and backend implemented; Supabase Test only.** The identity contract (#189), backend persistence and HTTP API (#190), and authenticated frontend hydration, optimistic mutations, and error recovery (#191) are implemented and locally verified. Migration `0005` is installed on Supabase Test, not Production. Additional API, identity, and browser regression validation (#192), followed by coordinated production deployment, remain pending. Attendance and default-group selection remain separate (#101).
 
 ## Purpose and ownership
 
@@ -112,17 +112,18 @@ A **confirmed-empty** preference collection is not the same as an **unknown** co
 
 | State | Meaning | Event projection |
 | --- | --- | --- |
-| `unknown` / `loading` | No authoritative or accepted local preference snapshot yet | Do not assume default visibility or render event cards using empty preferences |
-| `ready` with zero rows | Successful response or accepted snapshot confirms no overrides | Default visibility is valid |
+| `unknown` / `loading` | No authoritative server preference response yet | Do not assume default visibility or render event cards using empty preferences |
+| `ready` with zero rows | Successful server response confirms no overrides | Default visibility is valid |
 | `ready` with rows | Known applicable preference state | Apply precedence above |
-| `error` and no accepted snapshot | Preferences unavailable | Show an explicit incomplete/loading-error state; avoid flashing hidden events as visible |
-| `ready-from-cache` | Last-known applicable snapshot accepted for this account/plan | May render last-known projection and reconcile; **not** proof of current server state |
+| `failed` | Server preference loading failed | Show an explicit incomplete/loading-error state; avoid flashing hidden events as visible |
 
-#93 may initially wait for authenticated server hydration. #182 may later add browser teaching snapshots, but it must coordinate them with **known** preferences rather than projecting first with an empty object. Per-user/plan snapshot partitioning and generation guards are required when local persistence is introduced.
+The implemented frontend waits for an authenticated, plan-scoped `GET /api/plans/:planId/calendar`. `unknown` and `loading` gate event-card rendering, a successful response containing empty arrays establishes `ready`, and a failed GET displays a blocking Retry state rather than an empty default. The store isolates accounts and plans and ignores obsolete responses after sign-out or an account switch. No `localStorage` preference snapshot is used in #191. If #182 later introduces browser teaching snapshots, it must coordinate them with **known** preferences rather than projecting first with an empty object.
 
 ### Mutation ordering
 
-Optimistic edits should update the current projection immediately, mark the changed preference unconfirmed until acknowledged, and prevent older in-flight reads or writes from overwriting a newer local choice. The server is authoritative for acknowledged persistence; the local runtime must expose failed/unconfirmed writes. The exact revision, API, and retry protocol are designed in #190/#191, not assumed here.
+The #191 frontend updates the projection immediately, then persists group changes through `PUT /groups` and occurrence overrides through `PUT /occurrences`. Writes to the same preference identity are serialized to preserve the latest intent, while independent identities may save concurrently. Aggregated Calendar cards retain each distinct underlying occurrence identity when issuing writes. A failed mutation remains visible locally as unsaved, with a persistent, actionable Retry notification; successful saves are silent. A preference refresh is not started while that plan has outstanding or failed optimistic edits. Obsolete account responses cannot update a new account's state.
+
+The backend acknowledges each successful mutation with `204`, but it has no cross-client revision/ETag conflict protection. Conflicting writes from separate sessions follow database execution order. Reloading after a failed, unretried edit retrieves server state rather than the unconfirmed local choice.
 
 ## Contract test matrix for #189 / #192
 
@@ -139,9 +140,9 @@ Optimistic edits should update the current projection immediately, mark the chan
 11. Unknown/pending preference hydration → no default-state event-card flash; confirmed-empty is distinct.
 12. Serialization → deserialization preserves explicit-visible vs inherited absence, and no source metadata is invented.
 
-These are **required test cases**, not a claim that the repository's current unit tests already cover persistence.
+These cases define the contract. #191 adds frontend hydration, persistence, and concurrency regression tests; #192 retains additional API, identity-failure, and browser-level validation. See [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) for the observed local acceptance and remaining coverage.
 
-## Decisions for #190 and #191
+## Implemented decisions for #190 and #191
 
 - Adopt sparse plan-scoped rows for group hides and occurrence explicit overrides (see [Calendar Schema](../calendar-visibility-schema/)).
 - Keep the frontend v1 JSON occurrence encoder unchanged; store its version separately and verify embedded offering/group context when accepting writes.
