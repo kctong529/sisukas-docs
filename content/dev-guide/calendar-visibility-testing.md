@@ -49,6 +49,26 @@ The November 13, 2026 acceptance log recorded **17/17 focused tests**, **737/737
 
 The frontend also contains tests for API mapping, display gating, and the notification service under `tests/application/calendar/`, `tests/lib/stores/`, and `tests/infrastructure/services/`.
 
+## Calendar group and overlap interaction regression (#101 / #103)
+
+The Calendar frontend now provides **Choose / Cancel** and **Show all** for offering-level teaching groups (#101), plus **Keep this · Hide N overlapping events** and cross-course overlapping-event rows (#103). The same existing preference writes persist these choices; there is no separate attendance database model.
+
+- Choose one group: hide only same-type siblings of the same offering, preserve that group’s individual skipped occurrences, and clear conflicting explicit-visible sibling exceptions.
+- Show all for an offering: restore its group and occurrence preferences, including dormant identities where applicable.
+- Resolve one occurrence: hide only direct absolute half-open interval overlaps, not adjacency or transitive-only overlaps; retain aggregated source identities and block ambiguous identities.
+- Inspect overlapping events: include currently hidden events across offerings; clicking a row toggles its occurrence visibility, while hovering/focusing a hidden row previews without writing.
+- Dense disclosure: the one-click action must be reachable for four or more simultaneous occurrences. Confirm normal browser dialog opening/closing and focus return.
+- Verify plan/account boundaries, optimistic failures/Retry, refresh and reload after multi-identity changes. A group/overlap shortcut can issue multiple independent PUT requests and is **not transactionally atomic**.
+
+From `frontend/course-browser/` run:
+
+```sh
+npx tsc -p tsconfig.test.json --noEmit
+npx vitest run tests/application/calendar/calendarOverlapChoice.test.ts tests/application/calendar/calendarTimeSlotAlternatives.test.ts tests/application/calendar/calendarVisibilityShortcuts.test.ts tests/components/calendar/CalendarTimeSlotAlternatives.test.ts tests/components/calendar/WeekGrid.test.ts
+```
+
+The #103 manual review and November 13 test log reported **768/768 tests across 79 files**, Svelte checks with no errors or warnings, passing lint, and a production build (existing large-chunk warning). A subsequent CI run caught three implicit-any test callback parameters in `WeekGrid.test.ts` when directly executing `tsconfig.test.json`; those parameters have been explicitly annotated, but this specific CI command must be rerun to confirm the fix.
+
 ## Backend and outstanding coverage
 
 The backend test suites and opt-in database/HTTP integration commands are documented in [Calendar Preference API](../calendar-preference-api/). Validate the Test project reference and credentials before running them; they create test records.

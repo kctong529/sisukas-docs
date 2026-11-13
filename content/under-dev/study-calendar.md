@@ -5,7 +5,7 @@ description: "Design of an active-plan calendar that makes teaching events, over
 ---
 
 > [!NOTE]
-> **Status: beta under development.** The Calendar weekly view and display-visibility controls (#92), including authenticated server-backed persistence (#191), are implemented and locally verified. Additional validation (#192) and production deployment are pending. The broader [#81 beta](https://github.com/kctong529/sisukas/issues/81) and attendance-oriented features remain separate; the list below mixes completed and planned milestones.
+> **Status: beta under development.** The Calendar weekly view and display-visibility controls (#92), including authenticated server-backed persistence (#191), are implemented and locally verified. Group-selection shortcuts (#101) and direct-overlap actions (#103) are implemented in the frontend. The broader [#81 beta](https://github.com/kctong529/sisukas/issues/81), additional validation (#192), and production deployment remain pending.
 
 ## Why a calendar?
 
@@ -18,9 +18,9 @@ The first version should be valuable without asking students to resolve every co
 [Assemblies](../../concepts/assemblies/) are proposed configurations generated from selected LEGO blocks. They may include unavoidable conflicts and may eventually influence both active calendar courses and default study groups. Their generation and ranking are separate from calendar state.
 
 > [!IMPORTANT]
-> The calendar is independently editable. **Assembling or saving a candidate must not change it.** A future **Apply to calendar** action should preview and reconcile changes against existing course activity, study-group preferences, and attendance overrides before user confirmation. This integration is not part of the initial read-only calendar beta.
+> The calendar is independently editable. **Assembling or saving a candidate must not change it.** A future **Apply to calendar** action should preview and reconcile changes against existing course activity and Calendar group/occurrence preferences before user confirmation. This integration is not part of the initial read-only calendar beta.
 
-An overlap can remain visible even after an assembly is applied. Hiding an event is not the same as choosing to attend another event. Weekly overrides and partial attendance belong to calendar intent, not to the assembly algorithm. Earlier documentation called some conflict choices *Decision Slots*; that is no longer a mandatory separate workflow.
+An overlap can remain visible even after an assembly is applied. Users manage intended Calendar choices using the same group and occurrence visibility preferences. These choices do not register the student in SISU. Partial attendance remains separate future work. Earlier documentation called some conflict choices *Decision Slots*; that is no longer a mandatory separate workflow.
 
 ## Data and responsibility boundaries
 
@@ -29,8 +29,7 @@ An overlap can remain visible even after an assembly is applied. Hiding an event
 | Active Plan membership | Authenticated user/Plan state | The beta projects course instances in the active Plan; future calendar-active course selection may be narrower after explicit application. |
 | Teaching groups and occurrences | SISU data through `sisu-wrapper` | Preserve institutional times, identifiers, cancellation state, and notices; do not mutate upstream facts. |
 | Calendar projection and layout | Frontend domain logic | Derive a locally queryable weekly view; week navigation should not require a backend round trip. |
-| Display visibility | User/Plan-scoped preference | Hiding an item does not express attendance, registration, or group equivalence. |
-| Recurring attendance and exceptions | Future user/Plan-scoped intent | Keep recurring preferences distinct from individual-week overrides. |
+| Calendar preferences | User/Plan-scoped group and occurrence visibility | Group selection and per-occurrence conflict choices use the same persisted visibility mechanism; neither changes SISU registration. |
 | Runtime persistence | Authenticated backend | Server is authoritative for saved preferences; failed writes must be visible and recoverable. |
 
 Issue [#89](https://github.com/kctong529/sisukas/issues/89) established the need to preserve source event series IDs, expanded occurrence times, statuses, and location metadata. Individual occurrences may lack a stable upstream ID, so derived occurrence keys and their behavior under rescheduling need explicit handling in the projection and persisted preferences ([#90](https://github.com/kctong529/sisukas/issues/90)).
@@ -42,7 +41,7 @@ Issue [#89](https://github.com/kctong529/sisukas/issues/89) established the need
 
 For an authenticated active Plan, Calendar loads saved display preferences from the backend **before rendering event cards**. A successful empty response means default visibility; loading or failed preference requests do not briefly reveal saved-hidden events. Users may hide or restore teaching groups, or explicitly hide/show/reset an individual occurrence, and saved changes are restored after reload. Updates apply optimistically. Failed PUTs keep the local edit visible and offer Retry through a notification without shifting the Calendar layout; successful writes are silent.
 
-These controls affect **presentation only**: neither SISU registration nor intended attendance, recurring group choice, or weekly alternatives is changed. Persistence is verified in the Test-backed development environment, not yet released to Production.
+These controls support the student’s Calendar preferences, including recurring teaching-group choices and per-occurrence alternatives. They do **not** change SISU registration, upstream teaching data, or saved LEGO assemblies. Persistence is verified in the Test-backed development environment, not yet released to Production.
 
 ## Calendar beta: a useful weekly view
 
@@ -50,7 +49,7 @@ The first milestone ([#81](https://github.com/kctong529/sisukas/issues/81)) focu
 
 1. **Project active-Plan events.** Build a deterministic representation of fixed-time occurrences, source references, and diagnostics for missing or changed upstream data ([#90](https://github.com/kctong529/sisukas/issues/90)).
 2. **Display a responsive week.** Show event times, course and group information, location when available, and accessible details. Dense overlaps should remain legible rather than collapsing into narrow columns ([#91](https://github.com/kctong529/sisukas/issues/91)).
-3. **Control visibility.** Show or hide groups and specific occurrences without changing source data or claiming an attendance decision ([#92](https://github.com/kctong529/sisukas/issues/92)).
+3. **Control visibility.** Show or hide groups and specific occurrences without changing source data or claiming SISU registration ([#92](https://github.com/kctong529/sisukas/issues/92)).
 4. **Persist preferences (implemented locally in #191).** Save user/Plan-scoped visibility preferences; handle failed requests, stale references, sign-out, and account switching explicitly. Further regression validation and production rollout remain pending ([#93](https://github.com/kctong529/sisukas/issues/93), [#192](https://github.com/kctong529/sisukas/issues/192)).
 5. **Present flexible exam windows.** Distinguish a fixed exam from an availability period, which must not occupy every hour as if it were a booked sitting ([#100](https://github.com/kctong529/sisukas/issues/100)).
 6. **Test the actual journeys.** Cover navigation, overlapping events, empty states, identity changes, and errors with deterministic Playwright fixtures ([#94](https://github.com/kctong529/sisukas/issues/94)).
@@ -58,24 +57,24 @@ The first milestone ([#81](https://github.com/kctong529/sisukas/issues/81)) focu
 > [!TIP]
 > Start with a calendar that answers *“What could I attend this week?”* before asking users to answer *“What exactly will I attend?”* for every occurrence.
 
-## After beta: expressing attendance intent
+## Calendar preference shortcuts and planned features
 
-These features make the connection to Decision Slots stronger, but are post-beta, not prerequisites for rendering the calendar:
+The first three interactions now use the existing group and occurrence visibility preferences rather than separate attendance state:
 
-- **Recurring group preferences** ([#101](https://github.com/kctong529/sisukas/issues/101)): what the student ordinarily intends to attend, independently of visibility and LEGO blocks.
-- **Weekly alternatives** ([#102](https://github.com/kctong529/sisukas/issues/102)): replace, add, or skip a particular occurrence without changing the recurring default.
-- **Interval-aware conflict decisions** ([#103](https://github.com/kctong529/sisukas/issues/103)): detect overlaps among *selected attendance intervals*, including cases with more than two simultaneous events. Unresolved conflicts stay visible.
+- **Recurring group choices** ([#101](https://github.com/kctong529/sisukas/issues/101), implemented): Choose a teaching group, hide same-type alternatives, and Show all within an offering.
+- **Occurrence overrides** ([#102](https://github.com/kctong529/sisukas/issues/102), underlying mechanism implemented): Show or hide one occurrence without changing the group-wide preference.
+- **Direct overlap resolution** ([#103](https://github.com/kctong529/sisukas/issues/103), implemented in frontend): Keep an occurrence and hide only its direct overlaps; compare, preview and toggle cross-course alternatives, including hidden occurrences.
 - **Partial attendance** ([#104](https://github.com/kctong529/sisukas/issues/104)): represent an intended portion of an occurrence without modifying the institutional event.
 - **Planned e-exam sitting** ([#105](https://github.com/kctong529/sisukas/issues/105)): let the student place an intended sitting inside an availability window, clearly marked as *planned*, not externally booked.
 
-Attendance decisions remain scoped to occurrences or recurring preferences and never silently rewrite an assembly.
+Calendar choices remain scoped to occurrences or recurring groups and never silently rewrite an assembly or SISU registration.
 
 ## Constraints and open questions
 
 - **Caching and offline use:** Previously obtained teaching data should support local projection and navigation where available. This does not imply complete offline editing or synchronization; the backend remains authoritative for persisted user intentions.
 - **Temporal identity:** Rescheduled or cancelled occurrences need stable-enough matching, diagnostics, and explicit stale-reference behavior rather than silently applying old choices to new times.
 - **Accessibility:** Hover previews may improve exploration, but keyboard and touch users need equivalent controls.
-- **Conflict meaning:** A visible overlap is not necessarily an intended-attendance conflict. Likewise, a flexible availability window is not a confirmed appointment.
+- **Conflict meaning:** The one-click action is a user-requested visibility choice, not proof that the student will attend or is registered. Flexible availability windows are not confirmed appointments.
 - **Usability:** Validate the mental model with student scenarios before making advanced attendance controls part of the default experience ([#106](https://github.com/kctong529/sisukas/issues/106)).
 
 ## Related documentation
