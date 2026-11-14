@@ -18,6 +18,7 @@ description: "Practical instructions for building, testing, running, and maintai
 ## Data operations
 
 - [Database Operations](./database-operations/) — Inspect, compare, and troubleshoot PostgreSQL environments, RLS, and migration history.
+- [Release Procedure](./release-procedure/) — Prepare a release candidate, coordinate database rollout, deploy, verify, and tag.
 - [Data Pipeline](./data-pipeline/) — Run, validate, reconcile, and publish course datasets.
 - [Historical Records](./historical/) — Collect and maintain historical datasets.
 - [Curriculum Metadata](./curriculum-metadata/) — Maintain curated curriculum source files and validation.
