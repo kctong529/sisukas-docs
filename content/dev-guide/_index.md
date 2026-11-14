@@ -13,6 +13,7 @@ description: "Practical instructions for building, testing, running, and maintai
 - [Environment Variables](./env/) — Configure each service safely.
 - [Makefile Reference](./makefile/) — Understand setup and maintenance targets.
 - [State Conventions](./stores/) — Prescriptive Svelte store patterns for contributors; not a description of every existing runtime adapter.
+- [Frontend UI Conventions](./frontend-ui-conventions/) — Shared styling tokens, view headings, responsive rules, accessibility, and intentional feature-specific exceptions.
 
 ## Data operations
 

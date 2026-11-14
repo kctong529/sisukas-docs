@@ -189,6 +189,8 @@ The study-group reference migration passed ESLint, application and test TypeScri
 
 ## Related documentation
 
+For reusable visual primitives, responsive styling, and the distinction between shared colors and feature-owned color semantics, see [Frontend UI Conventions](../../dev-guide/frontend-ui-conventions/). These presentation conventions are distinct from capability/module ownership and do not require immediate migration to the proposed `shared/` directory.
+
 - [System Overview](../../system-overview/) — Main application responsibilities.
 - [Study-group Loading](../study-group-loading/) — Cache, request coordination, runtime, and cancellation semantics.
 - [State Conventions](../../dev-guide/stores/) — Store conventions and transitional reactive state.

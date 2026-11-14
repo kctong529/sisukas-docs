@@ -43,6 +43,14 @@ For an authenticated active Plan, Calendar loads saved display preferences from 
 
 These controls support the student’s Calendar preferences, including recurring teaching-group choices and per-occurrence alternatives. They do **not** change SISU registration, upstream teaching data, or saved LEGO assemblies. Persistence is verified in the Test-backed development environment, not yet released to Production.
 
+## Current presentation conventions
+
+The Calendar UI distinguishes a compact timetable event from the fuller details shown when an event or overlap is inspected. Cards show event time and, when available, classroom and building as separate unlabeled rows. The context panel and dense overlap dialog label **Location** (classroom) and **Building** explicitly; the time-slot alternatives list also preserves these details. Missing building information is omitted rather than inferred.
+
+Visible selection-status labels were removed from compact event presentation. Calendar planning and visibility information remains available through its controls and accessible descriptions; neither a choice nor hiding an event confirms registration in SISU. The current tooltip describes event details and actions rather than obsolete selection language.
+
+On narrow screens, the plan-manager controls are hidden below 810px and the course bar below 600px, while weekly navigation and the horizontally scrollable timetable remain available. The timetable does not deliberately reduce its vertical visible region below 700px. The shared frontend conventions, accessible focus behavior, and responsive verification guidance are described in [Frontend UI Conventions](../../dev-guide/frontend-ui-conventions/).
+
 ## Calendar beta: a useful weekly view
 
 The first milestone ([#81](https://github.com/kctong529/sisukas/issues/81)) focuses on a practical calendar with minimal setup:
