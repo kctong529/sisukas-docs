@@ -69,6 +69,45 @@ npx vitest run tests/application/calendar/calendarOverlapChoice.test.ts tests/ap
 
 The #103 manual review and November 13 test log reported **768/768 tests across 79 files**, Svelte checks with no errors or warnings, passing lint, and a production build (existing large-chunk warning). A subsequent CI run caught three implicit-any test callback parameters in `WeekGrid.test.ts` when directly executing `tsconfig.test.json`; those parameters have been explicitly annotated, but this specific CI command must be rerun to confirm the fix.
 
+## #192 PostgreSQL and RLS validation (November 14, 2026)
+
+The #192 validation cycle passed the backend Calendar routes (**11/11**),
+Supabase Test PostgreSQL integration (**6/6**), authenticated Better Auth
+HTTP integration (**4/4**), and six frontend persistence/lifecycle suites
+(**51/51**). Frontend and backend TypeScript checks also passed. These are
+**72 passing test executions across nine distinct suites**, not proof of
+browser-level release acceptance.
+
+The read-only `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql`
+was run against the independently confirmed Supabase Test project. It found
+both Calendar tables, 12 columns, 13 constraints, both primary-key indexes,
+RLS enabled on both tables, eight preference ownership policies, and eight
+CRUD grants for `authenticated`, with no `anon` table grants reported.
+This establishes **structural verification (D04)**, not that policies enforce
+ownership under a restricted database role.
+
+For **RLS enforcement (D02)**, run the opt-in
+`backend/tests/integration/calendarPreferences.rls.test.ts` suite, which
+simulates `anon` and `authenticated` roles with transaction-local JWT claims,
+checks two separately owned plans, and rolls back the restricted-role writes:
+
+```sh
+cd backend
+CALENDAR_RLS_TEST=yes npx vitest run \
+  tests/integration/calendarPreferences.rls.test.ts \
+  --no-file-parallelism
+```
+
+The test creates/deletes fixture users, so it must run **only against Supabase
+Test** and needs the independently verified `CALENDAR_TEST_PROJECT_REF` guard.
+It exercises Supabase Auth policy semantics; it does **not** prove Better Auth
+sessions are automatically mapped to Supabase JWT identities. The backend's
+Better Auth plan authorization is independently covered by the HTTP suite.
+
+Do not mark D02 complete until the restricted-role suite actually passes.
+Browser workflows (E01–E05) and production deployment verification remain
+outstanding under #192 and #135 respectively.
+
 ## Backend and outstanding coverage
 
 The backend test suites and opt-in database/HTTP integration commands are documented in [Calendar Preference API](../calendar-preference-api/). Validate the Test project reference and credentials before running them; they create test records.

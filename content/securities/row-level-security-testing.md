@@ -112,6 +112,43 @@ A typical isolation test follows four steps:
 
 The negative assertion only demonstrates RLS protection if the query actually runs under the intended restricted role and identity. An administrative or service-role query can bypass policies and is therefore unsuitable for proving user isolation.
 
+## Calendar preference RLS enforcement (#192)
+
+The Calendar preference migration `0005` defines owner-scoped policies for
+`calendar_hidden_groups` and `calendar_occurrence_overrides`. They check
+`plans.user_id = auth.uid()::text`, and therefore also depend on the `plans`
+RLS policies and the database session's JWT identity.
+
+There are **two distinct verification layers**:
+
+1. **Structural inspection:** `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql`
+   inspects tables, checks, indexes, grants and RLS policies without writing
+   data. This was verified on Supabase Test on November 14, 2026.
+2. **Enforcement:** `backend/tests/integration/calendarPreferences.rls.test.ts`
+   uses real `anon` and `authenticated` PostgreSQL roles, transaction-local
+   simulated JWT subjects, and two fixture owners. It checks grants,
+   missing-identity behavior, own-row access, foreign-row invisibility, and
+   restricted inserts, updates and deletes. Successful writes are rolled back.
+
+From `backend/`, after independently confirming the selected database is the
+**Supabase Test** project:
+
+```sh
+CALENDAR_RLS_TEST=yes npx vitest run \
+  tests/integration/calendarPreferences.rls.test.ts \
+  --no-file-parallelism
+```
+
+The test is opt-in, uses the Calendar test-database guard, creates and removes
+fixture accounts, and must never run against Production. A positive owner
+check is essential: getting zero rows for an unknown identity alone would
+not prove ownership isolation. This suite simulates *Supabase Auth* claims,
+not Better Auth session claims; application-level ownership is exercised by
+`calendarPreferences.http.test.ts` separately.
+
+Keep executable SQL assertions in the test file and the metadata inspection
+script, rather than duplicating copies of SQL in this documentation page.
+
 ## Troubleshooting and limitations
 
 | Symptom | What to check |

@@ -116,9 +116,10 @@ npm run build
 npx vitest run --exclude 'tests/rls.*.test.ts' --exclude 'tests/integration/*'
 CALENDAR_DB_TEST=yes npx vitest run tests/integration/calendarPreferences.db.test.ts --no-file-parallelism
 CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http.test.ts --no-file-parallelism
+CALENDAR_RLS_TEST=yes npx vitest run tests/integration/calendarPreferences.rls.test.ts --no-file-parallelism
 ```
 
-The database suite validates persistence and lifecycle rules, the HTTP suite exercises actual Better Auth sessions and ownership authorization, and the focused service tests simulate digest collisions.
+The database suite validates persistence and lifecycle rules, the HTTP suite exercises actual Better Auth sessions and ownership authorization, and the RLS suite independently simulates Supabase Auth roles and JWT claims at the PostgreSQL boundary. The focused service tests simulate digest collisions. The RLS suite does not prove Better Auth-to-Supabase identity propagation.
 
 For the #191 frontend from `frontend/course-browser/`:
 
