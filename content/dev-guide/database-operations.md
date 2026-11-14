@@ -130,7 +130,7 @@ WHERE schemaname = 'public'
 GROUP BY tablename ORDER BY tablename;
 ```
 
-Expected **after the initial test repair, before Calendar migration `0005`**: nine tables with RLS enabled; `course_snapshots` without RLS; 33 policies in total. **After `0005` on Supabase Test**, two Calendar tables add two RLS-enabled tables and eight policies (11 RLS tables, 41 policies in the `public` schema assuming no other changes). Supabase Production remains on the prior Calendar-free baseline. The RLS scripts protect `"user"`, `account`, `session`, `verification`, `favourites`, `feedback`, `plans`, `plan_instances`, and `course_grades`. `verification` has one deny-all policy for `authenticated`; the other eight tables have four CRUD policies each. This matches the reviewed production *policy definitions*; grants require separate inspection.
+Expected **after the initial test repair, before Calendar migration `0005`**: nine tables with RLS enabled; `course_snapshots` without RLS; 33 policies in total. **After `0005` on Supabase Test**, two Calendar tables add two RLS-enabled tables and eight policies (11 RLS tables, 41 policies in the `public` schema assuming no other changes). Supabase Production received `0005` on 14 November 2026; the prior Calendar-free state is retained here only as the pre-migration baseline. The RLS scripts protect `"user"`, `account`, `session`, `verification`, `favourites`, `feedback`, `plans`, `plan_instances`, and `course_grades`. `verification` has one deny-all policy for `authenticated`; the other eight tables have four CRUD policies each. This matches the reviewed production *policy definitions*; grants require separate inspection.
 
 ```sql
 SELECT table_name, grantee,
@@ -226,11 +226,11 @@ Until reconciliation is complete, any new table work (including Calendar prefere
 
 ## Calendar preference migration (`0005`)
 
-`backend/drizzle/sql/0005_calendar_visibility_preferences.sql` creates `calendar_hidden_groups` and `calendar_occurrence_overrides`, their constraints, grants, and eight RLS policies. `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql` provides read-only structural inspection. The former has been applied to **Supabase Test only**; **Supabase Production has not received `0005`**. Calendar persistence validation (#192) completed on Supabase Test and staging on 14 November 2026: all 37 tracked scenarios passed. The coordinated production migration and release are still pending. See [Calendar Visibility Testing](../calendar-visibility-testing/) for the reproducible evidence.
+`backend/drizzle/sql/0005_calendar_visibility_preferences.sql` creates `calendar_hidden_groups` and `calendar_occurrence_overrides`, their constraints, grants, and eight RLS policies. `backend/drizzle/sql/verify_0005_calendar_visibility_preferences.sql` provides read-only structural inspection. The migration was applied to **Supabase Test and Production** by 14 November 2026. Production execution completed with `COMMIT`, and read-only verification matched the Test structure. Calendar persistence validation (#192) completed on Supabase Test and staging: all 37 tracked scenarios passed. Production deployment was subsequently reported successful; guest smoke passed 4/4; authenticated Production Calendar smoke remains separately pending. See [Calendar Visibility Testing](../calendar-visibility-testing/) for the reproducible evidence.
 
 The application uses a SHA-256 physical occurrence-key index while retaining and checking the original serialized key. No historical generated Drizzle migration should be replayed to install this standalone SQL. #197 owns migration-history recovery.
 
-After confirming you are connected to **Supabase Test** with the correct project reference and reviewing the file, run the following in `psql` from `backend/` **only when the migration is not yet installed**:
+For **new or disposable environments only**, after confirming the target and reviewing the SQL, use the following in `psql` from `backend/` **only when the migration has not already been installed**. Do **not** rerun the migration in Test or Production:
 
 ```sql
 \set ON_ERROR_STOP on
@@ -252,9 +252,19 @@ CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http
 The database test directly exercises the Drizzle service. The HTTP test creates Better Auth fixtures, starts an in-process Express server, and exercises cookie-based authorization through the Calendar routes. **Both create and remove test records and must never point to production.** See `backend/tests/integration/README.md` in the application repository for preflight and cleanup details.
 
 > [!WARNING]
-> Calendar #192 validation has passed on Test and staging, but **do not apply `0005` to Production** until the reviewed migration procedure and coordinated backend/frontend release are approved. Production backend routes must not be called against a database lacking the new tables.
+> Migration `0005` has **already been applied to Production** for v0.9.0. Do **not** rerun it. The incomplete Drizzle journal remains independent of the verified deployed schema; see #197.
 
-### Production preflight and read-only verification
+### Recorded Production `0005` application (14 November 2026)
+
+- SQL file: `backend/drizzle/sql/0005_calendar_visibility_preferences.sql`.
+- SHA-256: `71c874731dd75e9766461ffd105bb81ddd565bfc6c0bf38c0d363f6506aec524`.
+- Operator reported a pre-migration backup and verified `plans(id uuid, user_id text)`, `auth.uid()`, SHA-256 support, and absence of both target tables before execution.
+- `psql` returned a successful transaction ending in `COMMIT`.
+- Read-only verification found **2 tables, 12 columns, 13 constraints, 2 PK indexes, 8 RLS policies, 8 authenticated CRUD grants and no anonymous grants**, with RLS on both preference tables. The existing `plans_exactly_one_active_per_user` trigger remained present.
+- Production deployment of v0.9.0 was subsequently reported successful. Guest Playwright smoke: **4/4 passed**. Authenticated Production smoke has not been reported.
+- The Production Drizzle journal contained only one earlier row before application; the standalone migration did **not** repair or populate that history. Continue #197 rather than editing the journal manually.
+
+### Production preflight and read-only verification (future migrations)
 
 At the release checkpoint (not during routine development):
 
@@ -307,5 +317,5 @@ In November 2026, the test suite contained 7 files and 45 tests. The production 
 - [Local Development](../running-locally/) — Start the services.
 - [Row-Level Security](../../securities/row-level-security-testing/) — Security model and test design.
 - [Route Protection](../../securities/route-protection/) — Better Auth authorization boundaries.
-- [Calendar Schema](../../architecture/calendar-visibility-schema/) — Implemented backend preference tables, currently deployed to Supabase Test only.
+- [Calendar Schema](../../architecture/calendar-visibility-schema/) — Implemented backend preference tables, deployed to Supabase Test and Production for v0.9.0.
 - [Calendar Preference API](../calendar-preference-api/) — Endpoint contract and integration-test workflow.

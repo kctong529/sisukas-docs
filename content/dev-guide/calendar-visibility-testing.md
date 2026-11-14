@@ -172,4 +172,4 @@ For interactive investigation, enable Preserve log in DevTools and filter for `/
 | Browser persistence (`E01`–`E05`) | **4/4** Playwright tests | `https://test.sisukas.eu` |
 | Migration `0005` metadata | Two tables, 12 columns, 13 constraints, eight policies, two PK indexes, eight authenticated grants, no anonymous table grants | Supabase Test |
 
-The full scenario-by-scenario rationale and evidence belong in [#192](https://github.com/kctong529/sisukas/issues/192). Passing Test and staging checks do **not** establish that migration `0005` has been deployed to Production. #135 remains the separate production migration-history gate.
+The full scenario-by-scenario rationale and evidence belong in [#192](https://github.com/kctong529/sisukas/issues/192). Migration `0005` was subsequently applied and structurally verified in Production on 14 November 2026, but the Test/staging suites above must not be mistaken for Production behavior tests. Production guest smoke passed 4/4; authenticated Production Calendar smoke has not yet been reported. Migration-history recovery remains under #197.

@@ -5,7 +5,7 @@ description: "Implemented sparse Calendar visibility schema, identity constraint
 ---
 
 > [!NOTE]
-> Migration `0005` was structurally verified against Supabase Test, not Production. Its database behavior is covered by #192. For repeatable commands and test evidence, see [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/). Production migration-history review remains tracked by #135.
+> Migration `0005` was structurally verified on both Supabase Test and Production (14 November 2026). The persistence behavior and security tests ran against Test, not Production; see [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/). Historical Drizzle journal recovery is separately tracked by #197.
 
 ## Design objectives
 

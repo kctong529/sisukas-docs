@@ -35,6 +35,6 @@ description: "Practical instructions for building, testing, running, and maintai
 - [Course Data](../architecture/course-data/) — Data ownership and canonical/runtime boundaries.
 - [Teaching Events](../architecture/teaching-events/) — Event identity and location contracts.
 - [Study-group Loading](../architecture/study-group-loading/) — In-memory retrieval architecture.
-- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Calendar visibility contract and implemented backend schema (Supabase Test only).
+- [Calendar Visibility](../architecture/calendar-visibility-preferences/) and [Calendar Schema](../architecture/calendar-visibility-schema/) — Calendar visibility contract and implemented backend schema (Test and Production since v0.9.0).
 
 For component orientation use [System Overview](../system-overview/); for unfinished features use [Under Development](../under-dev/).
