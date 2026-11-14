@@ -130,14 +130,7 @@ There are **two distinct verification layers**:
    missing-identity behavior, own-row access, foreign-row invisibility, and
    restricted inserts, updates and deletes. Successful writes are rolled back.
 
-From `backend/`, after independently confirming the selected database is the
-**Supabase Test** project:
-
-```sh
-CALENDAR_RLS_TEST=yes npx vitest run \
-  tests/integration/calendarPreferences.rls.test.ts \
-  --no-file-parallelism
-```
+For the exact Test-environment guard and run commands, use [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/).
 
 The test is opt-in, uses the Calendar test-database guard, creates and removes
 fixture accounts, and must never run against Production. A positive owner
@@ -165,6 +158,7 @@ The current harness is a useful historical set of isolation tests, not proof of 
 ## Related documentation
 
 - [Database Operations](../../dev-guide/database-operations/) — RLS and migration inspection queries, observed environments, and troubleshooting.
+- [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) — Calendar RLS command, test guard, and cross-layer validation evidence.
 
 - [Security](../) — Current authentication and authorization boundaries.
 - [Route Authorization](../route-protection/) — Application-level access control.

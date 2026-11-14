@@ -5,7 +5,7 @@ description: "Plan-scoped visibility identity, inheritance, and reconciliation c
 ---
 
 > [!NOTE]
-> **Status: frontend and backend implemented; Supabase Test only.** The identity contract (#189), backend persistence and HTTP API (#190), and authenticated frontend hydration, optimistic mutations, and error recovery (#191) are implemented and locally verified. Migration `0005` is installed on Supabase Test, not Production. Additional API, identity, and browser regression validation (#192), followed by coordinated production deployment, remain pending. Calendar group and occurrence choices (#101, #103) reuse these persisted preferences; no distinct attendance persistence layer is required for these interactions.
+> Calendar behavior and identity are validated by #192 against Test and staging. This is a design contract, not a production deployment instruction; see [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) for evidence and commands. Production migration review is tracked in #135.
 
 ## Purpose and ownership
 
@@ -140,7 +140,7 @@ The backend acknowledges each successful mutation with `204`, but it has no cros
 11. Unknown/pending preference hydration → no default-state event-card flash; confirmed-empty is distinct.
 12. Serialization → deserialization preserves explicit-visible vs inherited absence, and no source metadata is invented.
 
-These cases define the contract. #191 adds frontend hydration, persistence, and concurrency regression tests; #192 retains additional API, identity-failure, and browser-level validation. See [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) for the observed local acceptance and remaining coverage.
+These cases define the contract. #191 adds frontend hydration, persistence, and concurrency regression tests; #192 retains additional API, identity-failure, and browser-level validation. See [Calendar Visibility Testing](../../dev-guide/calendar-visibility-testing/) for reproducible verification and observed results.
 
 ## Implemented decisions for #190 and #191
 

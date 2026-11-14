@@ -5,7 +5,7 @@ description: "Authenticated plan-scoped Calendar preference endpoints, semantics
 ---
 
 > [!NOTE]
-> **Backend and frontend implemented; Supabase Test only.** The routes are in `backend/src/routes/calendarPreferences.ts`; frontend hydration and mutation handling under #191 are locally verified against the Test environment. Migration `0005` has **not** been applied to Supabase Production. Further API, identity, and Playwright regression validation remains in #192; production deployment requires a coordinated release.
+> This page is the reference for the authenticated Calendar preference HTTP contract. The #192 acceptance runs passed on Test and staging; see [Calendar Visibility Testing](../calendar-visibility-testing/) for reproducible commands and results. Production migration remains gated by #135.
 
 ## Purpose and scope
 
@@ -107,32 +107,12 @@ The frontend service `frontend/course-browser/src/infrastructure/services/Calend
 > [!IMPORTANT]
 > Per-identity serialization only orders writes from this frontend session. The API has **no server revision or ETag precondition** for simultaneous writes from other devices/clients. Conflicting cross-client updates resolve by database execution order; a GET retrieves the state currently stored on the server.
 
-## Verification and deployment
+## Verification and deployment boundary
 
-The test suites and their opt-in `.env.test` configuration are documented in `backend/tests/integration/README.md` in the application repository. From `backend/`:
-
-```sh
-npm run build
-npx vitest run --exclude 'tests/rls.*.test.ts' --exclude 'tests/integration/*'
-CALENDAR_DB_TEST=yes npx vitest run tests/integration/calendarPreferences.db.test.ts --no-file-parallelism
-CALENDAR_HTTP_TEST=yes npx vitest run tests/integration/calendarPreferences.http.test.ts --no-file-parallelism
-CALENDAR_RLS_TEST=yes npx vitest run tests/integration/calendarPreferences.rls.test.ts --no-file-parallelism
-```
-
-The database suite validates persistence and lifecycle rules, the HTTP suite exercises actual Better Auth sessions and ownership authorization, and the RLS suite independently simulates Supabase Auth roles and JWT claims at the PostgreSQL boundary. The focused service tests simulate digest collisions. The RLS suite does not prove Better Auth-to-Supabase identity propagation.
-
-For the #191 frontend from `frontend/course-browser/`:
-
-```sh
-npx vitest run tests/lib/stores/calendarVisibilityHydration.test.ts tests/lib/stores/calendarVisibilityMutations.test.ts tests/lib/stores/calendarVisibilityHardening.test.ts
-npm run type-check
-npm run check
-npm run lint
-npm run test
-npm run build
-```
-
-On November 13, 2026, local verification recorded **17/17 focused tests**, **737/737 tests across 73 files**, and successful TypeScript, Svelte, lint, and build checks. Browser checks against the Test-backed development environment covered failed/delayed GETs, reload persistence, plan/account changes, rapid mutations, and blocked PUT with notification-based Retry. These results **do not** establish production readiness or substitute for #192's additional formal API, identity, and Playwright coverage. See [Calendar Visibility Testing](../calendar-visibility-testing/).
+- Route authorization is exercised by `backend/tests/routes/calendarPreferences.test.ts` (11/11) and real Better Auth HTTP integration (`calendarPreferences.http.test.ts`, 4/4).
+- Database constraints, offering identity and lifecycle are exercised by `calendarPreferences.db.test.ts` (7/7).
+- Direct PostgreSQL policy enforcement is tested independently of Better Auth in `calendarPreferences.rls.test.ts` (7/7); see [Row-Level Security](../../securities/row-level-security-testing/).
+- The full test commands, opt-in environment guards, and two-account Playwright setup are maintained only in [Calendar Visibility Testing](../calendar-visibility-testing/).
 
 > [!WARNING]
-> The Supabase Test migration is verified. **Do not apply `0005` to production or enable production Calendar persistence until #192 has passed and the backend/frontend release is coordinated.** See [Database Operations](../database-operations/) for the reviewed migration and verification commands.
+> Passing Test/staging verification does not authorize Production migration. Review migration history (#135) and coordinate backend/frontend release deployment.
