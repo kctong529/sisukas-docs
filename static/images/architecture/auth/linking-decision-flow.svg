@@ -1,0 +1,290 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1150" width="1240" height="1150" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Account-linking decision flows</title>
+<desc id="d">Two flows after an OAuth callback that was authorized and carries a valid state. Ordinary OAuth sign-in: an already linked (provider_id, account_id) signs in as its user; an unlinked identity whose email belongs to an existing Sisukas user is not merged; a verified, eligible new identity creates a new user; registration of other identities is not established by the #215 tests. Explicit OAuth linking requires a valid session, a verified provider email, an email equal to the user's, and a provider identity not assigned to another user; only then is an account row added for the existing user.id. Rejected linking creates or reassigns no provider-account association.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+
+.bnd { fill: none; stroke: #8fb3d9; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.bnd-label { fill: #2f6fb0; font-size: 12px; font-weight: 760; letter-spacing: .6px; }
+.halo { paint-order: stroke; stroke: #fbfcfd; stroke-width: 6px; stroke-linejoin: round; }
+.ctr { fill: #fbfcfd; stroke: #c9d3df; stroke-width: 1.3; }
+.ctr-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+.ctr-sub { fill: #68768a; font-size: 12.5px; }
+.n-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.tag-auth { fill: #2f6fb0; }
+.n-planned { fill: #ffffff; stroke: #93a1b3; stroke-dasharray: 5 4; }
+.tag-planned { fill: #7d8ba0; }
+.n-reject { fill: #fcf4f3; stroke: #b4534a; stroke-width: 1.6; }
+.tag-reject { fill: #a2463e; }
+.n-accept { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 2; }
+.tag-accept { fill: #2f6fb0; }
+.e-auth { stroke: #2f6fb0; marker-end: url(#m-auth); }
+.e-app { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-plan { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-ret { stroke: #647b96; stroke-dasharray: 6 4; marker-end: url(#m-data); }
+.e-reject { stroke: #b4534a; marker-end: url(#m-reject); }
+.l-auth { fill: #2f6fb0; } .l-app { fill: #4b5f78; } .l-plan { fill: #6f7d92; } .l-reject { fill: #a2463e; }
+.tbl { fill: #ffffff; stroke: #b8c4d3; stroke-width: 1.3; }
+.tbl-canon { fill: #ffffff; stroke: #2f6fb0; stroke-width: 2.2; }
+.tbl-head { fill: #f2f5f8; }
+.tbl-head-canon { fill: #e3eefa; }
+.tbl-name { fill: #15253a; font-size: 15px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col-opt { fill: #7d8ba0; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.key { font-size: 10px; font-weight: 800; letter-spacing: .4px; }
+.key-pk { fill: #2f6fb0; } .key-fk { fill: #68768a; } .key-uq { fill: #8a5a12; }
+.row-hl { fill: #e3eefa; }
+.card { fill: #8a96a8; font-size: 12.5px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.rel { fill: none; stroke: #647b96; stroke-width: 1.6; }
+.rel-label { fill: #4b5f78; font-size: 12px; font-style: italic; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.life { stroke: #c3ccd8; stroke-width: 1.3; stroke-dasharray: 4 4; }
+.actor { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.actor-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.actor-plan { fill: #ffffff; stroke: #93a1b3; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.actor-text { fill: #15253a; font-size: 14px; font-weight: 720; }
+.msg { fill: #15253a; font-size: 13.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.msg-code { fill: #2c3e55; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.frame { fill: none; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-tab { fill: #e3eefa; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-text { fill: #1f4f80; font-size: 14px; font-weight: 740; }
+.snote { fill: #fffdf5; stroke: #d8cfae; stroke-width: 1.2; }
+.snote-hl { fill: #e3eefa; stroke: #2f6fb0; stroke-width: 1.4; }
+.snote-text { fill: #3d4b5c; font-size: 13.5px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.a-ctr { fill: #15253a; font-size: 15px; font-weight: 740; }
+.a-title { fill: #15253a; font-size: 15px; font-weight: 700; }
+.a-detail { fill: #44566c; font-size: 13px; }
+.a-foot { fill: #68768a; font-size: 13px; }
+.a-lbl { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.a-lbl .mono { font-weight: 600; }
+.layer { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.2; }
+.iface { fill: #2f6fb0; }
+.iface-text { fill: #ffffff; font-size: 14px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.iface-small { fill: #e3eefa; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) {
+  .bnd { stroke: #4f79a6; } .bnd-label { fill: #8cbbea; } .halo { stroke: #131c29; }
+  .ctr { fill: #131c29; stroke: #34465b; } .ctr-title { fill: #edf3fb; } .ctr-sub { fill: #8f9db0; }
+  .n-auth, .n-accept { fill: #12263a; stroke: #6aa7e3; } .tag-auth, .tag-accept { fill: #8cbbea; }
+  .n-planned { fill: #151f2d; stroke: #66768c; } .tag-planned { fill: #8f9db0; }
+  .n-reject { fill: #2a1a19; stroke: #d98b80; } .tag-reject { fill: #f0b0a6; }
+  .e-auth { stroke: #6aa7e3; } .e-app, .e-ret { stroke: #9cacc0; } .e-reject { stroke: #d98b80; }
+  .l-auth { fill: #8cbbea; } .l-app { fill: #b9c6d6; } .l-reject { fill: #f0b0a6; }
+  .tbl { fill: #182436; stroke: #4b5f78; } .tbl-canon { fill: #182436; stroke: #6aa7e3; }
+  .tbl-head { fill: #1f2d40; } .tbl-head-canon, .row-hl { fill: #173250; }
+  .tbl-name { fill: #edf3fb; } .col { fill: #d3deea; } .col-opt { fill: #8f9db0; }
+  .key-pk { fill: #8cbbea; } .key-uq { fill: #e7c27a; }
+  .card, .rel-label, .msg, .msg-code { stroke: #0f1724; }
+  .card { fill: #a3b0c1; } .rel { stroke: #9cacc0; } .rel-label { fill: #b9c6d6; }
+  .life { stroke: #34465b; }
+  .actor { fill: #182436; stroke: #9cacc0; } .actor-auth { fill: #12263a; stroke: #6aa7e3; }
+  .actor-plan { fill: #151f2d; stroke: #66768c; } .actor-text, .msg { fill: #edf3fb; } .msg-code { fill: #d3deea; }
+  .frame { stroke: #3d5a7a; } .frame-tab { fill: #173250; stroke: #3d5a7a; } .frame-text { fill: #a9cdf0; }
+  .snote { fill: #222018; stroke: #4c4632; } .snote-hl { fill: #173250; stroke: #6aa7e3; } .snote-text { fill: #c9d3df; }
+  .layer { fill: #151f2d; stroke: #2b3a4e; }
+  .a-ctr, .a-title { fill: #edf3fb; } .a-detail { fill: #b9c6d6; } .a-foot { fill: #8f9db0; }
+  .a-lbl { stroke: #0f1724; }
+  .iface { fill: #3f86cc; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+<marker id="m-auth" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#2f6fb0" stroke-width="1.8"/></marker>
+<marker id="m-reject" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b4534a" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1240" height="1150"/>
+<path class="e e-flow" d="M620 86 V112"/>
+<path class="e e-flow" d="M620 192 V218"/>
+<text class="e-label l-data" x="630" y="208" text-anchor="start">yes</text>
+<path class="e e-reject" d="M730 152 H846"/>
+<text class="e-label l-reject" x="788" y="144" text-anchor="middle">no</text>
+<path class="e e-reject" d="M730 258 H846"/>
+<text class="e-label l-reject" x="788" y="250" text-anchor="middle">no</text>
+<rect class="n n-neutral" x="470" y="20" width="300" height="66" rx="12"/>
+<text class="tag tag-neutral" x="486" y="44" text-anchor="start">START</text>
+<text class="title" x="486" y="67" text-anchor="start">OAuth callback</text>
+<text class="note" x="754" y="78" text-anchor="end">provider → Better Auth</text>
+<polygon class="diamond" points="620,112 730,152 620,192 510,152"/>
+<text class="d-text" x="620" y="157" text-anchor="middle">authorized?</text>
+<rect class="n n-reject" x="850" y="115" width="250" height="74" rx="12"/>
+<text class="tag tag-reject" x="866" y="139" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="866" y="161" text-anchor="start">Cancelled</text>
+<text class="note" x="866" y="179" text-anchor="start">no provider account created</text>
+<polygon class="diamond" points="620,218 730,258 620,298 510,258"/>
+<text class="d-text" x="620" y="263" text-anchor="middle">valid state?</text>
+<rect class="n n-reject" x="850" y="221" width="250" height="74" rx="12"/>
+<text class="tag tag-reject" x="866" y="245" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="866" y="267" text-anchor="start">Invalid OAuth state</text>
+<text class="note" x="866" y="285" text-anchor="start">no provider account created</text>
+<path class="e e-flow" d="M620 298 V318 H300 V352"/>
+<text class="e-label l-data" x="450" y="312" text-anchor="middle">ordinary sign-in</text>
+<path class="e e-flow" d="M620 298 V318 H930 V352"/>
+<text class="e-label l-data" x="790" y="312" text-anchor="middle">explicit link request</text>
+<rect class="panel" x="14" y="356" width="590" height="640" rx="14"/>
+<text class="panel-title" x="34" y="386" text-anchor="start">Ordinary OAuth sign-in</text>
+<text class="note" x="34" y="406" text-anchor="start">linked identities and new registrations</text>
+<rect class="panel" x="636" y="356" width="590" height="640" rx="14"/>
+<text class="panel-title" x="656" y="386" text-anchor="start">Explicit OAuth linking</text>
+<text class="note" x="656" y="406" text-anchor="start">signed-in user connects a provider</text>
+<polygon class="diamond" points="210,426 350,466 210,506 70,466"/>
+<text class="d-text" x="210" y="471" text-anchor="middle">identity linked?</text>
+<text class="note" x="34" y="524" text-anchor="start">(provider_id, account_id)</text>
+<path class="e e-flow" d="M210 506 V560"/>
+<text class="e-label l-data" x="220" y="540" text-anchor="start">yes</text>
+<rect class="n n-accept" x="34" y="564" width="250" height="100" rx="12"/>
+<text class="tag tag-accept" x="50" y="588" text-anchor="start">ACCEPTED</text>
+<text class="title-sm" x="50" y="610" text-anchor="start">Sign in as linked user</text>
+<text class="line" x="50" y="632" text-anchor="start">existing user.id</text>
+<text class="line" x="50" y="652" text-anchor="start">same plans and data</text>
+<path class="e e-flow" d="M350 466 H450 V514"/>
+<text class="e-label l-data" x="398" y="458" text-anchor="middle">no</text>
+<polygon class="diamond" points="450,514 580,554 450,594 320,554"/>
+<text class="d-text" x="450" y="559" text-anchor="middle">email in use?</text>
+<text class="note" x="450" y="610" text-anchor="middle">an existing Sisukas user</text>
+<path class="e e-reject" d="M450 616 V650 C450 660 440 664 430 664"/>
+<text class="e-label l-reject" x="462" y="640" text-anchor="start">yes</text>
+<rect class="n n-reject" x="300" y="668" width="250" height="74" rx="12"/>
+<text class="tag tag-reject" x="316" y="692" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="316" y="714" text-anchor="start">No implicit merge</text>
+<text class="note" x="316" y="732" text-anchor="start">sign in with existing method, then link</text>
+<path class="e e-flow" d="M580 554 H592 V780 H450 V796"/>
+<text class="e-label l-data" x="604" y="664" text-anchor="start">no</text>
+<polygon class="diamond" points="450,796 600,836 450,876 300,836"/>
+<text class="d-text" x="450" y="841" text-anchor="middle">verified, eligible?</text>
+<path class="e e-flow" d="M300 836 H170 V892"/>
+<text class="e-label l-data" x="240" y="828" text-anchor="middle">yes</text>
+<rect class="n n-accept" x="34" y="896" width="270" height="80" rx="12"/>
+<text class="tag tag-accept" x="50" y="920" text-anchor="start">ACCEPTED</text>
+<text class="title-sm" x="50" y="942" text-anchor="start">Create new user</text>
+<text class="line" x="50" y="964" text-anchor="start">new user.id + account + session</text>
+<path class="e e-flow" d="M450 876 V892"/>
+<text class="e-label l-data" x="460" y="888" text-anchor="start">no</text>
+<rect class="n n-muted" x="330" y="896" width="260" height="80" rx="12"/>
+<text class="tag tag-muted" x="346" y="920" text-anchor="start">NOT ESTABLISHED</text>
+<text class="title-sm" x="346" y="942" text-anchor="start">Not shown as eligible</text>
+<text class="line" x="346" y="964" text-anchor="start">outside the #215 tests</text>
+<path class="e e-flow" d="M930 352 V412 H850 V426"/>
+<polygon class="diamond" points="850,426 970,466 850,506 730,466"/>
+<text class="d-text" x="850" y="471" text-anchor="middle">valid session?</text>
+<path class="e e-reject" d="M970 466 H986"/>
+<text class="e-label l-reject" x="978" y="458" text-anchor="end">no</text>
+<rect class="n n-reject" x="990" y="431" width="222" height="70" rx="12"/>
+<text class="tag tag-reject" x="1004" y="452" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="1004" y="473" text-anchor="start">No valid session</text>
+<text class="note" x="1004" y="491" text-anchor="start">missing or expired</text>
+<path class="e e-flow" d="M850 506 V546"/>
+<text class="e-label l-data" x="860" y="530" text-anchor="start">yes</text>
+<polygon class="diamond" points="850,546 970,586 850,626 730,586"/>
+<text class="d-text" x="850" y="591" text-anchor="middle">email verified?</text>
+<path class="e e-reject" d="M970 586 H986"/>
+<text class="e-label l-reject" x="978" y="578" text-anchor="end">no</text>
+<rect class="n n-reject" x="990" y="551" width="222" height="70" rx="12"/>
+<text class="tag tag-reject" x="1004" y="572" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="1004" y="593" text-anchor="start">Unverified email</text>
+<text class="note" x="1004" y="611" text-anchor="start">provider email not verified</text>
+<path class="e e-flow" d="M850 626 V666"/>
+<text class="e-label l-data" x="860" y="650" text-anchor="start">yes</text>
+<polygon class="diamond" points="850,666 970,706 850,746 730,706"/>
+<text class="d-text" x="850" y="711" text-anchor="middle">email matches?</text>
+<path class="e e-reject" d="M970 706 H986"/>
+<text class="e-label l-reject" x="978" y="698" text-anchor="end">no</text>
+<rect class="n n-reject" x="990" y="671" width="222" height="70" rx="12"/>
+<text class="tag tag-reject" x="1004" y="692" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="1004" y="713" text-anchor="start">Different email</text>
+<text class="note" x="1004" y="731" text-anchor="start">allowDifferentEmails: false</text>
+<path class="e e-flow" d="M850 746 V786"/>
+<text class="e-label l-data" x="860" y="770" text-anchor="start">yes</text>
+<polygon class="diamond" points="850,786 970,826 850,866 730,826"/>
+<text class="d-text" x="850" y="831" text-anchor="middle">identity unowned?</text>
+<path class="e e-reject" d="M970 826 H986"/>
+<text class="e-label l-reject" x="978" y="818" text-anchor="end">no</text>
+<rect class="n n-reject" x="990" y="791" width="222" height="70" rx="12"/>
+<text class="tag tag-reject" x="1004" y="812" text-anchor="start">REJECTED</text>
+<text class="title-sm" x="1004" y="833" text-anchor="start">Identity conflict</text>
+<text class="note" x="1004" y="851" text-anchor="start">assigned to another user</text>
+<text class="note" x="836" y="884" text-anchor="end">UNIQUE (provider_id, account_id)</text>
+<path class="e e-flow" d="M850 866 V900"/>
+<text class="e-label l-data" x="860" y="892" text-anchor="start">yes</text>
+<rect class="n n-accept" x="670" y="904" width="360" height="80" rx="12"/>
+<text class="tag tag-accept" x="686" y="928" text-anchor="start">ACCEPTED</text>
+<text class="title-sm" x="686" y="950" text-anchor="start">Link to existing user</text>
+<text class="line" x="686" y="972" text-anchor="start">INSERT account → existing user.id</text>
+<rect class="panel" x="14" y="1016" width="1212" height="118" rx="14"/>
+<text class="panel-title" x="36" y="1046" text-anchor="start">Security invariant</text>
+<text class="line" x="36" y="1072" text-anchor="start">Rejected linking must not create or reassign a provider-account association. Temporary OAuth verification state and existing</text>
+<text class="line" x="36" y="1092" text-anchor="start">session handling are separate concerns. A matching email is required for explicit linking but never merges accounts on its own</text>
+<text class="line" x="36" y="1112" text-anchor="start">(disableImplicitLinking: true). Gates are drawn as logical conditions; Better Auth's internal evaluation order may differ.</text>
+</svg>

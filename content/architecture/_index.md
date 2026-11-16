@@ -18,6 +18,11 @@ description: "System design, responsibilities, invariants, data contracts, and t
 - [Planning Architecture](./planning/) — Domain models, candidate generation, and planning algorithms, with implemented and proposed parts distinguished.
 - [Frontend Organization](./frontend-organization/) — Module boundaries, dependencies, and migration rules.
 
+## Authentication
+
+- [Authentication Architecture](./authentication/) — Canonical user identity, module boundaries and provider extensibility.
+- [Authentication Data Model](./authentication-data-model/) — Accounts, sessions, uniqueness and application ownership.
+
 ## Calendar persistence
 
 - [Calendar Visibility](./calendar-visibility-preferences/) — Visibility identity, inheritance, and ambiguity contracts.

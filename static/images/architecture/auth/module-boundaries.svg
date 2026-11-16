@@ -1,0 +1,240 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1220 580" width="1220" height="580" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Authentication module boundaries</title>
+<desc id="d">Frontend and backend each have a modules/auth boundary whose index.ts is the only entry point. Frontend: App.svelte, AuthModal, the AuthVerify page and feature views import canonicalUserId, signInWithMagicLink, verifyMagicLink, signOut and useSession; App.svelte passes the derived userId to the app/auth data lifecycle, which does not import the module. Internally, application files use infrastructure/authClient.ts, which calls the backend at /api/auth/*. Backend: server.ts, middleware/auth.ts and UsersService import authHttpHandler, resolveAuthenticatedSession, createEmailPasswordUser, toAuthenticatedIdentity and AuthenticatedIdentity. Internal layers are application, domain, config and infrastructure; infrastructure holds the single Better Auth instance, which uses PostgreSQL and Resend; OAuth providers are planned. Boundary tests reject Better Auth or internal auth imports elsewhere.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+
+.bnd { fill: none; stroke: #8fb3d9; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.bnd-label { fill: #2f6fb0; font-size: 12px; font-weight: 760; letter-spacing: .6px; }
+.halo { paint-order: stroke; stroke: #fbfcfd; stroke-width: 6px; stroke-linejoin: round; }
+.ctr { fill: #fbfcfd; stroke: #c9d3df; stroke-width: 1.3; }
+.ctr-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+.ctr-sub { fill: #68768a; font-size: 12.5px; }
+.n-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.tag-auth { fill: #2f6fb0; }
+.n-planned { fill: #ffffff; stroke: #93a1b3; stroke-dasharray: 5 4; }
+.tag-planned { fill: #7d8ba0; }
+.n-reject { fill: #fcf4f3; stroke: #b4534a; stroke-width: 1.6; }
+.tag-reject { fill: #a2463e; }
+.n-accept { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 2; }
+.tag-accept { fill: #2f6fb0; }
+.e-auth { stroke: #2f6fb0; marker-end: url(#m-auth); }
+.e-app { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-plan { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-ret { stroke: #647b96; stroke-dasharray: 6 4; marker-end: url(#m-data); }
+.e-reject { stroke: #b4534a; marker-end: url(#m-reject); }
+.l-auth { fill: #2f6fb0; } .l-app { fill: #4b5f78; } .l-plan { fill: #6f7d92; } .l-reject { fill: #a2463e; }
+.tbl { fill: #ffffff; stroke: #b8c4d3; stroke-width: 1.3; }
+.tbl-canon { fill: #ffffff; stroke: #2f6fb0; stroke-width: 2.2; }
+.tbl-head { fill: #f2f5f8; }
+.tbl-head-canon { fill: #e3eefa; }
+.tbl-name { fill: #15253a; font-size: 15px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col-opt { fill: #7d8ba0; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.key { font-size: 10px; font-weight: 800; letter-spacing: .4px; }
+.key-pk { fill: #2f6fb0; } .key-fk { fill: #68768a; } .key-uq { fill: #8a5a12; }
+.row-hl { fill: #e3eefa; }
+.card { fill: #8a96a8; font-size: 12.5px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.rel { fill: none; stroke: #647b96; stroke-width: 1.6; }
+.rel-label { fill: #4b5f78; font-size: 12px; font-style: italic; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.life { stroke: #c3ccd8; stroke-width: 1.3; stroke-dasharray: 4 4; }
+.actor { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.actor-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.actor-plan { fill: #ffffff; stroke: #93a1b3; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.actor-text { fill: #15253a; font-size: 14px; font-weight: 720; }
+.msg { fill: #15253a; font-size: 13.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.msg-code { fill: #2c3e55; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.frame { fill: none; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-tab { fill: #e3eefa; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-text { fill: #1f4f80; font-size: 14px; font-weight: 740; }
+.snote { fill: #fffdf5; stroke: #d8cfae; stroke-width: 1.2; }
+.snote-hl { fill: #e3eefa; stroke: #2f6fb0; stroke-width: 1.4; }
+.snote-text { fill: #3d4b5c; font-size: 13.5px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.a-ctr { fill: #15253a; font-size: 15px; font-weight: 740; }
+.a-title { fill: #15253a; font-size: 15px; font-weight: 700; }
+.a-detail { fill: #44566c; font-size: 13px; }
+.a-foot { fill: #68768a; font-size: 13px; }
+.a-lbl { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.a-lbl .mono { font-weight: 600; }
+.layer { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.2; }
+.iface { fill: #2f6fb0; }
+.iface-text { fill: #ffffff; font-size: 14px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.iface-small { fill: #e3eefa; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) {
+  .bnd { stroke: #4f79a6; } .bnd-label { fill: #8cbbea; } .halo { stroke: #131c29; }
+  .ctr { fill: #131c29; stroke: #34465b; } .ctr-title { fill: #edf3fb; } .ctr-sub { fill: #8f9db0; }
+  .n-auth, .n-accept { fill: #12263a; stroke: #6aa7e3; } .tag-auth, .tag-accept { fill: #8cbbea; }
+  .n-planned { fill: #151f2d; stroke: #66768c; } .tag-planned { fill: #8f9db0; }
+  .n-reject { fill: #2a1a19; stroke: #d98b80; } .tag-reject { fill: #f0b0a6; }
+  .e-auth { stroke: #6aa7e3; } .e-app, .e-ret { stroke: #9cacc0; } .e-reject { stroke: #d98b80; }
+  .l-auth { fill: #8cbbea; } .l-app { fill: #b9c6d6; } .l-reject { fill: #f0b0a6; }
+  .tbl { fill: #182436; stroke: #4b5f78; } .tbl-canon { fill: #182436; stroke: #6aa7e3; }
+  .tbl-head { fill: #1f2d40; } .tbl-head-canon, .row-hl { fill: #173250; }
+  .tbl-name { fill: #edf3fb; } .col { fill: #d3deea; } .col-opt { fill: #8f9db0; }
+  .key-pk { fill: #8cbbea; } .key-uq { fill: #e7c27a; }
+  .card, .rel-label, .msg, .msg-code { stroke: #0f1724; }
+  .card { fill: #a3b0c1; } .rel { stroke: #9cacc0; } .rel-label { fill: #b9c6d6; }
+  .life { stroke: #34465b; }
+  .actor { fill: #182436; stroke: #9cacc0; } .actor-auth { fill: #12263a; stroke: #6aa7e3; }
+  .actor-plan { fill: #151f2d; stroke: #66768c; } .actor-text, .msg { fill: #edf3fb; } .msg-code { fill: #d3deea; }
+  .frame { stroke: #3d5a7a; } .frame-tab { fill: #173250; stroke: #3d5a7a; } .frame-text { fill: #a9cdf0; }
+  .snote { fill: #222018; stroke: #4c4632; } .snote-hl { fill: #173250; stroke: #6aa7e3; } .snote-text { fill: #c9d3df; }
+  .layer { fill: #151f2d; stroke: #2b3a4e; }
+  .a-ctr, .a-title { fill: #edf3fb; } .a-detail { fill: #b9c6d6; } .a-foot { fill: #8f9db0; }
+  .a-lbl { stroke: #0f1724; }
+  .iface { fill: #3f86cc; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+<marker id="m-auth" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#2f6fb0" stroke-width="1.8"/></marker>
+<marker id="m-reject" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b4534a" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1220" height="580"/>
+<text class="tag tag-neutral" x="24" y="108" text-anchor="start">OUTSIDE</text>
+<text class="tag tag-neutral" x="24" y="226" text-anchor="start">PUBLIC API</text>
+<text class="tag tag-neutral" x="24" y="360" text-anchor="start">INTERNAL</text>
+<line class="rule" x1="24" x2="1196" y1="160" y2="160" style="stroke:#e5eaf1;stroke-width:1"/>
+<text class="region-title" x="150" y="36" text-anchor="start">Frontend · course-browser/src</text>
+<text class="region-title" x="600" y="36" text-anchor="start">Backend · backend/src</text>
+<rect class="bnd" x="140" y="172" width="430" height="290" rx="14"/>
+<text class="bnd-label halo" x="154" y="192" text-anchor="start">modules/auth/</text>
+<rect class="bnd" x="590" y="172" width="430" height="290" rx="14"/>
+<text class="bnd-label halo" x="604" y="192" text-anchor="start">modules/auth/</text>
+<path class="e e-app" d="M270 150 V200"/>
+<path class="e e-ret" d="M390 105 H430"/>
+<text class="e-label l-data" x="410" y="92" text-anchor="middle">userId</text>
+<path class="e e-app" d="M805 150 V200"/>
+<path class="e e-auth" d="M355 284 V300"/>
+<path class="e e-auth" d="M355 360 V376"/>
+<path class="e e-auth" d="M805 284 V300"/>
+<path class="e e-auth" d="M355 436 V490 H910 V454"/>
+<text class="e-label l-auth" x="632" y="484" text-anchor="middle">HTTP /api/auth/* · session cookie</text>
+<path class="e e-auth" d="M1010 388 C1024 388 1022 322 1036 322"/>
+<path class="e e-auth" d="M1010 406 C1024 406 1022 374 1036 374"/>
+<path class="e e-plan" d="M1010 424 C1024 424 1022 426 1036 426"/>
+<rect class="n n-consumer" x="150" y="60" width="240" height="90" rx="12"/>
+<text class="title-sm" x="166" y="86" text-anchor="start">UI and app shell</text>
+<text class="line-code" x="166" y="108" text-anchor="start">App.svelte · AuthModal</text>
+<text class="line-code" x="166" y="128" text-anchor="start">AuthVerify · feature views</text>
+<rect class="n n-consumer" x="434" y="60" width="126" height="90" rx="12"/>
+<text class="title-sm code" x="450" y="86" text-anchor="start">app/auth/</text>
+<text class="line" x="450" y="108" text-anchor="start">data</text>
+<text class="line" x="450" y="128" text-anchor="start">lifecycle</text>
+<rect class="n n-consumer" x="600" y="60" width="410" height="90" rx="12"/>
+<text class="title-sm" x="616" y="86" text-anchor="start">Express app</text>
+<text class="line-code" x="616" y="108" text-anchor="start">server.ts · middleware/auth.ts</text>
+<text class="line-code" x="616" y="128" text-anchor="start">services/UsersService.ts</text>
+<rect class="iface" x="150" y="200" width="410" height="84" rx="10"/>
+<text class="iface-text" x="166" y="224" text-anchor="start">index.ts</text>
+<text class="iface-small" x="166" y="246" text-anchor="start">canonicalUserId · useSession · signOut</text>
+<text class="iface-small" x="166" y="266" text-anchor="start">signInWithMagicLink · verifyMagicLink</text>
+<rect class="iface" x="600" y="200" width="410" height="84" rx="10"/>
+<text class="iface-text" x="616" y="224" text-anchor="start">index.ts</text>
+<text class="iface-small" x="616" y="246" text-anchor="start">authHttpHandler · resolveAuthenticatedSession</text>
+<text class="iface-small" x="616" y="266" text-anchor="start">createEmailPasswordUser · toAuthenticatedIdentity</text>
+<rect class="n n-neutral" x="150" y="300" width="410" height="60" rx="10"/>
+<text class="title-sm code" x="164" y="324" text-anchor="start">application/</text>
+<text class="note" x="164" y="345" text-anchor="start">identity · magicLink · session</text>
+<rect class="n n-auth" x="150" y="376" width="410" height="60" rx="10"/>
+<text class="title-sm code" x="164" y="400" text-anchor="start">infrastructure/authClient.ts</text>
+<text class="note" x="164" y="421" text-anchor="start">Better Auth Svelte client · never exported</text>
+<rect class="n n-neutral" x="600" y="300" width="200" height="60" rx="10"/>
+<text class="title-sm code" x="614" y="324" text-anchor="start">application/</text>
+<text class="note" x="614" y="345" text-anchor="start">session · user creation</text>
+<rect class="n n-neutral" x="810" y="300" width="200" height="60" rx="10"/>
+<text class="title-sm code" x="824" y="324" text-anchor="start">domain/</text>
+<text class="note" x="824" y="345" text-anchor="start">AuthenticatedIdentity type</text>
+<rect class="n n-neutral" x="600" y="376" width="200" height="60" rx="10"/>
+<text class="title-sm code" x="614" y="400" text-anchor="start">config/</text>
+<text class="note" x="614" y="421" text-anchor="start">linking policy · origins</text>
+<rect class="n n-auth" x="810" y="376" width="200" height="60" rx="10"/>
+<text class="title-sm code" x="824" y="400" text-anchor="start">infrastructure/</text>
+<text class="note" x="824" y="421" text-anchor="start">Better Auth · handler · email</text>
+<rect class="n n-service" x="1040" y="300" width="160" height="44" rx="10"/>
+<text class="title-sm" x="1054" y="319" text-anchor="start">PostgreSQL</text>
+<text class="note" x="1054" y="336" text-anchor="start">auth tables</text>
+<rect class="n n-service" x="1040" y="352" width="160" height="44" rx="10"/>
+<text class="title-sm" x="1054" y="371" text-anchor="start">Resend</text>
+<text class="note" x="1054" y="388" text-anchor="start">magic-link email</text>
+<rect class="n n-planned" x="1040" y="404" width="160" height="44" rx="10"/>
+<text class="title-sm" x="1054" y="423" text-anchor="start">OAuth</text>
+<text class="note" x="1054" y="440" text-anchor="start">planned · #216</text>
+<text class="note" x="150" y="534" text-anchor="start">Boundary tests reject Better Auth or internal auth-module imports outside modules/auth, in both frontend and backend.</text>
+<text class="note" x="150" y="554" text-anchor="start">app/auth/ receives userId from App.svelte and never imports the module; admin tokens stay in middleware/auth.ts.</text>
+</svg>

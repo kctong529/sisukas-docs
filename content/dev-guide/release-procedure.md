@@ -39,6 +39,16 @@ Calendar visibility persistence requires `backend/drizzle/sql/0005_calendar_visi
 
 If this gate is unresolved, **stop before merging `dev` into `main`**. A version bump or release tag does not resolve it.
 
+## Authentication migration `0006` gate (next release)
+
+Account linking requires the unique index `account_provider_identity_unique` on `public.account(provider_id, account_id)` from `backend/drizzle/sql/0006_account_provider_identity_unique.sql`. It was applied and verified on **Supabase Test** during #215; **Production application has not been confirmed** in this documentation. This is a prerequisite before promoting the corresponding authentication change.
+
+1. On the intended Production database, identify the target and inspect the existing index and duplicate provider identities **read-only**.
+2. Review the approved standalone SQL, current backup/recovery procedure, and maintenance window; do not use `drizzle-kit push` or replay the unresolved migration journal ([#197](https://github.com/kctong529/sisukas/issues/197)).
+3. Apply the migration before deploying code that depends on it. The index is created transactionally, but normal index construction can briefly block writes to `account`.
+4. Inspect `pg_indexes` for the exact unique definition. Record the migration checksum, database target and execution evidence in release notes.
+5. After `dev` deployment, complete the authentication checks in [Authentication Testing](./authentication-testing/) before declaring #215's staged validation complete.
+
 ## Production smoke checks
 
 After deployment, run **read-only guest checks** against the actual Production origin. On 14 November 2026 the `guest.spec.ts` Chromium suite passed **4/4 in 8.1 seconds** against `https://sisukas.eu`, covering course loading, active/historical sources, protected-view sign-in behavior, and fresh reload/navigation:

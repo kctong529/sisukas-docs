@@ -5,7 +5,7 @@ description: "Capability-oriented frontend ownership, public module contracts, d
 ---
 
 > [!NOTE]
-> **Architecture direction — November 2026.** This page defines the capability-oriented frontend organization established under [#177](https://github.com/kctong529/sisukas/issues/177). The study-group data subsystem is the first reference implementation. The broader frontend migration remains incremental, and existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use until their respective capabilities are relocated.
+> **Architecture direction — November 2026.** This page defines the capability-oriented frontend organization established under [#177](https://github.com/kctong529/sisukas/issues/177). The study-group data subsystem was the first reference implementation; authentication now provides another implemented module boundary. The broader frontend migration remains incremental, and existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/lib/`, and `src/components/` directories remain in use until their respective capabilities are relocated.
 
 ## Goals and organizing principles
 
@@ -110,6 +110,12 @@ Internal code within the study-group module may import its own implementation fi
 Existing formatting utilities are not included in the core public interface. Their current external consumers retain documented transitional imports until their ownership is reconsidered during later migrations.
 
 The public entry point does not introduce new retrieval behavior. Calling `entry()` alone remains observational and does not initiate network retrieval.
+
+## Authentication as a second implemented module
+
+The #215 refactor introduced `src/modules/auth/index.ts` as the public frontend authentication entry point. The Better Auth SDK client remains inside `src/modules/auth/infrastructure/`, while `application/` exposes magic-link, identity and session operations. Components and application features consume public methods, not raw SDK client internals. Import-boundary regression tests enforce this contract.
+
+The application-wide authenticated data lifecycle remains in `src/app/auth/` because it coordinates guest and signed-in loading for other capabilities. Authentication establishes **who** the user is (`user.id`); the application lifecycle decides **which data** to load or reset. See [Authentication Architecture](../authentication/) for both frontend and backend ownership.
 
 ## Dependency rules
 

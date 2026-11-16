@@ -8,7 +8,7 @@ description: "How Better Auth sessions, route authorization, and separate admin 
 
 ## User authentication and authorization
 
-The Better Auth configuration lives in `backend/src/lib/auth.ts`. `extractSession` calls `auth.api.getSession` using incoming request headers and stores the session and user in `res.locals`. `requireAuth` returns `401 Unauthorized` if no authenticated user was found.
+Better Auth is encapsulated by `backend/src/modules/auth/`. Express `extractSession` in `backend/src/middleware/auth.ts` uses the public `resolveAuthenticatedSession` operation to resolve incoming request headers, then stores the resolved session and user in `res.locals`. `requireAuth` returns `401 Unauthorized` if no authenticated user was found. `res.locals.user.id` is the canonical Sisukas user identifier; provider identities are not used for resource ownership.
 
 Authentication establishes identity; individual handlers still need to enforce ownership. For example, `GET /api/users/:id` and `DELETE /api/users/:id` check that the URL ID matches `res.locals.user.id` and return `403 Forbidden` on a mismatch.
 
@@ -61,5 +61,6 @@ Route checks enforce application permissions. Database RLS can supplement these 
 ## Related documentation
 
 - [Security](../) — How the security boundaries fit together.
+- [Account Linking](../account-linking/) — Explicit provider identity association and conflict rules.
 - [Row-Level Security](../row-level-security-testing/) — Database policy concepts and the test harness.
 - [System Overview](../../system-overview/) — Backend responsibilities.

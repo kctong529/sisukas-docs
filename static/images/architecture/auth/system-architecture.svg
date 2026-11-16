@@ -1,0 +1,287 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 800" width="1120" height="800" xml:space="preserve" role="img" aria-labelledby="t d">
+<title id="t">Sisukas authentication system architecture</title>
+<desc id="d">The student signs in through the sign-in UI, which uses the frontend modules/auth public API. Its internal Better Auth client calls authHttpHandler at /api/auth/* inside the backend's authentication boundary; the handler applies the account-linking policy, sends magic links through Resend and stores user, account, session and verification rows in PostgreSQL. Google and GitHub OAuth are planned. The auth module passes the canonical user.id to the app/auth data lifecycle, which loads or resets user-owned data. Application requests carry the session cookie; extractSession calls resolveAuthenticatedSession() to obtain the canonical user.id, and routes check ownership before reading or writing plans, favourites, grades and calendar preferences. PostgreSQL adds constraints and RLS policies for the roles they target.</desc>
+<style>
+svg { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.canvas { fill: #ffffff; }
+.code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.region { stroke-width: 1.3; }
+.region-fe { fill: #f6fafd; stroke: #cfe3f1; }
+.region-title { fill: #1b2c40; font-size: 15px; font-weight: 740; }
+.region-sub { fill: #68768a; font-size: 12.5px; }
+.n { stroke-width: 1.5; }
+.n-external { fill: #f5f7fa; stroke: #93a1b3; stroke-dasharray: 6 4; }
+.n-service { fill: #f5f7fa; stroke: #647b96; }
+.n-runtime { fill: #eef6fc; stroke: #3b8bc2; stroke-width: 2.4; }
+.n-projection { fill: #f6f3ff; stroke: #8b77dc; }
+.n-consumer { fill: #ffffff; stroke: #b8c4d3; }
+.n-user { fill: #fff8ec; stroke: #c08a3e; }
+.n-neutral { fill: #ffffff; stroke: #b8c4d3; }
+.n-muted { fill: #f5f7fa; stroke: #a5b2c2; }
+.n-ok { fill: #effaf5; stroke: #3b9279; stroke-width: 2; }
+.n-bad { fill: #fdf3f1; stroke: #c27a62; stroke-width: 2; }
+.tag { font-size: 11px; font-weight: 780; letter-spacing: .9px; }
+.tag-external, .tag-service, .tag-neutral, .tag-muted { fill: #68768a; }
+.tag-runtime { fill: #2a6a99; } .tag-projection { fill: #5a45b5; }
+.tag-consumer { fill: #68768a; } .tag-user { fill: #94612a; }
+.tag-ok { fill: #287b63; } .tag-bad { fill: #a44842; }
+.title { fill: #15253a; font-size: 17px; font-weight: 720; }
+.title-sm { fill: #15253a; font-size: 15.5px; font-weight: 700; }
+.line { fill: #44566c; font-size: 14.5px; }
+.line-code { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.note { fill: #7d8ba0; font-size: 13px; font-style: italic; }
+.pill { fill: #eef2f7; } .pill-text { fill: #506277; font-size: 10.5px; font-weight: 760; letter-spacing: .5px; }
+.pill-runtime { fill: #dcecf7; } .pill-text-runtime { fill: #2a6a99; }
+.pill-user { fill: #fbecd6; } .pill-text-user { fill: #94612a; }
+.pill-ok { fill: #dcefe6; } .pill-text-ok { fill: #29775c; }
+.pill-bad { fill: #f9e4e1; } .pill-text-bad { fill: #a44842; }
+.e { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.e-data { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-user { stroke: #b7791f; stroke-dasharray: 7 5; marker-end: url(#m-user); }
+.e-future { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-flow { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-label { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.l-data { fill: #4b5f78; } .l-user { fill: #94612a; } .l-future { fill: #6f7d92; }
+.diamond { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.d-text { fill: #15253a; font-size: 15px; font-weight: 680; }
+.panel { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.3; }
+.panel-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+@media (prefers-color-scheme: dark) {
+  .canvas { fill: #0f1724; }
+  .region-fe { fill: #12202d; stroke: #24425a; }
+  .region-title, .title, .title-sm, .d-text, .panel-title { fill: #edf3fb; }
+  .region-sub, .note { fill: #8f9db0; }
+  .line { fill: #b9c6d6; } .line-code { fill: #d3deea; }
+  .n-external { fill: #151f2d; stroke: #66768c; }
+  .n-service { fill: #182436; stroke: #7f93ab; }
+  .n-runtime { fill: #12283b; stroke: #5aa7dc; }
+  .n-projection { fill: #1d1a33; stroke: #9a8af0; }
+  .n-consumer, .n-neutral { fill: #182436; stroke: #4b5f78; }
+  .n-user { fill: #251e12; stroke: #d29a4b; }
+  .n-muted { fill: #151f2d; stroke: #52647a; }
+  .n-ok { fill: #11251f; stroke: #5fb497; }
+  .n-bad { fill: #2a1a19; stroke: #d99a82; }
+  .tag-external, .tag-service, .tag-consumer, .tag-neutral, .tag-muted { fill: #8f9db0; }
+  .tag-runtime { fill: #8cc5ea; } .tag-projection { fill: #b9acf5; } .tag-user { fill: #f2cf9c; }
+  .tag-ok { fill: #8fdcbb; } .tag-bad { fill: #f1b39b; }
+  .pill { fill: #2a394d; } .pill-text { fill: #c2cedb; }
+  .pill-runtime { fill: #1f4560; } .pill-text-runtime { fill: #b7dcf5; }
+  .pill-user { fill: #4a3a1f; } .pill-text-user { fill: #f2cf9c; }
+  .pill-ok { fill: #204d3e; } .pill-text-ok { fill: #a6e9cc; }
+  .pill-bad { fill: #58312d; } .pill-text-bad { fill: #f0b5ae; }
+  .e-data, .e-flow { stroke: #9cacc0; } .e-user { stroke: #d29a4b; } .e-future { stroke: #7f8da1; }
+  .e-label { stroke: #0f1724; }
+  .l-data { fill: #b9c6d6; } .l-user { fill: #f2cf9c; } .l-future { fill: #a3b0c1; }
+  .diamond { fill: #182436; stroke: #9cacc0; }
+  .panel { fill: #151f2d; stroke: #2b3a4e; }
+}
+
+.bnd { fill: none; stroke: #8fb3d9; stroke-width: 1.4; stroke-dasharray: 8 5; }
+.bnd-label { fill: #2f6fb0; font-size: 12px; font-weight: 760; letter-spacing: .6px; }
+.halo { paint-order: stroke; stroke: #fbfcfd; stroke-width: 6px; stroke-linejoin: round; }
+.ctr { fill: #fbfcfd; stroke: #c9d3df; stroke-width: 1.3; }
+.ctr-title { fill: #15253a; font-size: 15px; font-weight: 740; }
+.ctr-sub { fill: #68768a; font-size: 12.5px; }
+.n-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.tag-auth { fill: #2f6fb0; }
+.n-planned { fill: #ffffff; stroke: #93a1b3; stroke-dasharray: 5 4; }
+.tag-planned { fill: #7d8ba0; }
+.n-reject { fill: #fcf4f3; stroke: #b4534a; stroke-width: 1.6; }
+.tag-reject { fill: #a2463e; }
+.n-accept { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 2; }
+.tag-accept { fill: #2f6fb0; }
+.e-auth { stroke: #2f6fb0; marker-end: url(#m-auth); }
+.e-app { stroke: #4b5f78; marker-end: url(#m-data); }
+.e-plan { stroke: #8a96a8; stroke-dasharray: 2 5; marker-end: url(#m-future); }
+.e-ret { stroke: #647b96; stroke-dasharray: 6 4; marker-end: url(#m-data); }
+.e-reject { stroke: #b4534a; marker-end: url(#m-reject); }
+.l-auth { fill: #2f6fb0; } .l-app { fill: #4b5f78; } .l-plan { fill: #6f7d92; } .l-reject { fill: #a2463e; }
+.tbl { fill: #ffffff; stroke: #b8c4d3; stroke-width: 1.3; }
+.tbl-canon { fill: #ffffff; stroke: #2f6fb0; stroke-width: 2.2; }
+.tbl-head { fill: #f2f5f8; }
+.tbl-head-canon { fill: #e3eefa; }
+.tbl-name { fill: #15253a; font-size: 15px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col { fill: #2c3e55; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.col-opt { fill: #7d8ba0; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.key { font-size: 10px; font-weight: 800; letter-spacing: .4px; }
+.key-pk { fill: #2f6fb0; } .key-fk { fill: #68768a; } .key-uq { fill: #8a5a12; }
+.row-hl { fill: #e3eefa; }
+.card { fill: #8a96a8; font-size: 12.5px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.rel { fill: none; stroke: #647b96; stroke-width: 1.6; }
+.rel-label { fill: #4b5f78; font-size: 12px; font-style: italic; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.life { stroke: #c3ccd8; stroke-width: 1.3; stroke-dasharray: 4 4; }
+.actor { fill: #ffffff; stroke: #647b96; stroke-width: 1.5; }
+.actor-auth { fill: #eef5fc; stroke: #2f6fb0; stroke-width: 1.8; }
+.actor-plan { fill: #ffffff; stroke: #93a1b3; stroke-width: 1.5; stroke-dasharray: 5 4; }
+.actor-text { fill: #15253a; font-size: 14px; font-weight: 720; }
+.msg { fill: #15253a; font-size: 13.5px; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.msg-code { fill: #2c3e55; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; }
+.frame { fill: none; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-tab { fill: #e3eefa; stroke: #9fb4cc; stroke-width: 1.3; }
+.frame-text { fill: #1f4f80; font-size: 14px; font-weight: 740; }
+.snote { fill: #fffdf5; stroke: #d8cfae; stroke-width: 1.2; }
+.snote-hl { fill: #e3eefa; stroke: #2f6fb0; stroke-width: 1.4; }
+.snote-text { fill: #3d4b5c; font-size: 13.5px; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.a-ctr { fill: #15253a; font-size: 15px; font-weight: 740; }
+.a-title { fill: #15253a; font-size: 15px; font-weight: 700; }
+.a-detail { fill: #44566c; font-size: 13px; }
+.a-foot { fill: #68768a; font-size: 13px; }
+.a-lbl { font-size: 12.5px; font-weight: 650; paint-order: stroke; stroke: #ffffff; stroke-width: 5px; stroke-linejoin: round; }
+.a-lbl .mono { font-weight: 600; }
+.layer { fill: #f7f9fb; stroke: #dfe6ee; stroke-width: 1.2; }
+.iface { fill: #2f6fb0; }
+.iface-text { fill: #ffffff; font-size: 14px; font-weight: 750; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.iface-small { fill: #e3eefa; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+@media (prefers-color-scheme: dark) {
+  .bnd { stroke: #4f79a6; } .bnd-label { fill: #8cbbea; } .halo { stroke: #131c29; }
+  .ctr { fill: #131c29; stroke: #34465b; } .ctr-title { fill: #edf3fb; } .ctr-sub { fill: #8f9db0; }
+  .n-auth, .n-accept { fill: #12263a; stroke: #6aa7e3; } .tag-auth, .tag-accept { fill: #8cbbea; }
+  .n-planned { fill: #151f2d; stroke: #66768c; } .tag-planned { fill: #8f9db0; }
+  .n-reject { fill: #2a1a19; stroke: #d98b80; } .tag-reject { fill: #f0b0a6; }
+  .e-auth { stroke: #6aa7e3; } .e-app, .e-ret { stroke: #9cacc0; } .e-reject { stroke: #d98b80; }
+  .l-auth { fill: #8cbbea; } .l-app { fill: #b9c6d6; } .l-reject { fill: #f0b0a6; }
+  .tbl { fill: #182436; stroke: #4b5f78; } .tbl-canon { fill: #182436; stroke: #6aa7e3; }
+  .tbl-head { fill: #1f2d40; } .tbl-head-canon, .row-hl { fill: #173250; }
+  .tbl-name { fill: #edf3fb; } .col { fill: #d3deea; } .col-opt { fill: #8f9db0; }
+  .key-pk { fill: #8cbbea; } .key-uq { fill: #e7c27a; }
+  .card, .rel-label, .msg, .msg-code { stroke: #0f1724; }
+  .card { fill: #a3b0c1; } .rel { stroke: #9cacc0; } .rel-label { fill: #b9c6d6; }
+  .life { stroke: #34465b; }
+  .actor { fill: #182436; stroke: #9cacc0; } .actor-auth { fill: #12263a; stroke: #6aa7e3; }
+  .actor-plan { fill: #151f2d; stroke: #66768c; } .actor-text, .msg { fill: #edf3fb; } .msg-code { fill: #d3deea; }
+  .frame { stroke: #3d5a7a; } .frame-tab { fill: #173250; stroke: #3d5a7a; } .frame-text { fill: #a9cdf0; }
+  .snote { fill: #222018; stroke: #4c4632; } .snote-hl { fill: #173250; stroke: #6aa7e3; } .snote-text { fill: #c9d3df; }
+  .layer { fill: #151f2d; stroke: #2b3a4e; }
+  .a-ctr, .a-title { fill: #edf3fb; } .a-detail { fill: #b9c6d6; } .a-foot { fill: #8f9db0; }
+  .a-lbl { stroke: #0f1724; }
+  .iface { fill: #3f86cc; }
+}
+</style>
+<defs>
+<marker id="m-data" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#647b96" stroke-width="1.8"/></marker>
+<marker id="m-user" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b7791f" stroke-width="1.8"/></marker>
+<marker id="m-future" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#8a96a8" stroke-width="1.8"/></marker>
+<marker id="m-auth" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#2f6fb0" stroke-width="1.8"/></marker>
+<marker id="m-reject" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#b4534a" stroke-width="1.8"/></marker>
+</defs>
+<rect class="canvas" width="1120" height="800"/>
+<rect class="ctr" x="190" y="130" width="270" height="560" rx="16"/>
+<text class="a-ctr" x="208" y="158" text-anchor="start">Svelte frontend</text>
+<text class="ctr-sub" x="208" y="177" text-anchor="start">browser</text>
+<rect class="ctr" x="495" y="130" width="360" height="560" rx="16"/>
+<text class="a-ctr" x="513" y="158" text-anchor="start">Express backend</text>
+<text class="ctr-sub" x="513" y="177" text-anchor="start">Node.js · Drizzle ORM</text>
+<rect class="ctr" x="878" y="130" width="232" height="560" rx="16"/>
+<text class="a-ctr" x="896" y="158" text-anchor="start">PostgreSQL</text>
+<text class="ctr-sub" x="896" y="177" text-anchor="start">constraints · role-dependent RLS</text>
+<rect class="bnd" x="510" y="192" width="330" height="196" rx="12"/>
+<rect class="bnd" x="510" y="404" width="330" height="272" rx="12"/>
+<rect class="bnd" x="886" y="192" width="216" height="196" rx="12"/>
+<rect class="bnd" x="886" y="404" width="216" height="272" rx="12"/>
+<path class="e e-auth" d="M160 380 C176 380 176 251 206 251"/>
+<text class="a-lbl l-auth" x="150" y="316" text-anchor="end">sign in</text>
+<path class="e e-app" d="M160 410 C176 410 176 603 206 603"/>
+<text class="a-lbl l-app" x="150" y="520" text-anchor="end">use the app</text>
+<path class="e e-auth" d="M325 286 V318"/>
+<path class="e e-auth" d="M325 388 V420"/>
+<text class="a-lbl l-auth" x="333" y="408" text-anchor="start"><tspan class="mono">user.id</tspan></text>
+<path class="e e-app" d="M325 490 V566"/>
+<text class="a-lbl l-app" x="333" y="532" text-anchor="start">load / reset data</text>
+<path class="e e-auth" d="M440 353 H476 V262 H522"/>
+<g transform="rotate(-90 468 308)">
+<text class="a-lbl l-auth" x="468" y="308" text-anchor="middle"><tspan class="mono">/api/auth/*</tspan></text>
+</g>
+<path class="e e-app" d="M440 616 H476 V478 H522"/>
+<g transform="rotate(-90 468 548)">
+<text class="a-lbl l-app" x="468" y="548" text-anchor="middle">request + session cookie</text>
+</g>
+<path class="e e-auth" d="M595 236 V98"/>
+<text class="a-lbl l-auth" x="603" y="120" text-anchor="start">magic link</text>
+<path class="e e-plan" d="M770 236 V98"/>
+<path class="e e-plan" d="M800 236 C800 160 957 160 957 98"/>
+<text class="a-lbl l-plan" x="785" y="182" text-anchor="middle">OAuth</text>
+<path class="e e-auth" d="M824 262 H894"/>
+<text class="a-lbl l-auth" x="859" y="254" text-anchor="middle">Drizzle</text>
+<path class="e e-auth" d="M800 444 V320"/>
+<text class="a-lbl l-auth" x="792" y="398" text-anchor="end"><tspan class="mono">resolveAuthenticatedSession()</tspan></text>
+<path class="e e-app" d="M675 510 V540"/>
+<text class="a-lbl l-app" x="683" y="528" text-anchor="start">canonical <tspan class="mono">user.id</tspan></text>
+<path class="e e-app" d="M824 600 H894"/>
+<text class="a-lbl l-app" x="859" y="592" text-anchor="middle">authorized</text>
+<text class="bnd-label halo" x="524" y="212" text-anchor="start">AUTHENTICATION BOUNDARY</text>
+<text class="bnd-label halo" x="524" y="424" text-anchor="start">AUTHORIZATION BOUNDARY</text>
+<rect class="n n-service" x="520" y="20" width="150" height="74" rx="12"/>
+<text class="tag tag-service" x="536" y="44" text-anchor="start">EMAIL SERVICE</text>
+<text class="a-title" x="536" y="67" text-anchor="start">Resend</text>
+<rect class="n n-planned" x="690" y="20" width="165" height="74" rx="12"/>
+<text class="tag tag-planned" x="706" y="44" text-anchor="start">PLANNED · #216</text>
+<text class="a-title" x="706" y="67" text-anchor="start">Google OAuth</text>
+<rect class="n n-planned" x="875" y="20" width="165" height="74" rx="12"/>
+<text class="tag tag-planned" x="891" y="44" text-anchor="start">PLANNED · LATER</text>
+<text class="a-title" x="891" y="67" text-anchor="start">GitHub OAuth</text>
+<rect class="n n-neutral" x="20" y="340" width="140" height="100" rx="12"/>
+<text class="tag tag-neutral" x="36" y="364" text-anchor="start">PERSON</text>
+<text class="a-title" x="36" y="387" text-anchor="start">Student</text>
+<text class="a-detail" x="36" y="408" text-anchor="start">web browser</text>
+<rect class="n n-consumer" x="210" y="216" width="230" height="70" rx="12"/>
+<text class="tag tag-consumer" x="226" y="240" text-anchor="start">UI</text>
+<text class="a-detail" x="424" y="240" text-anchor="end"><tspan class="mono">AuthModal</tspan></text>
+<text class="a-title" x="226" y="263" text-anchor="start">Sign-in UI</text>
+<rect class="n n-auth" x="210" y="318" width="230" height="70" rx="12"/>
+<text class="tag tag-auth" x="226" y="342" text-anchor="start">PUBLIC API</text>
+<text class="a-detail" x="424" y="342" text-anchor="end"><tspan class="mono">modules/auth</tspan></text>
+<text class="a-title" x="226" y="365" text-anchor="start">Auth module</text>
+<rect class="n n-neutral" x="210" y="420" width="230" height="70" rx="12"/>
+<text class="tag tag-neutral" x="226" y="444" text-anchor="start">APP LIFECYCLE</text>
+<text class="a-detail" x="424" y="444" text-anchor="end"><tspan class="mono">app/auth</tspan></text>
+<text class="a-title" x="226" y="467" text-anchor="start">Data lifecycle</text>
+<rect class="n n-consumer" x="210" y="566" width="230" height="100" rx="12"/>
+<text class="tag tag-consumer" x="226" y="590" text-anchor="start">FEATURES</text>
+<text class="a-title" x="226" y="613" text-anchor="start">App features</text>
+<text class="a-detail" x="226" y="634" text-anchor="start">plans · favourites · grades</text>
+<text class="a-detail" x="226" y="653" text-anchor="start">Calendar preferences</text>
+<rect class="n n-auth" x="526" y="236" width="298" height="84" rx="12"/>
+<text class="tag tag-auth" x="542" y="260" text-anchor="start">BETTER AUTH · INTERNAL</text>
+<text class="a-title" x="542" y="283" text-anchor="start">Auth handler</text>
+<text class="a-detail" x="542" y="304" text-anchor="start"><tspan class="mono">authHttpHandler</tspan> · magic link · OAuth</text>
+<rect class="n n-neutral" x="526" y="332" width="230" height="46" rx="12"/>
+<text class="a-title" x="542" y="360.0" text-anchor="start">Account-linking policy</text>
+<rect class="n n-neutral" x="526" y="444" width="298" height="66" rx="12"/>
+<text class="tag tag-neutral" x="542" y="468" text-anchor="start">MIDDLEWARE</text>
+<text class="a-detail" x="808" y="468" text-anchor="end"><tspan class="mono">extractSession</tspan></text>
+<text class="a-title" x="542" y="491" text-anchor="start">Session resolution</text>
+<rect class="n n-consumer" x="526" y="540" width="298" height="120" rx="12"/>
+<text class="tag tag-consumer" x="542" y="564" text-anchor="start">APPLICATION ROUTES</text>
+<text class="a-title" x="542" y="587" text-anchor="start">Ownership checks</text>
+<text class="a-detail" x="542" y="608" text-anchor="start"><tspan class="mono">/api/plans</tspan> · <tspan class="mono">/api/favourites</tspan></text>
+<text class="a-detail" x="542" y="627" text-anchor="start"><tspan class="mono">/api/grades</tspan> · <tspan class="mono">…/calendar</tspan></text>
+<text class="a-detail" x="542" y="646" text-anchor="start">own records and plans only</text>
+<rect class="n n-auth" x="898" y="226" width="200" height="150" rx="12"/>
+<text class="tag tag-auth" x="914" y="250" text-anchor="start">AUTH TABLES</text>
+<text class="a-title" x="914" y="273" text-anchor="start">Identity</text>
+<text class="a-detail" x="914" y="294" text-anchor="start"><tspan class="mono">user</tspan></text>
+<text class="a-detail" x="914" y="313" text-anchor="start"><tspan class="mono">account</tspan></text>
+<text class="a-detail" x="914" y="332" text-anchor="start"><tspan class="mono">session</tspan></text>
+<text class="a-detail" x="914" y="351" text-anchor="start"><tspan class="mono">verification</tspan></text>
+<rect class="n n-consumer" x="898" y="438" width="200" height="220" rx="12"/>
+<text class="tag tag-consumer" x="914" y="462" text-anchor="start">DOMAIN TABLES</text>
+<text class="a-title" x="914" y="485" text-anchor="start">User-owned</text>
+<text class="a-detail" x="914" y="506" text-anchor="start"><tspan class="mono">plans</tspan></text>
+<text class="a-detail" x="914" y="525" text-anchor="start"><tspan class="mono">plan_instances</tspan></text>
+<text class="a-detail" x="914" y="544" text-anchor="start"><tspan class="mono">favourites</tspan></text>
+<text class="a-detail" x="914" y="563" text-anchor="start"><tspan class="mono">course_grades</tspan></text>
+<text class="a-detail" x="914" y="582" text-anchor="start"><tspan class="mono">calendar_hidden_groups</tspan></text>
+<text class="a-detail" x="914" y="601" text-anchor="start"><tspan class="mono">calendar_occurrence_</tspan></text>
+<text class="a-detail" x="914" y="620" text-anchor="start"><tspan class="mono">  overrides</tspan></text>
+<path class="e e-auth" d="M190 735 H240"/>
+<text class="a-detail" x="250" y="740" text-anchor="start">authentication flow</text>
+<path class="e e-app" d="M420 735 H470"/>
+<text class="a-detail" x="480" y="740" text-anchor="start">authorized application request</text>
+<path class="e e-plan" d="M720 735 H770"/>
+<text class="a-detail" x="780" y="740" text-anchor="start">planned</text>
+<rect class="bnd" x="860" y="727" width="40" height="18" rx="5"/>
+<text class="a-detail" x="910" y="740" text-anchor="start">trust boundary</text>
+<text class="a-foot" x="190" y="772" text-anchor="start">Routes enforce ownership on the canonical <tspan class="mono">user.id</tspan>. RLS policies apply only to the roles they target;</text>
+<text class="a-foot" x="190" y="790" text-anchor="start">the Supabase-oriented RLS tests do not show enforcement for Better Auth or Drizzle runtime queries.</text>
+</svg>

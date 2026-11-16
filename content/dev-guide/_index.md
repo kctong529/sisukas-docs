@@ -32,6 +32,7 @@ description: "Practical instructions for building, testing, running, and maintai
 
 ## Read the design
 
+- [Authentication Architecture](../architecture/authentication/) and [Authentication Data Model](../architecture/authentication-data-model/) — Identity and session boundaries.
 - [Course Data](../architecture/course-data/) — Data ownership and canonical/runtime boundaries.
 - [Teaching Events](../architecture/teaching-events/) — Event identity and location contracts.
 - [Study-group Loading](../architecture/study-group-loading/) — In-memory retrieval architecture.

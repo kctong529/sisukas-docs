@@ -12,7 +12,7 @@ Security in Sisukas is enforced at several boundaries. An authenticated session 
 
 | Boundary | Implementation | Responsibility |
 | --- | --- | --- |
-| User session | Better Auth, configured in `backend/src/lib/auth.ts` | Establish caller identity |
+| User session | Better Auth in `backend/src/modules/auth/` | Establish caller identity |
 | Protected API request | `extractSession`, `requireAuth`, and resource checks | Reject unauthenticated or unauthorized requests |
 | Admin access | Separate expiring token sessions, `requireAdmin` | Protect designated administrative endpoints |
 | Database persistence | PostgreSQL accessed through Drizzle | Persist user records and runtime snapshots |
@@ -36,6 +36,7 @@ A useful security review asks whether a route authenticates the request, checks 
 
 ## Related documentation
 
+- [Account Linking](./account-linking/) — Explicit linking security contract and verified OAuth callback behavior.
 - [Route Authorization](./route-protection/) — User sessions, admin tokens, and ownership checks.
 - [Row-Level Security](./row-level-security-testing/) — PostgreSQL policies and existing tests.
 - [System Overview](../system-overview/) — System responsibilities.
