@@ -5,7 +5,7 @@ description: "Canonical user identity, authentication boundaries, sessions, prov
 ---
 
 > [!NOTE]
-> **Implementation status — 16 November 2026 (#215).** Magic-link sign-in and the explicit linking policy are implemented. Real Better Auth OAuth callback behavior has been exercised with a **controlled test provider**, but Google (#216), GitHub, and connected-method UI (#217) are **not yet enabled**. The refactored authentication modules have passed local regression tests; deployment to Test is pending in this record.
+> **Implementation status — 16 November 2026.** Email magic links and the #215 explicit-linking policy are implemented. Feature-gated Google sign-in (#216, PR #221) has been deployed and manually verified on **Test** for new users, repeated sign-in and session/data persistence. Google remains disabled in Production; GitHub and the connected-methods UI (#217) are not implemented. Error recovery (#222) and full identity/Production acceptance (#218) remain pending.
 
 ## Why identity is independent of sign-in method
 
@@ -39,6 +39,7 @@ backend/src/modules/auth/
 │   └── resolveAuthenticatedSession.ts
 ├── config/
 │   ├── accountLinkingPolicy.ts
+│   ├── socialProviders.ts
 │   └── trustedOrigins.ts
 ├── domain/
 │   └── AuthenticatedIdentity.ts
@@ -50,9 +51,12 @@ backend/src/modules/auth/
 frontend/course-browser/src/modules/auth/
 ├── index.ts                           # Public entry point
 ├── application/
+│   ├── google.ts
 │   ├── identity.ts
 │   ├── magicLink.ts
 │   └── session.ts
+├── config/
+│   └── availableMethods.ts
 └── infrastructure/
     └── authClient.ts
 ```
@@ -63,9 +67,13 @@ The backend retains `src/middleware/auth.ts` for Express middleware **and a sepa
 
 **Implemented:** an email magic link is sent using Resend; Better Auth verifies it and establishes a session for `user.id`. A magic-link user need not have an `account` row.
 
-**Verified with controlled OAuth provider:** an existing linked identity resolves to its established user; explicit linking adds a provider identity to the signed-in user; rejected linking scenarios cannot reassign another user's provider identity.
+**Verified with controlled OAuth provider (#215):** an existing linked identity resolves to its established user; explicit linking adds a provider identity to the signed-in user; rejected linking scenarios cannot reassign another user's provider identity.
 
-**Planned:** enabling Google OAuth (#216), the connected-methods user interface (#217), and rollout acceptance (#218). A provider addition should extend Better Auth configuration and public method actions without changing how application features identify a user.
+**Deployed on Test (#216):** Google OAuth registers a new identity, returns an authenticated session, and preserves application data on repeat sign-in. A Google-created user can subsequently use a magic link to access the same observed data. Attempting unlinked Google sign-in with an existing magic-link email returns `account_not_linked`, but currently redirects to the backend root without useful recovery (#222). The same-`user.id` property still requires explicit deployed verification (#218).
+
+**Feature configuration:** backend `GOOGLE_OAUTH_ENABLED` with `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` controls Better Auth provider registration; the frontend build flag `VITE_GOOGLE_OAUTH_ENABLED` controls whether the Google action is shown. Client credentials must remain backend-only. Test uses `https://api.test.sisukas.eu/api/auth/callback/google` as the authorized callback. Production remains disabled.
+
+**Remaining:** connected-method UI and authenticated Connect Google (#217), OAuth error recovery (#222), and complete acceptance/Production readiness (#218). GitHub OAuth remains separate under #37. A provider addition does not change how application features identify users.
 
 ## Related documentation
 

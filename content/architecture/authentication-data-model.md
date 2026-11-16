@@ -20,6 +20,9 @@ description: "Canonical identity and provider-account mapping, sessions, verific
 
 A user may have **zero or more** `account` rows and **zero or more** sessions. Email magic-link users may have **no** `account` rows at all. Do not infer available sign-in methods solely from the count of linked accounts.
 
+> [!NOTE]
+> **Observed on Test (16 November 2026):** a Google-created user could authenticate again with an email magic link and access the same application data. This does not mean a magic-link login creates another provider-account row or that the explicit Connect Google flow is implemented. Identity-level equality of `user.id` across these paths is a separate acceptance check (#218).
+
 `account.id` is the internal row key. `account.account_id` is the external provider's subject/identity identifier; the two fields have different meanings. `session.id` and session tokens are independent of the canonical user key.
 
 ## Provider-identity uniqueness

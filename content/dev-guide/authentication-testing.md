@@ -47,7 +47,25 @@ The backend and frontend boundary tests prevent new direct imports of internal a
 | Frontend build/PWA generation | Passed |
 | Database uniqueness index | Verified on Supabase Test |
 
-The printed Better Auth errors (`account_not_linked`, untrusted provider, invalid state) are expected **negative test cases**. An intentional mock-service exception may also appear in frontend test stdout despite that test passing. These results are evidence from the local branch; they do not verify the pending deployed Test revision.
+The printed Better Auth errors (`account_not_linked`, untrusted provider, invalid state) in these **controlled-provider tests** are expected negative test cases. An intentional mock-service exception may also appear in frontend test stdout despite that test passing. These results are evidence from the local branch; they do not verify the pending deployed Test revision.
+
+## Real Google OAuth — Test verification (16 November 2026, #216)
+
+The following are **manual observations from the deployed Test environment**, not results from the controlled-provider integration suite above:
+
+| Scenario | Result | Scope/limitation |
+| --- | --- | --- |
+| New Google identity signs in | **Pass** | Account and authenticated session created; all five application views loaded |
+| Same identity signs in again through Google | **Pass** | Existing application data persisted |
+| Google-created identity signs in with magic link | **Pass (observed data)** | Same data available; the exact `user.id` was not independently compared |
+| Existing unlinked magic-link identity signs in through Google | **Expected rejection, poor recovery** | `account_not_linked`, browser ends at `https://api.test.sisukas.eu/?error=account_not_linked` displaying backend root response |
+| Authenticated Connect Google for existing user | **Not yet tested** | Account settings/linking implementation belongs to #217 |
+| Consent rejection, expired state, other OAuth failures | **Not yet verified end to end** | Frontend error handling belongs to #222; acceptance to #218 |
+| Production Google sign-in | **Not enabled** | Defer until #218 rollout gate |
+
+A successful repeat sign-in and unchanged visible data do **not** substitute for checking the canonical `user.id`. For #217/#218 use dedicated Test identities, capture the resolved identity before and after linking, and compare ownership of plans, favourites, grades and Calendar preference records. Do not log tokens or passwords.
+
+**Current defect (#222):** unlinked existing users receive a raw backend-root error rather than actionable frontend feedback. Do not mark OAuth failure recovery as passing until the redirect and message are exercised in the browser.
 
 ## Verify migration `0006` on Test
 

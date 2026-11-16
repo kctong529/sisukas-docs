@@ -28,6 +28,18 @@ Before merging, confirm the candidate contains #192's completed verification wor
 3. Run E01–E05 browser acceptance on `https://test.sisukas.eu` with two *different dedicated* authenticated accounts. Follow [Calendar Visibility Testing](../calendar-visibility-testing/) for account-state capture and cleanup. Review any leftover `Playwright #192` temporary plans.
 4. Inspect the released staging assets and API behavior before promoting.
 
+## Google OAuth rollout gate (#216, #217, #218, #222)
+
+Google OAuth was deployed and manually exercised on **Test** on 16 November 2026 (#216, PR #221). This is not approval to enable the provider in Production. The backend uses `GOOGLE_OAUTH_ENABLED` and backend-only `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`; frontend visibility is controlled at build time with `VITE_GOOGLE_OAUTH_ENABLED`. Keep both feature gates disabled for Production until the approved rollout.
+
+- **Test callback:** `https://api.test.sisukas.eu/api/auth/callback/google`. Register the actual public backend callback in the Google OAuth web client. Keep Test credentials in appropriately scoped deployment secrets; never put the client secret in a `VITE_*` variable or commit it.
+- **Google publishing status:** the external Google OAuth app may remain in **Testing**, with designated test users, during Test acceptance. Complete Google Branding, privacy-policy and audience requirements separately before public enablement.
+- **Before Production:** complete account settings and explicit linking (#217), usable callback failure recovery (#222), end-to-end identity/session/conflict acceptance and rollback review (#218), and confirm the Production `0006` migration gate below.
+- **Rollback:** disable the backend provider flag and frontend sign-in action through the reviewed deployment configuration; check existing magic-link access. Because the frontend flag is build-time, deploying a new frontend build is necessary to hide the action.
+- **Evidence:** capture the deployed SHA, workflow status, OAuth client callback configuration (not credential values), results for new/repeat/linked/conflicting users, and the approval for Production enablement.
+
+The Test-only acceptance evidence and its limitations are recorded in [Authentication Testing](../authentication-testing/). This section is a **future release gate**, not a statement that Production migration or Google OAuth rollout is complete.
+
 ## Production migration gate
 
 Calendar visibility persistence requires `backend/drizzle/sql/0005_calendar_visibility_preferences.sql`. **Migration `0005` was applied to both Test and Production before the v0.9.0 Production deployment on 14 November 2026.** Refer to [Database Operations](../database-operations/#calendar-preference-migration-0005) and migration-history investigation [#197](https://github.com/kctong529/sisukas/issues/197). Do not infer that a passing Test suite means Production is ready.
