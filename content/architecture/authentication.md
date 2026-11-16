@@ -5,7 +5,7 @@ description: "Canonical user identity, authentication boundaries, sessions, prov
 ---
 
 > [!NOTE]
-> **Implementation status — 16 November 2026.** Email magic links and the #215 explicit-linking policy are implemented. Feature-gated Google sign-in (#216, PR #221) has been deployed and manually verified on **Test** for new users, repeated sign-in and session/data persistence. Google remains disabled in Production; GitHub and the connected-methods UI (#217) are not implemented. Error recovery (#222) and full identity/Production acceptance (#218) remain pending.
+> **Status — 16 November 2026.** Email magic links, explicit linking policy (#215), Google sign-in on Test (#216), callback error recovery (#222), and Account settings with authenticated Connect Google (#217) are implemented. Deployed Test checks confirmed matching canonical `user.id` across linking and both sign-in methods, including Google-created accounts using a magic link. **Google remains disabled in Production**; GitHub OAuth and broader release/rollback acceptance (#218) remain separate.
 
 ## Why identity is independent of sign-in method
 
@@ -19,8 +19,8 @@ A person may first authenticate by email magic link and subsequently **explicitl
 
 | Boundary | Responsibility | Deliberately excluded |
 | --- | --- | --- |
-| Svelte `modules/auth` | Public sign-in/sign-out, session and identity adapters; internal Better Auth browser client | Loading plans or Calendar data |
-| `src/app/auth/` | Guest-to-authenticated lifecycle, account-scoped loading and state reset | Provider identity and OAuth callbacks |
+| Svelte `modules/auth` | Public sign-in/sign-out, connected-provider discovery, explicit linking, callback verification and session/identity adapters; internal Better Auth browser client | Loading plans or Calendar data |
+| `src/app/auth/` | Guest-to-authenticated lifecycle, account-scoped loading and state reset | Provider ownership and OAuth authorization policy |
 | Express `modules/auth` | Better Auth construction, magic-link delivery, session resolution, HTTP handler, linking policy | Per-route authorization of plans and other domain resources |
 | Express middleware and routes | Session extraction, `requireAuth`, ownership/permission checks | Choosing a login provider |
 | PostgreSQL | Identity, session and provider-account persistence; indexes and foreign keys | Automatic proof of user authorization merely because RLS policies exist |
@@ -51,9 +51,13 @@ backend/src/modules/auth/
 frontend/course-browser/src/modules/auth/
 ├── index.ts                           # Public entry point
 ├── application/
+│   ├── accountLinkCallback.ts
+│   ├── connectedMethods.ts
 │   ├── google.ts
 │   ├── identity.ts
+│   ├── linkGoogle.ts
 │   ├── magicLink.ts
+│   ├── oauthCallbackError.ts
 │   └── session.ts
 ├── config/
 │   └── availableMethods.ts
@@ -63,21 +67,25 @@ frontend/course-browser/src/modules/auth/
 
 The backend retains `src/middleware/auth.ts` for Express middleware **and a separate admin-token mechanism**; the frontend retains `src/app/auth/` for application data lifecycle. These components are not interchangeable and were deliberately not collapsed into the authentication capability. The older `backend/src/lib/auth.ts`, `backend/src/lib/accountLinkingPolicy.ts`, and `frontend/course-browser/src/lib/authClient.ts` compatibility exports were removed in the #215 boundary refactor. Tests prevent consumers from importing internal authentication infrastructure directly.
 
-## Current and future authentication paths
+## Implemented authentication and linking paths
 
-**Implemented:** an email magic link is sent using Resend; Better Auth verifies it and establishes a session for `user.id`. A magic-link user need not have an `account` row.
+**Email magic link.** Better Auth sends a link via Resend and establishes a session for the existing or newly registered `user.id`. Magic-link users can have no OAuth `account` rows.
 
-**Verified with controlled OAuth provider (#215):** an existing linked identity resolves to its established user; explicit linking adds a provider identity to the signed-in user; rejected linking scenarios cannot reassign another user's provider identity.
+**Google sign-in on Test (#216).** The feature-gated provider supports new verified Google identities and repeat sign-in. An existing, *unlinked* magic-link account cannot be silently linked merely because its email matches; the rejected callback returns to the frontend with `account_not_linked` and actionable magic-link guidance (#222). Unknown errors have a safe fallback and callback error parameters are removed from the URL.
 
-**Deployed on Test (#216):** Google OAuth registers a new identity, returns an authenticated session, and preserves application data on repeat sign-in. A Google-created user can subsequently use a magic link to access the same observed data. Attempting unlinked Google sign-in with an existing magic-link email returns `account_not_linked`, but currently redirects to the backend root without useful recovery (#222). The same-`user.id` property still requires explicit deployed verification (#218).
+**Account settings and explicit Google linking (#217).** The authenticated dialog displays the current account email, magic-link availability, and Google connection state using Better Auth `listAccounts()`. It does not expose provider credentials. **Connect Google** calls authenticated `linkSocial()`, not `signIn.social()`, with an explicit callback. Account selection is requested using `additionalParams: { prompt: "select_account" }`, allowing users to retry with a different Google identity after an email mismatch. The same-email restriction is enforced by the backend.
 
-**Feature configuration:** backend `GOOGLE_OAUTH_ENABLED` with `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` controls Better Auth provider registration; the frontend build flag `VITE_GOOGLE_OAUTH_ENABLED` controls whether the Google action is shown. Client credentials must remain backend-only. Test uses `https://api.test.sisukas.eu/api/auth/callback/google` as the authorized callback. Production remains disabled.
+**Callback verification.** A short-lived `sessionStorage` marker records the original `user.id` and creation time (15-minute validity). On return, the frontend checks that the session still identifies the original user **and** Better Auth reports a Google association before displaying success. The marker is a browser consistency check, not authorization or OAuth state security; Better Auth enforces the authenticated linking operation and provider state. Invalid, expired and mismatched returns do not produce success feedback. Failures are announced as alerts, successes as status messages.
 
-**Remaining:** connected-method UI and authenticated Connect Google (#217), OAuth error recovery (#222), and complete acceptance/Production readiness (#218). GitHub OAuth remains separate under #37. A provider addition does not change how application features identify users.
+**Deployed Test evidence (16 November 2026).** An existing magic-link identity was explicitly linked to a matching Google account, then reauthenticated using Google and magic links with the **same canonical `user.id` and saved application data**. The reverse direction, Google-created account followed by magic-link sign-in, was also confirmed at `user.id` level. A different-email attempt was rejected without changing the original identity or data, and retrying with the matching Google account worked using the chooser. Backend controlled-provider conflict/cancellation/expiry coverage complements the deployed browser checks; it is not equivalent to having manually exercised every provider cancellation UI path.
+
+**Feature configuration.** Backend `GOOGLE_OAUTH_ENABLED`, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` control provider availability; frontend build-time `VITE_GOOGLE_OAUTH_ENABLED` controls visibility. Credentials remain backend-only. Test's authorized callback is `https://api.test.sisukas.eu/api/auth/callback/google`. Production remains disabled pending #218 and the Production migration gate.
+
+**Scope boundary.** Provider unlinking is not exposed because last-usable-method recovery is not proven. Cross-email linking, GitHub OAuth and extended profile/session management are future work. The broader automated browser acceptance matrix, monitoring, rollback and Production rollout remain #218.
 
 ## Related documentation
 
-- [Authentication Data Model](./authentication-data-model/) — tables, keys and ownership.
+- [Authentication Data Model](../authentication-data-model/) — tables, keys and ownership.
 - [Account Linking](../../securities/account-linking/) — policy, failure paths and security invariants.
 - [Authentication Testing](../../dev-guide/authentication-testing/) — reproducible verification and Test-only safeguards.
 - [Frontend Organization](../frontend-organization/) — capability-oriented ownership conventions.

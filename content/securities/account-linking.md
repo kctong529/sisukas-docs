@@ -5,7 +5,7 @@ description: "Explicit provider linking, identity guarantees, conflict handling 
 ---
 
 > [!NOTE]
-> **Status — 16 November 2026.** #215 policy and callback invariants were verified using a controlled provider and Supabase Test. Real Google sign-in (#216) is now deployed on Test, without automatic linking. Connected-method UI and authenticated Connect Google (#217) remain pending; GitHub OAuth is not implemented.
+> **Status — 16 November 2026.** #215 security policy and database uniqueness are verified on Supabase Test; Google sign-in (#216), frontend OAuth failure recovery (#222), and authenticated account linking with connected-method UI (#217) are implemented and exercised on **Test**. Google remains disabled in Production; GitHub OAuth is not implemented.
 
 ## Linking is not account merging
 
@@ -27,12 +27,12 @@ The Better Auth configuration in `backend/src/modules/auth/config/accountLinking
 | `allowUnlinkingAll` | `false` | Prevents removing every linked provider account under Better Auth's policy |
 | `updateUserInfoOnLink` | `false` | Linked provider details do not automatically overwrite the user profile |
 
-The explicit-linking callback also checks the authenticated session, state and eligible provider identity. Verified email and provider trust are part of that validation. The database's `(provider_id, account_id)` unique index provides an additional integrity guarantee.
+Better Auth validates the authenticated linking session, OAuth state, verified provider email, and provider identity. The database's `(provider_id, account_id)` unique index provides an additional integrity guarantee. The frontend additionally checks the original user identity and the confirmed provider association before reporting success; these browser checks are not a substitute for backend authorization.
 
 ![Account-linking decision and rejection flow](/images/architecture/auth/linking-decision-flow.svg)
 
 > [!WARNING]
-> `allowUnlinkingAll: false` should not be described as a complete account-recovery guarantee. Magic-link users can have zero provider-account rows, so future connected-method UI must reason about available authentication methods, not just `account` count.
+> `allowUnlinkingAll: false` should not be described as a complete account-recovery guarantee. Magic-link users can have zero provider-account rows, so the connected-method UI represents magic-link availability separately from OAuth provider rows. Disconnect remains unavailable until method-aware recovery and last-usable-method safeguards exist.
 
 ## Tested security properties
 
@@ -40,19 +40,23 @@ The nine OAuth callback integration scenarios cover: same-email implicit merge r
 
 These tests establish **specific observed invariants**. They do not mean every rejected OAuth flow is entirely side-effect-free in temporary verification/session tables, nor do they replace browser verification after Test deployment.
 
-## Observed behavior on Test — 16 November 2026
+## Implemented Connect Google and callback recovery (#217)
 
-- New Google identities can sign in and retain application data across repeated Google sign-ins.
-- A Google-created account can subsequently sign in via an email magic link and access the same observed data. The exact `user.id` correspondence remains to be verified explicitly (#218).
-- Google sign-in with the email of an **existing unlinked magic-link user** fails with `account_not_linked`; there is no silent provider association. The current backend-root redirect provides no meaningful explanation, so error recovery is tracked by #222.
+1. A signed-in user opens **Account settings**. `listAccounts()` supplies connected OAuth providers; email magic-link availability is presented separately.
+2. **Connect Google** starts Better Auth `linkSocial()` in the current authenticated session, not an independent sign-in. The request uses Google's `prompt=select_account` to let users choose another identity on retry.
+3. A 15-minute timestamped browser marker captures the original `user.id` for consistency checking. Better Auth retains responsibility for OAuth state, session authorization and provider ownership.
+4. After redirect, the client re-reads the session and connected methods. Success is reported only if the original `user.id` remains current **and** Google is now connected.
+5. Rejected or uncertain results display actionable feedback; `email_doesn't_match` / `email_does_not_match` explain that different-email linking is not yet supported. Invalid markers, missing sessions, expired callbacks and provider conflicts cannot be treated as success.
 
-These directions of sign-in are not equivalent: magic-link authentication need not create an OAuth `account` association, and the observed magic-link access is **not evidence** that the explicit provider-linking flow has been implemented.
+**Manual Test evidence (16 November 2026):** a magic-link-only user connected a matching Google identity and subsequently used each method with the same `user.id` and existing data. A Google-created user also signed in via magic link with the same canonical `user.id`. Different-email linking was rejected with unchanged identity/data; users could retry using Google's account chooser and complete a matching-email link. Account settings keyboard navigation, focus return and narrow mobile usability were checked. A real Google cancellation UI path was not independently exercised; controlled-provider callback tests cover cancellation and invalid state.
 
-## What remains outside #215
+**Error recovery (#222):** ordinary Google sign-in with an existing unlinked magic-link email returns `account_not_linked` to the **frontend sign-in modal** with instructions to sign in by magic link first. It no longer strands the browser on the backend root. This is distinct from an authenticated linking failure.
 
-- Google sign-in on Test is implemented by #216; its callback-failure UX is tracked by #222.
-- Connected provider display and authenticated Connect Google belong to #217. Do not infer usable login methods only from `account` rows.
-- Deployed identity regression, Production migration and rollout acceptance remain #218.
-- GitHub OAuth remains under #37.
+## Scope and rollout boundaries
+
+- **No Disconnect UI.** `allowUnlinkingAll: false` alone does not establish recovery safety, and provider account counts are not equivalent to usable login methods.
+- **No cross-email linking.** The current policy deliberately requires the same email, and no account merge is performed. Extending this requires separate recovery and ownership design.
+- **No Production OAuth rollout.** Full deployment acceptance, monitoring, rollback and Production migration `0006` are tracked by #218 and the [Release Procedure](../../dev-guide/release-procedure/).
+- GitHub OAuth remains under #37; expanded user-profile and session management is separate follow-up work.
 
 See [Authentication Architecture](../../architecture/authentication/), [Authentication Data Model](../../architecture/authentication-data-model/), and [Authentication Testing](../../dev-guide/authentication-testing/).

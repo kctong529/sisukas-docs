@@ -7,7 +7,7 @@ description: "Local checks, controlled OAuth callback integration, Test database
 > [!WARNING]
 > **The opt-in integration suites write fixtures to PostgreSQL.** Confirm that `backend/.env.test` uses the designated **Supabase Test** project before enabling them. Never run fixture-writing suites against Production; do not paste connection credentials into issues or CI logs.
 
-## Pre-deployment validation (#215)
+## Local and integration validation (#215, #217)
 
 From `backend/`:
 
@@ -47,25 +47,32 @@ The backend and frontend boundary tests prevent new direct imports of internal a
 | Frontend build/PWA generation | Passed |
 | Database uniqueness index | Verified on Supabase Test |
 
-The printed Better Auth errors (`account_not_linked`, untrusted provider, invalid state) in these **controlled-provider tests** are expected negative test cases. An intentional mock-service exception may also appear in frontend test stdout despite that test passing. These results are evidence from the local branch; they do not verify the pending deployed Test revision.
+The printed Better Auth errors (`account_not_linked`, untrusted provider, invalid state) in these **controlled-provider tests** are expected negative test cases. An intentional mock-service exception may also appear in frontend test stdout despite that test passing. These recorded results describe the earlier #215 baseline, not the latest #217 polish branch or a deployed Test revision. The separate #217 automated and manual results below must not be conflated with this historical total.
 
-## Real Google OAuth — Test verification (16 November 2026, #216)
+## Real Google OAuth and linking — deployed Test verification (16 November 2026)
 
-The following are **manual observations from the deployed Test environment**, not results from the controlled-provider integration suite above:
+Manual browser observations below were performed against `https://test.sisukas.eu` using disposable Test identities. They complement, rather than replace, the controlled-provider OAuth suite.
 
-| Scenario | Result | Scope/limitation |
+| Scenario | Result | Evidence and scope |
 | --- | --- | --- |
-| New Google identity signs in | **Pass** | Account and authenticated session created; all five application views loaded |
-| Same identity signs in again through Google | **Pass** | Existing application data persisted |
-| Google-created identity signs in with magic link | **Pass (observed data)** | Same data available; the exact `user.id` was not independently compared |
-| Existing unlinked magic-link identity signs in through Google | **Expected rejection, poor recovery** | `account_not_linked`, browser ends at `https://api.test.sisukas.eu/?error=account_not_linked` displaying backend root response |
-| Authenticated Connect Google for existing user | **Not yet tested** | Account settings/linking implementation belongs to #217 |
-| Consent rejection, expired state, other OAuth failures | **Not yet verified end to end** | Frontend error handling belongs to #222; acceptance to #218 |
-| Production Google sign-in | **Not enabled** | Defer until #218 rollout gate |
+| New Google identity and repeat Google sign-in (#216) | **Pass** | Authenticated session established; repeat sign-in retained existing application data |
+| Google-created identity → magic-link sign-in (#217) | **Pass** | Canonical `session.user.id` compared before/after; same user and saved data |
+| Unlinked existing magic-link account attempts ordinary Google sign-in (#222) | **Expected rejection; recovery pass** | `account_not_linked` returns to frontend sign-in modal with magic-link guidance, not the backend root |
+| Magic-link account → explicit Connect Google (#217) | **Pass** | Google association confirmed, original `user.id`, `createdAt` and saved data unchanged; core checklist 21/21 |
+| Linked account → Google sign-in → magic-link sign-in (#217) | **Pass** | All three authenticated stages used the same canonical `user.id` |
+| Different-email Google linking (#217) | **Expected rejection; pass** | Clear mismatch message, Google remains disconnected, original `user.id` and saved data unchanged |
+| Wrong Google account → retry with matching identity (#217) | **Pass** | `linkSocial()` requests `prompt=select_account`; no private window or Google logout required |
+| Account settings keyboard and narrow-mobile use (#217) | **Pass, manually checked** | Escape close, focus containment/restoration, responsive controls, understandable failure messaging |
+| Real provider cancellation/abandoned authorization | **Not independently exercised in browser** | Controlled-provider cancellation, invalid OAuth state and expired-session tests pass; full browser matrix belongs to #218 |
+| Production Google sign-in | **Not enabled** | Release gate and rollout tracked by #218 |
 
-A successful repeat sign-in and unchanged visible data do **not** substitute for checking the canonical `user.id`. For #217/#218 use dedicated Test identities, capture the resolved identity before and after linking, and compare ownership of plans, favourites, grades and Calendar preference records. Do not log tokens or passwords.
+### Automated regression evidence
 
-**Current defect (#222):** unlinked existing users receive a raw backend-root error rather than actionable frontend feedback. Do not mark OAuth failure recovery as passing until the redirect and message are exercised in the browser.
+- #215 baseline: **143/143 backend tests** (20 files, with the opt-in suites enabled), **816/816 frontend tests** (93 files), and successful build/checks (historical run).
+- #217 backend account-linking OAuth suite: **9/9 passed**, including implicit-link rejection, ownership conflicts, different/unverified emails, cancellation, invalid state, new registration and expired sessions.
+- #217 frontend: connected-method discovery, callback marker expiry/validation, provider verification, error recovery and focused Account settings component tests have passed in their respective development increments. The developer confirmed the current UI-polish branch's tests pass; no consolidated final suite count or deployed SHA was provided for that branch.
+
+Do not include live session tokens, OAuth `state` values or credentials in test records. Use `session.user.id` solely to compare identities, without publishing raw identity/session dumps.
 
 ## Verify migration `0006` on Test
 

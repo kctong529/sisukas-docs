@@ -21,7 +21,7 @@ description: "Canonical identity and provider-account mapping, sessions, verific
 A user may have **zero or more** `account` rows and **zero or more** sessions. Email magic-link users may have **no** `account` rows at all. Do not infer available sign-in methods solely from the count of linked accounts.
 
 > [!NOTE]
-> **Observed on Test (16 November 2026):** a Google-created user could authenticate again with an email magic link and access the same application data. This does not mean a magic-link login creates another provider-account row or that the explicit Connect Google flow is implemented. Identity-level equality of `user.id` across these paths is a separate acceptance check (#218).
+> **Verified on Test (16 November 2026, #217):** both magic-link → explicit Google linking → Google sign-in and Google-created account → magic-link sign-in resolve to the same canonical `user.id`, retaining existing application data. Magic-link sign-in does **not** imply a separate provider `account` row. The Google association is created only by explicit linking (or initial Google registration); matching emails do not silently merge users.
 
 `account.id` is the internal row key. `account.account_id` is the external provider's subject/identity identifier; the two fields have different meanings. `session.id` and session tokens are independent of the canonical user key.
 
@@ -47,6 +47,6 @@ plans.id ──> calendar_hidden_groups.plan_id
 account.user_id ──> user.id   (authentication association only)
 ```
 
-Explicit linking inserts/associates an `account` with the **existing** user. It does not re-key plans or copy preferences. Independent accounts are **not** merged based on matching email.
+Explicit linking inserts/associates an `account` with the **existing** user. It does not re-key plans or copy preferences. Independent accounts are **not** merged based on matching email. In the Test linking acceptance flow, the original `user.id`, account creation timestamp and saved data remained unchanged across subsequent Google and magic-link sessions. Current policy requires the linked Google email to match the Sisukas account email; the separate user-profile email is not automatically replaced by provider data (`updateUserInfoOnLink: false`).
 
 For the wider Calendar ownership and schema constraints, see [Calendar Schema](../calendar-visibility-schema/) and [Calendar Visibility](../calendar-visibility-preferences/).

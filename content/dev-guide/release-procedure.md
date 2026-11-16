@@ -34,7 +34,8 @@ Google OAuth was deployed and manually exercised on **Test** on 16 November 2026
 
 - **Test callback:** `https://api.test.sisukas.eu/api/auth/callback/google`. Register the actual public backend callback in the Google OAuth web client. Keep Test credentials in appropriately scoped deployment secrets; never put the client secret in a `VITE_*` variable or commit it.
 - **Google publishing status:** the external Google OAuth app may remain in **Testing**, with designated test users, during Test acceptance. Complete Google Branding, privacy-policy and audience requirements separately before public enablement.
-- **Before Production:** complete account settings and explicit linking (#217), usable callback failure recovery (#222), end-to-end identity/session/conflict acceptance and rollback review (#218), and confirm the Production `0006` migration gate below.
+- **Completed on Test:** account settings and explicit same-email Google linking (#217), ordinary OAuth callback failure recovery (#222), and targeted canonical-identity/security regressions were exercised on 16 November 2026. This is not Production approval.
+- **Before Production:** complete the wider automated browser/session/conflict acceptance, monitoring and rollback review (#218), branding/privacy/audience requirements, and the Production `0006` migration gate below.
 - **Rollback:** disable the backend provider flag and frontend sign-in action through the reviewed deployment configuration; check existing magic-link access. Because the frontend flag is build-time, deploying a new frontend build is necessary to hide the action.
 - **Evidence:** capture the deployed SHA, workflow status, OAuth client callback configuration (not credential values), results for new/repeat/linked/conflicting users, and the approval for Production enablement.
 
@@ -59,7 +60,7 @@ Account linking requires the unique index `account_provider_identity_unique` on 
 2. Review the approved standalone SQL, current backup/recovery procedure, and maintenance window; do not use `drizzle-kit push` or replay the unresolved migration journal ([#197](https://github.com/kctong529/sisukas/issues/197)).
 3. Apply the migration before deploying code that depends on it. The index is created transactionally, but normal index construction can briefly block writes to `account`.
 4. Inspect `pg_indexes` for the exact unique definition. Record the migration checksum, database target and execution evidence in release notes.
-5. After `dev` deployment, complete the authentication checks in [Authentication Testing](./authentication-testing/) before declaring #215's staged validation complete.
+5. Verify the deployed candidate against [Authentication Testing](../authentication-testing/) and record the Production-specific acceptance and release evidence under #218.
 
 ## Production smoke checks
 
